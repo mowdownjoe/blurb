@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/FeedListFragment">
+
+    <fragment
+        android:id="@+id/FeedListFragment"
+        android:name="com.mowdowndevelopments.blurb.ui.FeedList.FeedListFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_feed_list">
+        <action
+            android:id="@+id/action_FeedListFragment_to_SingleFeedStoryFragment"
+            app:destination="@id/SingleFeedStoryFragment" />
+        <action
+            android:id="@+id/action_FeedListFragment_to_FavoriteStoriesFragment"
+            app:destination="@id/FavoriteStoriesFragment" />
+        <action
+            android:id="@+id/action_FeedListFragment_to_RiverOfNewsFragment"
+            app:destination="@id/RiverOfNewsFragment" />
+    </fragment>
+    <navigation android:id="@+id/navigation"
+        app:startDestination="@id/login_fragment">
+        <fragment android:id="@+id/login_fragment">
+            <action
+                android:id="@+id/action_create_account"
+                app:destination="@id/account_creation_fragment" />
+        </fragment>
+        <fragment android:id="@+id/account_creation_fragment" />
+    </navigation>
+    <action android:id="@+id/action_login" app:destination="@id/navigation" />
+    <fragment android:id="@+id/SingleFeedStoryFragment" >
+        <action
+            android:id="@+id/action_SingleFeedStoryFragment_to_StoryPagerActivity"
+            app:destination="@id/StoryPagerActivity" />
+        <argument
+            android:name="FeedToShow"
+            app:argType="com.mowdowndevelopments.blurb.database.entities.Feed" />
+    </fragment>
+    <fragment android:id="@+id/StoryPagerActivity" >
+        <argument
+            android:name="Stories"
+            app:argType="com.mowdowndevelopments.blurb.database.entities.Story[]" />
+        <argument
+            android:name="InitialStory"
+            app:argType="integer"
+            android:defaultValue="0" />
+    </fragment>
+    <fragment android:id="@+id/FavoriteStoriesFragment" >
+        <action
+            android:id="@+id/action_FavoriteStoriesFragment_to_StoryPagerActivity"
+            app:destination="@id/StoryPagerActivity" />
+        <argument
+            android:name="FavStories"
+            app:argType="com.mowdowndevelopments.blurb.database.entities.Story[]" />
+    </fragment>
+    <fragment android:id="@+id/RiverOfNewsFragment" >
+        <action
+            android:id="@+id/action_RiverOfNewsFragment_to_StoryPagerActivity"
+            app:destination="@id/StoryPagerActivity" />
+        <argument
+            android:name="FeedsInRiver"
+            app:argType="com.mowdowndevelopments.blurb.database.entities.Feed[]" />
+    </fragment>
+</navigation>
