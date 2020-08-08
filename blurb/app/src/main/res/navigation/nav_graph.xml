@@ -33,12 +33,12 @@
     <fragment android:id="@+id/SingleFeedStoryFragment" >
         <action
             android:id="@+id/action_SingleFeedStoryFragment_to_StoryPagerActivity"
-            app:destination="@id/StoryPagerActivity" />
+            app:destination="@id/StoryPagerActivityPlaceholder" />
         <argument
             android:name="FeedToShow"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Feed" />
     </fragment>
-    <fragment android:id="@+id/StoryPagerActivity" >
+    <fragment android:id="@+id/StoryPagerActivityPlaceholder" >
         <argument
             android:name="Stories"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Story[]" />
@@ -47,18 +47,20 @@
             app:argType="integer"
             android:defaultValue="0" />
     </fragment>
-    <fragment android:id="@+id/FavoriteStoriesFragment" >
+    <fragment
+        android:id="@+id/FavoriteStoriesFragment"
+        android:label="@string/fav_stories">
         <action
             android:id="@+id/action_FavoriteStoriesFragment_to_StoryPagerActivity"
-            app:destination="@id/StoryPagerActivity" />
-        <argument
-            android:name="FavStories"
-            app:argType="com.mowdowndevelopments.blurb.database.entities.Story[]" />
+            app:destination="@id/StoryPagerActivityPlaceholder" />
+
     </fragment>
-    <fragment android:id="@+id/RiverOfNewsFragment" >
+    <fragment
+        android:id="@+id/RiverOfNewsFragment"
+        android:label="@string/river_feed">
         <action
             android:id="@+id/action_RiverOfNewsFragment_to_StoryPagerActivity"
-            app:destination="@id/StoryPagerActivity" />
+            app:destination="@id/StoryPagerActivityPlaceholder" />
         <argument
             android:name="FeedsInRiver"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Feed[]" />
