@@ -16,9 +16,6 @@ package com.mowdowndevelopments.blurb;
  * limitations under the License.
  */
 
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.annotation.NonNull;
 
 import java.util.concurrent.Executor;
@@ -69,11 +66,11 @@ public class AppExecutors {
     }
 
     private static class MainThreadExecutor implements Executor {
-        private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
+        //private Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
         @Override
         public void execute(@NonNull Runnable command) {
-            mainThreadHandler.post(command);
+            //mainThreadHandler.post(command);
         }
     }
 }
