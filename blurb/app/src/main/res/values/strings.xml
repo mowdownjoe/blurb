@@ -12,4 +12,18 @@
     <string name="error_text">We can\'t seem to load this content.</string>
     <string name="river_feed">River of News</string>
     <string name="fav_stories">Favorite Stories</string>
+    <string name="create_title">Create Account</string>
+    <string name="login_title">Login</string>
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in or register</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="welcome">"Welcome!"</string>
+    <string name="invalid_username">Not a valid username</string>
+    <string name="invalid_password">Password must be >5 characters</string>
+    <string name="login_failed">"Login failed"</string>
+    <string name="nav_dest_fav">Favorite Stories</string>
+    <string name="action_sign_out">Sign out</string>
+    <string name="nav_dest_home">Your Feeds</string>
 </resources>

@@ -25,6 +25,16 @@ public interface NewsBlurAPI {
     @POST("/api/logout")
     public Call<Void> logout();
 
+    @POST("/api/signup")
+    @FormUrlEncoded
+    public Call<Void> signup(@Field("username") String username,
+                             @Field("password") String password,
+                             @Field("email") String emailAddress);
+
+    @POST("/api/signup")
+    @FormUrlEncoded
+    public Call<Void> signup(@Field("username") String username, @Field("email") String emailAddress);
+
     @GET("/reader/feeds?flat=true")
     public Call<GetFeedsResponse> getFeeds();
 
@@ -32,4 +42,7 @@ public interface NewsBlurAPI {
     public Call<FeedContentsResponse> getFeedContents(@Path("id") int feedId,
                                                       @Query("read_filter") String filter,
                                                       @Query("include_story_content") boolean includeStoryContent);
+
+    @GET("/reader/river_stories?{concatenatedFeeds}")
+    public Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") String concatenatedFeedQueries);
 }

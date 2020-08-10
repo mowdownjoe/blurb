@@ -20,16 +20,20 @@
             android:id="@+id/action_FeedListFragment_to_RiverOfNewsFragment"
             app:destination="@id/RiverOfNewsFragment" />
     </fragment>
-    <navigation android:id="@+id/navigation"
+    <navigation android:id="@+id/login_graph"
         app:startDestination="@id/login_fragment">
-        <fragment android:id="@+id/login_fragment">
+        <fragment
+            android:id="@+id/login_fragment"
+            android:label="@string/login_title">
             <action
                 android:id="@+id/action_create_account"
                 app:destination="@id/account_creation_fragment" />
         </fragment>
-        <fragment android:id="@+id/account_creation_fragment" />
+        <fragment
+            android:id="@+id/account_creation_fragment"
+            android:label="@string/create_title" />
     </navigation>
-    <action android:id="@+id/action_login" app:destination="@id/navigation" />
+    <action android:id="@+id/action_login_flow" app:destination="@id/login_graph" />
     <fragment android:id="@+id/SingleFeedStoryFragment" >
         <action
             android:id="@+id/action_SingleFeedStoryFragment_to_StoryPagerActivity"
@@ -65,4 +69,7 @@
             android:name="FeedsInRiver"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Feed[]" />
     </fragment>
+    <action
+        android:id="@+id/action_global_FavoriteStories"
+        app:destination="@id/FavoriteStoriesFragment" />
 </navigation>

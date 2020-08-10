@@ -74,7 +74,7 @@ public class Singletons {
 
     public static Moshi getMoshi() {
         if (moshi == null){
-            //TODO Add adapters for model classes
+            //TODO Add adapters for model classes?
             moshi = new Moshi.Builder()
                     .build();
         }

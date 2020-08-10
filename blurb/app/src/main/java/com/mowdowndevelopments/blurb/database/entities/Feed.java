@@ -16,20 +16,18 @@ import java.util.Objects;
 @Entity(tableName = Feed.TABLE_NAME)
 public class Feed implements Parcelable {
 
-    public static final String ID = "id";
-    public static final String TITLE = "feed_title";
-    public static final String ADDRESS = "feed_address";
-    public static final String LINK = "feed_link";
-    public static final String FAVICON = "favicon_url";
-    public static final String TABLE_NAME = "feeds";
+    static final String ID = "id";
+    private static final String TITLE = "feed_title";
+    private static final String ADDRESS = "feed_address";
+    private static final String LINK = "feed_link";
+    private static final String FAVICON = "favicon_url";
+    static final String TABLE_NAME = "feeds";
 
     @PrimaryKey(autoGenerate = false)
     private int id;
-
     @Json(name = TITLE)
     @ColumnInfo(name = TITLE)
     private String feedTitle;
-
     @Json(name = ADDRESS)
     @ColumnInfo(name = ADDRESS)
     private String feedAddress;

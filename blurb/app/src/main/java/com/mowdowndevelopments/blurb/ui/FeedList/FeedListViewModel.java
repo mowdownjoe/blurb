@@ -1,6 +1,12 @@
 package com.mowdowndevelopments.blurb.ui.FeedList;
 
-import androidx.lifecycle.ViewModel;
+import android.app.Application;
 
-public class FeedListViewModel extends ViewModel {
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+
+public class FeedListViewModel extends AndroidViewModel {
+    public FeedListViewModel(@NonNull Application application) {
+        super(application);
+    }
 }
