@@ -45,7 +45,8 @@ dependencies {
     def room_version = "2.2.5"
     def truth_version = '1.0.1'
     def glide_version = "4.11.0"
-    def androidXTestCoreVersion = "1.2.0"
+    def androidX_testCore_version = "1.2.0"
+    def work_version = "2.4.0"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "androidx.appcompat:appcompat:1.1.0"
@@ -60,6 +61,7 @@ dependencies {
     implementation "androidx.viewpager2:viewpager2:1.0.0"
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation "androidx.fragment:fragment:$androidX_fragment_version"
+    implementation 'androidx.preference:preference:1.1.1'
     testImplementation "androidx.fragment:fragment-testing:$androidX_fragment_version"
     implementation 'androidx.browser:browser:1.2.0'
 
@@ -69,6 +71,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+    implementation "androidx.work:work-runtime:$work_version"
 
     implementation "androidx.navigation:navigation-fragment:$nav_version"
     implementation "androidx.navigation:navigation-ui:$nav_version"
@@ -94,12 +97,11 @@ dependencies {
     testImplementation 'junit:junit:4.13'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    testImplementation "androidx.test.ext:truth:$androidXTestCoreVersion"
+    testImplementation "androidx.test.ext:truth:$androidX_testCore_version"
     testImplementation "com.google.truth.extensions:truth-java8-extension:$truth_version"
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"
     testImplementation "com.google.truth:truth:$truth_version"
     testImplementation 'org.robolectric:robolectric:4.3.1'
-    testImplementation "androidx.test:core:$androidXTestCoreVersion"
-
-
+    testImplementation "androidx.test:core:$androidX_testCore_version"
+    androidTestImplementation "androidx.work:work-testing:$work_version"
 }

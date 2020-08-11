@@ -23,7 +23,12 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
-    <string name="nav_dest_fav">Favorite Stories</string>
+    <string name="nav_dest_fav">View Favorite Stories</string>
     <string name="action_sign_out">Sign out</string>
     <string name="nav_dest_home">Your Feeds</string>
+    <string name="action_support">Support the developer...</string>
+    <string name="create_account_prompt">Don\'t have a NewsBlur account? <u>Create one!</u></string>
+    <string name="retry_action">Retry</string>
+    <string name="http_error">HTTP Error %o</string>
+    <string name="error_debug_this">Login wasn\'t saved, or check was improperly performed.</string>
 </resources>

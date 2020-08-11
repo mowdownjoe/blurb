@@ -1,4 +1,4 @@
-package com.mowdowndevelopments.blurb.ui.FeedList;
+package com.mowdowndevelopments.blurb.ui.feedList;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
