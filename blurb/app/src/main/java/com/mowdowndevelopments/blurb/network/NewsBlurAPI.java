@@ -38,6 +38,9 @@ public interface NewsBlurAPI {
     @GET("/reader/feeds?flat=true")
     public Call<GetFeedsResponse> getFeeds();
 
+    @GET("/reader/feeds?flat=true&update_counts=true")
+    public Call<GetFeedsResponse> getFeedsAndRefreshCounts();
+
     @GET("/reader/feed/{id}")
     public Call<FeedContentsResponse> getFeedContents(@Path("id") int feedId,
                                                       @Query("read_filter") String filter,

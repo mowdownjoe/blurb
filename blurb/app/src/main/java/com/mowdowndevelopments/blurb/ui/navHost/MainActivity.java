@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
+
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.getLogoutStatus().observe(this, loadingStatus -> {
             if (loadingStatus == LoadingStatus.DONE){
@@ -58,7 +59,9 @@ public class MainActivity extends AppCompatActivity {
                 navController.navigate(NavGraphDirections.actionGlobalFavoriteStories());
                 return true;
             case R.id.action_logout:
-                viewModel.logout();
+                if (viewModel.getLogoutStatus().getValue() != LoadingStatus.LOADING) {
+                    viewModel.logout();
+                }
                 return true;
             case R.id.action_settings:
                 navController.navigate(NavGraphDirections.actionGlobalPreferences());

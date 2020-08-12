@@ -48,7 +48,7 @@ public class NewsBlurAPITest {
         testFeeds.put("test feed", new Feed(42, "pls ignore",
                 "http://testfeed.plsignore",
                 "http://testfeed.plsignore",
-                "http://testfeed.plsignore/img.png"));
+                "http://testfeed.plsignore/img.png", 5, 5));
         GetFeedsResponse feedsResponse = new GetFeedsResponse(testFolders, testFeeds);
 
         //WHEN
@@ -81,8 +81,8 @@ public class NewsBlurAPITest {
     @Test
     public void getFeedContents() {
         //GIVEN
-        Story testStory1 = new Story("1a4:45", "test post pls ignore", "1234567890", "nobody", "testpost.pls/ignore", 42);
-        Story testStory2 = new Story("45:1a4", "lorem ipsum", "12345678910", "blah", "blah.blah", 42);
+        Story testStory1 = new Story("1a4:45","hi","test post pls ignore", "1234567890", "nobody", "testpost.pls/ignore", 42);
+        Story testStory2 = new Story("45:1a4","hi","lorem ipsum", "12345678910", "blah", "blah.blah", 42);
         FeedContentsResponse response = new FeedContentsResponse(new Story[]{testStory1, testStory2});
 
         //WHEN

@@ -6,15 +6,17 @@ import android.os.Parcelable;
 import androidx.annotation.Keep;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
+import com.mowdowndevelopments.blurb.ui.feedList.FeedListItem;
 import com.squareup.moshi.Json;
 
 import java.util.Objects;
 
 @Keep
 @Entity(tableName = Feed.TABLE_NAME)
-public class Feed implements Parcelable {
+public class Feed implements Parcelable, FeedListItem {
 
     static final String ID = "id";
     private static final String TITLE = "feed_title";
@@ -37,12 +39,32 @@ public class Feed implements Parcelable {
     @Json(name = FAVICON)
     @ColumnInfo(name = FAVICON)
     private String favIconUrl;
+    @Ignore
+    @Json(name = "nt")
+    private int unreadCount;
+    @Ignore
+    @Json(name = "ps")
+    private int preferredUnreadCount;
+
     public Feed(int id, String feedTitle, String feedAddress, String feedLink, String favIconUrl) {
         this.id = id;
         this.feedTitle = feedTitle;
         this.feedAddress = feedAddress;
         this.feedLink = feedLink;
         this.favIconUrl = favIconUrl;
+        unreadCount = -1;
+        preferredUnreadCount = -1;
+    }
+
+    @Ignore
+    public Feed(int id, String feedTitle, String feedAddress, String feedLink, String favIconUrl, int unreadCount, int preferredUnreadCount) {
+        this.id = id;
+        this.feedTitle = feedTitle;
+        this.feedAddress = feedAddress;
+        this.feedLink = feedLink;
+        this.favIconUrl = favIconUrl;
+        this.unreadCount = unreadCount;
+        this.preferredUnreadCount = preferredUnreadCount;
     }
 
     private Feed(Parcel in){
@@ -51,6 +73,8 @@ public class Feed implements Parcelable {
         feedAddress = in.readString();
         feedLink = in.readString();
         favIconUrl = in.readString();
+        unreadCount = -1;
+        preferredUnreadCount = -1;
     }
 
     public static final Parcelable.Creator<Feed> CREATOR = new Parcelable.Creator<Feed>() {
@@ -84,6 +108,14 @@ public class Feed implements Parcelable {
 
     public String getFavIconUrl() {
         return favIconUrl;
+    }
+
+    public int getUnreadCount() {
+        return unreadCount;
+    }
+
+    public int getPreferredUnreadCount() {
+        return preferredUnreadCount;
     }
 
     @Override

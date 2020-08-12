@@ -1,6 +1,7 @@
 package com.mowdowndevelopments.blurb.ui.navHost;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -46,6 +47,9 @@ public class MainViewModel extends AndroidViewModel {
             public void onResponse(@NotNull Call<Void> call, @NotNull Response<Void> response) {
                 if (response.isSuccessful()){
                     logoutStatus.postValue(LoadingStatus.DONE);
+                    SharedPreferences prefs = getApplication()
+                            .getSharedPreferences(getApplication().getString(R.string.shared_pref_file), 0);
+                    prefs.edit().putBoolean(getApplication().getString(R.string.logged_in_key), false).apply();
                 } else {
                     logoutStatus.postValue(LoadingStatus.ERROR);
                     //TODO Add messages to explain HTTP Error codes in plain language

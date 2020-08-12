@@ -34,7 +34,9 @@
         </fragment>
         <fragment
             android:id="@+id/account_creation_fragment"
-            android:label="@string/create_title" />
+            android:name="com.mowdowndevelopments.blurb.ui.login.RegistrationFragment"
+            android:label="@string/create_title"
+            tools:layout="@layout/fragment_registration"/>
     </navigation>
     <action android:id="@+id/action_login_flow" app:destination="@id/login_graph" />
     <fragment android:id="@+id/SingleFeedStoryFragment" >

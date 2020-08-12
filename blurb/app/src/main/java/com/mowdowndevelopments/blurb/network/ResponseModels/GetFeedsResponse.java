@@ -9,9 +9,15 @@ import java.util.Map;
 import java.util.Objects;
 
 public class GetFeedsResponse {
+    /*
+    * Maps name of folder to feed IDs.
+    * */
     @Json(name = "flat_folders")
     private Map<String, Integer[]> folders;
-    private Map<String, Feed> feeds;
+    /*
+    * Maps feed ID parsed to String to its appropriate feed.
+    * */
+    private Map<String, Feed> feeds; //Key will be Feed ID parsed to String
 
     public GetFeedsResponse(Map<String, Integer[]> folders, Map<String, Feed> feeds) {
         this.folders = folders;
@@ -37,8 +43,7 @@ public class GetFeedsResponse {
     public HashMap<Integer, String> getInvertedFolderMap(){
         HashMap<Integer, String> invertedFolders = new HashMap<>();
         for (String key : folders.keySet()) {
-            Integer[] values = Objects.requireNonNull(folders.get(key));
-            for (Integer newKey : values) {
+            for (Integer newKey : Objects.requireNonNull(folders.get(key))) {
                 invertedFolders.put(newKey, key);
             }
         }
