@@ -53,7 +53,7 @@ public class FeedListViewModel extends AndroidViewModel {
             public void onResponse(@NotNull Call<GetFeedsResponse> call, @NotNull Response<GetFeedsResponse> response) {
                 if (response.isSuccessful()) {
                     status.postValue(LoadingStatus.DONE);
-                    //TODO Fill out success case
+                    feedsResponseData.postValue(response.body());
                 } else {
                     status.postValue(LoadingStatus.ERROR);
                     String errorMsg = getApplication().getString(R.string.http_error, response.code());
@@ -79,7 +79,7 @@ public class FeedListViewModel extends AndroidViewModel {
             public void onResponse(@NotNull Call<GetFeedsResponse> call, @NotNull Response<GetFeedsResponse> response) {
                 refreshing = false;
                 if (response.isSuccessful()){
-                    //TODO Fill out success case
+                    feedsResponseData.postValue(response.body());
                 } else {
                     String errorMsg = getApplication().getString(R.string.http_error, response.code());
                     errorMessage.postValue(errorMsg);

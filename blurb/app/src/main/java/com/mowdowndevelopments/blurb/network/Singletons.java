@@ -26,7 +26,7 @@ public class Singletons {
     private Singletons(){}
 
     public static OkHttpClient getOkHttpClient() {
-        if (okHttpClient == null){
+        if (okHttpClient == null){ //TODO Implement new CookieHandler
             Dispatcher dispatcher = new Dispatcher((ExecutorService) AppExecutors.getInstance().networkIO());
             okHttpClient = new  OkHttpClient.Builder()
                     .cookieJar(new JavaNetCookieJar(CookieHandler.getDefault()))

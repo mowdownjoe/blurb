@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.mowdowndevelopments.blurb.R;
@@ -132,7 +133,11 @@ public class FeedListAdapter extends RecyclerView.Adapter {
             });
             binding.folderHeader.ivFolderIcon.setOnClickListener(this);
             binding.folderHeader.tvFolderName.setOnClickListener(this);
+
             adapter = new FolderInnerFeedListAdapter(this);
+            binding.rvFolderFeeds.setHasFixedSize(true);
+            binding.rvFolderFeeds.setAdapter(adapter);
+            binding.rvFolderFeeds.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
         }
 
         public void bind(Folder folder){

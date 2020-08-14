@@ -45,6 +45,9 @@ public class FolderInnerFeedListAdapter extends RecyclerView.Adapter<FolderInner
 
     @Override
     public int getItemCount() {
+        if (feeds != null) {
+            return feeds.size();
+        }
         return 0;
     }
 
@@ -52,6 +55,7 @@ public class FolderInnerFeedListAdapter extends RecyclerView.Adapter<FolderInner
 
         public InnerFeedViewHolder(@NonNull View itemView) {
             super(itemView);
+            itemView.setOnClickListener(this);
         }
 
         @Override

@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -46,6 +47,7 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
                     binding.rvFeedList.setVisibility(View.INVISIBLE);
                     binding.tvErrorText.setVisibility(View.INVISIBLE);
                     break;
+                case WAITING:
                 case DONE:
                     binding.pbLoadingSpinner.setVisibility(View.INVISIBLE);
                     binding.rvFeedList.setVisibility(View.VISIBLE);
@@ -70,10 +72,14 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         super.onActivityCreated(savedInstanceState);
 
         adapter = new FeedListAdapter(this);
-    }
+        binding.rvFeedList.setAdapter(adapter);
+        binding.rvFeedList.setHasFixedSize(true);
+        binding.rvFeedList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-    public void loadData(){
-        viewModel.loadFeeds();
+        /*if (requireActivity().getSharedPreferences(getString(R.string.shared_pref_file), 0)
+                .getBoolean(getString(R.string.logged_in_key), false)){
+            viewModel.loadFeeds();
+        }*/
     }
 
     @Override

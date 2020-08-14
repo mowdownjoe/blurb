@@ -7,15 +7,12 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="error_text">We can\'t seem to load this content.</string>
     <string name="error_text_feeds">We can\'t seem to load your feeds.</string>
     <string name="river_feed">River of News</string>
     <string name="fav_stories">Favorite Stories</string>
     <string name="create_title">Create Account</string>
     <string name="login_title">Login</string>
-    <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign in with Newsblur</string>
@@ -27,10 +24,10 @@
     <string name="nav_dest_fav">View Favorite Stories</string>
     <string name="action_sign_out">Sign out</string>
     <string name="nav_dest_home">Your Feeds</string>
-    <string name="action_support">Support the developer...</string>
+    <string name="action_support">Support the developer…</string>
     <string name="create_account_prompt">Create a NewsBlur account</string>
     <string name="retry_action">Retry</string>
-    <string name="http_error">HTTP Error %o</string>
+    <string name="http_error">HTTP Error %1$o</string>
     <string name="error_debug_this">Login wasn\'t saved, or check was improperly performed.</string>
     <string name="shared_pref_file">com.mowdowndevelopments.blurb.prefs</string>
     <string name="logged_in_key">com.mowdowndevelopments.blurb.logged_in</string>
@@ -40,4 +37,7 @@
     <string name="prompt_username">Username</string>
     <string name="cd_folder">Folder</string>
     <string name="cd_icon">Feed Icon</string>
+    <string name="logged_toast">Logged in as %1$s</string>
+    <string name="no_credentials_error">Please enter your login credentials.</string>
+    <string name="missing_registration_error">Please enter a username and email address.</string>
 </resources>

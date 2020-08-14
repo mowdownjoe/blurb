@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
     private MainViewModel viewModel;
+    private Menu menu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,28 +32,62 @@ public class MainActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.getLogoutStatus().observe(this, loadingStatus -> {
             if (loadingStatus == LoadingStatus.DONE){
-                Navigation.findNavController(binding.mainContent.getRoot())
+                Navigation.findNavController(this, R.id.nav_host_fragment)
                         .navigate(NavGraphDirections.actionLoginFlow());
             }
         });
         viewModel.getErrorMessage().observe(this, message -> Snackbar
                 .make(binding.getRoot(), message, BaseTransientBottomBar.LENGTH_LONG)
                 .show());
+
+        Navigation.findNavController(this, R.id.nav_host_fragment)
+                .addOnDestinationChangedListener((controller, destination, arguments) -> {
+                    if (menu != null) {
+                        if (destination.getId() == R.id.login_fragment ||
+                                destination.getId() == R.id.account_creation_fragment){
+                            menu.findItem(R.id.action_show_favorites).setVisible(false);
+                            menu.findItem(R.id.action_logout).setVisible(false);
+                        } else {
+                            menu.findItem(R.id.action_show_favorites).setVisible(true);
+                            menu.findItem(R.id.action_logout).setVisible(true);
+                        }
+                    }
+                });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (!getSharedPreferences(getString(R.string.shared_pref_file), 0)
+                .getBoolean(getString(R.string.logged_in_key), false)){
+            Navigation.findNavController(this, R.id.nav_host_fragment)
+                    .navigate(NavGraphDirections.actionLoginFlow());
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        boolean isLoggedIn = getSharedPreferences(getString(R.string.shared_pref_file), 0)
+                .getBoolean(getString(R.string.logged_in_key), false);
+        menu.findItem(R.id.action_show_favorites).setVisible(isLoggedIn);
+        menu.findItem(R.id.action_logout).setVisible(isLoggedIn);
+
+        this.menu = menu;
+
         return true;
     }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        NavController navController = Navigation.findNavController(binding.mainContent.getRoot());
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
 
         switch (item.getItemId()) {
             case R.id.action_show_favorites:
