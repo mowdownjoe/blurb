@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -42,20 +43,33 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         binding.btnLogin.setOnClickListener(v -> {
-            String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
-            String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
-            if (username.isEmpty()){
-                Snackbar.make(requireView(), R.string.no_credentials_error, BaseTransientBottomBar.LENGTH_SHORT).show();
-                return;
+            Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+            beginLoginFlow();
+        });
+        binding.etPassword.setOnEditorActionListener((textView, i, keyEvent) -> {
+            if (keyEvent != null){
+                Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+                beginLoginFlow();
+                return true;
             }
-            if (!password.isEmpty()){
-                viewModel.login(username, password);
-            } else {
-                viewModel.login(username);
-            }
+            return false;
         });
         binding.btnCreateAccount.setOnClickListener(v -> NavHostFragment.findNavController(this)
                 .navigate(LoginFragmentDirections.actionCreateAccount()));
+    }
+
+    private void beginLoginFlow() {
+        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+        String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
+        if (username.isEmpty()){
+            Snackbar.make(requireView(), R.string.no_credentials_error, BaseTransientBottomBar.LENGTH_SHORT).show();
+            return;
+        }
+        if (!password.isEmpty()){
+            viewModel.login(username, password);
+        } else {
+            viewModel.login(username);
+        }
     }
 
     @Override
@@ -71,7 +85,7 @@ public class LoginFragment extends Fragment {
                     binding.btnLogin.setVisibility(View.INVISIBLE);
                     binding.etUsername.setVisibility(View.INVISIBLE);
                     binding.etPassword.setVisibility(View.INVISIBLE);
-                    return;
+                    break;
                 case ERROR:
                 case DONE:
                 case WAITING:
@@ -80,7 +94,7 @@ public class LoginFragment extends Fragment {
                     binding.btnLogin.setVisibility(View.VISIBLE);
                     binding.etUsername.setVisibility(View.VISIBLE);
                     binding.etPassword.setVisibility(View.VISIBLE);
-                    return;
+                    break;
             }
             if (loadingStatus == LoadingStatus.DONE){
                 SharedPreferences prefs = requireActivity()

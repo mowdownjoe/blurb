@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -69,7 +70,7 @@ public class RegistrationFragment extends Fragment {
                     binding.btnRegister.setVisibility(View.INVISIBLE);
                     binding.etUsername.setVisibility(View.INVISIBLE);
                     binding.etPassword.setVisibility(View.INVISIBLE);
-                    return;
+                    break;
                 case ERROR:
                 case DONE:
                 case WAITING:
@@ -78,15 +79,20 @@ public class RegistrationFragment extends Fragment {
                     binding.btnRegister.setVisibility(View.VISIBLE);
                     binding.etUsername.setVisibility(View.VISIBLE);
                     binding.etPassword.setVisibility(View.VISIBLE);
-                    return;
+                    break;
             }
             if (loadingStatus == LoadingStatus.DONE){
                 SharedPreferences prefs = requireActivity()
                         .getSharedPreferences(getString(R.string.shared_pref_file), 0);
-                prefs.edit().putBoolean(getString(R.string.logged_in_key), true).apply();
-                Toast.makeText(requireContext(), getString(R.string.logged_toast,
-                        binding.etUsername.getText().toString()), Toast.LENGTH_LONG).show();
-                NavHostFragment.findNavController(this).popBackStack(R.id.login_fragment, true);
+                boolean isStoredInSharedPrefs = prefs.edit()
+                        .putBoolean(getString(R.string.logged_in_key), true).commit();
+                if (isStoredInSharedPrefs) {
+                    Toast.makeText(requireContext(), getString(R.string.logged_toast,
+                            binding.etUsername.getText().toString()), Toast.LENGTH_LONG).show();
+                    NavHostFragment.findNavController(this).popBackStack(R.id.login_fragment, true);
+                } else {
+                    Toast.makeText(requireContext(), R.string.error_text, Toast.LENGTH_LONG).show();
+                }
             }
         });
         viewModel.getErrorToast().observe(getViewLifecycleOwner(), error -> {
@@ -100,19 +106,24 @@ public class RegistrationFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         binding.btnRegister.setOnClickListener(view -> {
-            String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
-            String emailAddress = Objects.requireNonNull(binding.etEmail.getText()).toString();
-            String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
-            if (username.isEmpty() || emailAddress.isEmpty()){
-                Snackbar.make(requireView(), R.string.missing_registration_error, BaseTransientBottomBar.LENGTH_SHORT).show();
-                return;
-            }
-            if (!password.isEmpty()){
-                viewModel.registerNewAccount(username, password, emailAddress);
-            } else {
-                viewModel.registerNewAccount(username, emailAddress);
-            }
+            Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+            beginRegistrationFlow();
         });
+    }
+
+    private void beginRegistrationFlow() {
+        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+        String emailAddress = Objects.requireNonNull(binding.etEmail.getText()).toString();
+        String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
+        if (username.isEmpty() || emailAddress.isEmpty()){
+            Snackbar.make(requireView(), R.string.missing_registration_error, BaseTransientBottomBar.LENGTH_SHORT).show();
+            return;
+        }
+        if (!password.isEmpty()){
+            viewModel.registerNewAccount(username, password, emailAddress);
+        } else {
+            viewModel.registerNewAccount(username, emailAddress);
+        }
     }
 
 }

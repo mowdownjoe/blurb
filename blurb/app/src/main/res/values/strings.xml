@@ -40,4 +40,5 @@
     <string name="logged_toast">Logged in as %1$s</string>
     <string name="no_credentials_error">Please enter your login credentials.</string>
     <string name="missing_registration_error">Please enter a username and email address.</string>
+    <string name="bed_credential_error"><![CDATA[You were not logged in. Check your username & password.]]></string>
 </resources>

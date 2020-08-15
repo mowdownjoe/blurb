@@ -2,15 +2,16 @@ package com.mowdowndevelopments.blurb.network;
 
 import android.content.Context;
 
+import com.franmontiel.persistentcookiejar.PersistentCookieJar;
+import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
+import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import com.mowdowndevelopments.blurb.AppExecutors;
 import com.squareup.moshi.Moshi;
 
-import java.net.CookieHandler;
 import java.util.concurrent.ExecutorService;
 
 import okhttp3.Cache;
 import okhttp3.Dispatcher;
-import okhttp3.JavaNetCookieJar;
 import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.converter.moshi.MoshiConverterFactory;
@@ -25,40 +26,21 @@ public class Singletons {
 
     private Singletons(){}
 
-    public static OkHttpClient getOkHttpClient() {
+    public static OkHttpClient getOkHttpClient(Context c){
         if (okHttpClient == null){ //TODO Implement new CookieHandler
             Dispatcher dispatcher = new Dispatcher((ExecutorService) AppExecutors.getInstance().networkIO());
+            PersistentCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(c));
             okHttpClient = new  OkHttpClient.Builder()
-                    .cookieJar(new JavaNetCookieJar(CookieHandler.getDefault()))
+                    .cookieJar(cookieJar)
+                    .cache(new Cache(c.getCacheDir(), CACHE_SIZE))
                     .dispatcher(dispatcher)
                     .build();
         }
         return okHttpClient;
     }
 
-    public static OkHttpClient getOkHttpClient(Context c){
-        return getOkHttpClient().newBuilder()
-                .cache(new Cache(c.getCacheDir(), CACHE_SIZE))
-                .build();
-    }
-
-    public static NewsBlurAPI getNewsBlurAPI(){
-        return getNewsBlurAPI(BASE_URL);
-    }
-
     public static NewsBlurAPI getNewsBlurAPI(Context c){
         return getNewsBlurAPI(BASE_URL, c);
-    }
-
-    public static NewsBlurAPI getNewsBlurAPI(String baseUrl) {
-        if (retrofit == null){
-            retrofit = new Retrofit.Builder()
-                    .addConverterFactory(MoshiConverterFactory.create(getMoshi()))
-                    .baseUrl(baseUrl)
-                    .client(getOkHttpClient())
-                    .build();
-        }
-        return retrofit.create(NewsBlurAPI.class);
     }
 
     public static NewsBlurAPI getNewsBlurAPI(String baseUrl, Context c) {

@@ -74,7 +74,7 @@ public class FeedListViewModel extends AndroidViewModel {
     public void refreshFeeds(){
         if (refreshing) return;
         refreshing = true;
-        Singletons.getNewsBlurAPI().getFeedsAndRefreshCounts().enqueue(new Callback<GetFeedsResponse>() {
+        Singletons.getNewsBlurAPI(getApplication()).getFeedsAndRefreshCounts().enqueue(new Callback<GetFeedsResponse>() {
             @Override
             public void onResponse(@NotNull Call<GetFeedsResponse> call, @NotNull Response<GetFeedsResponse> response) {
                 refreshing = false;

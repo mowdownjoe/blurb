@@ -78,12 +78,13 @@ dependencies {
     implementation "androidx.navigation:navigation-ui:$nav_version"
     implementation "androidx.navigation:navigation-dynamic-features-fragment:$nav_version"
 
+    implementation 'com.squareup.picasso:picasso:2.71828'
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-moshi:$retrofit_version"
     implementation "com.squareup.okhttp3:okhttp:$okHttp_version"
     implementation "com.squareup.okhttp3:okhttp-urlconnection:$okHttp_version"
     testImplementation "com.squareup.okhttp3:mockwebserver:$okHttp_version"
-    implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
 
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor("androidx.room:room-compiler:$room_version")

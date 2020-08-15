@@ -1,5 +1,7 @@
 package com.mowdowndevelopments.blurb.network;
 
+import androidx.test.core.app.ApplicationProvider;
+
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
@@ -8,9 +10,10 @@ import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.RobolectricTestRunner;
 
 import java.io.IOException;
-import java.net.CookieHandler;
 import java.util.HashMap;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -20,6 +23,7 @@ import retrofit2.Response;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
+@RunWith(RobolectricTestRunner.class)
 public class NewsBlurAPITest {
 
     private MockWebServer server;
@@ -28,14 +32,11 @@ public class NewsBlurAPITest {
     public void setUp() throws Exception {
         server = new MockWebServer();
         server.start();
-        TestCookieHandler cookieHandler = new TestCookieHandler();
-        CookieHandler.setDefault(cookieHandler);
     }
 
     @After
     public void tearDown() throws Exception {
         server.shutdown();
-        CookieHandler.setDefault(null);
     }
 
     @Test
@@ -57,8 +58,8 @@ public class NewsBlurAPITest {
             String json = Singletons.getMoshi().adapter(GetFeedsResponse.class).toJson(feedsResponse);
             server.enqueue(new MockResponse().setResponseCode(200).setBody(json));
 
-            response = Singletons
-                    .getNewsBlurAPI(server.url("/").toString()).getFeeds().execute();
+            response = Singletons.getNewsBlurAPI(server.url("/").toString(),
+                    ApplicationProvider.getApplicationContext()).getFeeds().execute();
         } catch (IOException e) {
             fail(e.getMessage());
             e.printStackTrace();
@@ -90,7 +91,8 @@ public class NewsBlurAPITest {
         server.enqueue(new MockResponse().setBody(json).setResponseCode(200));
         Response<FeedContentsResponse> serverResponse;
         try {
-            serverResponse = Singletons.getNewsBlurAPI(server.url("/").toString())
+            serverResponse = Singletons.getNewsBlurAPI(server.url("/").toString(),
+                    ApplicationProvider.getApplicationContext())
                     .getFeedContents(42, "all", true).execute();
         } catch (IOException e) {
             e.printStackTrace();

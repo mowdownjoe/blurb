@@ -1,5 +1,6 @@
 package com.mowdowndevelopments.blurb.network;
 
+import com.mowdowndevelopments.blurb.network.ResponseModels.AuthResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 
@@ -16,24 +17,24 @@ public interface NewsBlurAPI {
 
     @POST("/api/login")
     @FormUrlEncoded
-    public Call<Void> login(@Field("username") String username, @Field("password") String password);
+    public Call<AuthResponse> login(@Field("username") String username, @Field("password") String password);
 
     @POST("/api/login")
     @FormUrlEncoded
-    public Call<Void> login(@Field("username") String username);
+    public Call<AuthResponse> login(@Field("username") String username);
 
     @POST("/api/logout")
     public Call<Void> logout();
 
     @POST("/api/signup")
     @FormUrlEncoded
-    public Call<Void> signup(@Field("username") String username,
+    public Call<AuthResponse> signup(@Field("username") String username,
                              @Field("password") String password,
                              @Field("email") String emailAddress);
 
     @POST("/api/signup")
     @FormUrlEncoded
-    public Call<Void> signup(@Field("username") String username, @Field("email") String emailAddress);
+    public Call<AuthResponse> signup(@Field("username") String username, @Field("email") String emailAddress);
 
     @GET("/reader/feeds?flat=true")
     public Call<GetFeedsResponse> getFeeds();
