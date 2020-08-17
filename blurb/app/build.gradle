@@ -45,7 +45,6 @@ dependencies {
     def retrofit_version = "2.9.0"
     def room_version = "2.2.5"
     def truth_version = '1.0.1'
-    def glide_version = "4.11.0"
     def androidX_testCore_version = "1.2.0"
     def work_version = "2.4.0"
 

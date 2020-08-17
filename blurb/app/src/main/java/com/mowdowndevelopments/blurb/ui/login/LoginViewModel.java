@@ -34,9 +34,37 @@ public class LoginViewModel extends AndroidViewModel {
                     loginStatus.postValue(LoadingStatus.DONE);
                 } else {
                     loginStatus.postValue(LoadingStatus.ERROR);
-                    String errorMsg = getApplication().getString(R.string.bed_credential_error);
+                    String errorMsg = getApplication().getString(R.string.bad_credential_error);
                     errorToast.postValue(errorMsg);
                     Log.w(TAG, "loginCallback.onResponse: User entered incorrect credentials.");
+                }
+            } else {
+                loginStatus.postValue(LoadingStatus.ERROR);
+                //TODO Add messages to explain HTTP Error codes in plain language
+                String errorMsg = getApplication().getString(R.string.http_error, response.code());
+                errorToast.postValue(errorMsg);
+                Log.e(TAG, "loginCallback.onResponse: "+errorMsg);
+            }
+        }
+
+        @Override
+        public void onFailure(@NotNull Call<AuthResponse> call, @NotNull Throwable t) {
+            loginStatus.postValue(LoadingStatus.ERROR);
+            Log.e(TAG, "loginCallback.onFailure: "+t.getMessage(), t);
+            errorToast.postValue(t.getLocalizedMessage());
+        }
+    };
+    private final Callback<AuthResponse> registrationCallback= new Callback<AuthResponse>() {
+        @Override
+        public void onResponse(@NotNull Call<AuthResponse> call, @NotNull Response<AuthResponse> response) {
+            if (response.isSuccessful()) {
+                if (response.body() != null && response.body().isAuthenticated()) {
+                    loginStatus.postValue(LoadingStatus.DONE);
+                } else {
+                    loginStatus.postValue(LoadingStatus.ERROR);
+                    String errorMsg = getApplication().getString(R.string.bad_registration_error);
+                    errorToast.postValue(errorMsg);
+                    Log.w(TAG, "registrationCallback.onResponse: User entered incorrect credentials.");
                 }
             } else {
                 loginStatus.postValue(LoadingStatus.ERROR);
@@ -82,12 +110,12 @@ public class LoginViewModel extends AndroidViewModel {
     public void registerNewAccount(String username, String password, String emailAddress){
         if (loginStatus.getValue() == LoadingStatus.LOADING) return;
         loginStatus.postValue(LoadingStatus.LOADING);
-        Singletons.getNewsBlurAPI(getApplication()).signup(username, password, emailAddress).enqueue(loginCallback);
+        Singletons.getNewsBlurAPI(getApplication()).signup(username, password, emailAddress).enqueue(registrationCallback);
     }
 
     public void registerNewAccount(String username, String emailAddress){
         if (loginStatus.getValue() == LoadingStatus.LOADING) return;
         loginStatus.postValue(LoadingStatus.LOADING);
-        Singletons.getNewsBlurAPI(getApplication()).signup(username, emailAddress).enqueue(loginCallback);
+        Singletons.getNewsBlurAPI(getApplication()).signup(username, emailAddress).enqueue(registrationCallback);
     }
 }

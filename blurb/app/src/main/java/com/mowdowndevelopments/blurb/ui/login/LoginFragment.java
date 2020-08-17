@@ -1,6 +1,7 @@
 package com.mowdowndevelopments.blurb.ui.login;
 
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +12,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -24,6 +27,8 @@ import java.util.Objects;
 
 
 public class LoginFragment extends Fragment {
+
+    public static final String LOGIN_SUCCESS = "com.mowdowndevelopments.blurb.LOGIN_SUCCESS";
 
     private LoginViewModel viewModel;
     private FragmentLoginBinding binding;
@@ -42,13 +47,23 @@ public class LoginFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        NavController navController = NavHostFragment.findNavController(this);
+        SavedStateHandle handle = Objects.requireNonNull(navController.getPreviousBackStackEntry())
+                .getSavedStateHandle();
+        handle.set(LOGIN_SUCCESS, false);
+
         binding.btnLogin.setOnClickListener(v -> {
-            Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+            }
             beginLoginFlow();
         });
         binding.etPassword.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (keyEvent != null){
-                Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+                }
                 beginLoginFlow();
                 return true;
             }
@@ -56,20 +71,6 @@ public class LoginFragment extends Fragment {
         });
         binding.btnCreateAccount.setOnClickListener(v -> NavHostFragment.findNavController(this)
                 .navigate(LoginFragmentDirections.actionCreateAccount()));
-    }
-
-    private void beginLoginFlow() {
-        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
-        String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
-        if (username.isEmpty()){
-            Snackbar.make(requireView(), R.string.no_credentials_error, BaseTransientBottomBar.LENGTH_SHORT).show();
-            return;
-        }
-        if (!password.isEmpty()){
-            viewModel.login(username, password);
-        } else {
-            viewModel.login(username);
-        }
     }
 
     @Override
@@ -97,12 +98,7 @@ public class LoginFragment extends Fragment {
                     break;
             }
             if (loadingStatus == LoadingStatus.DONE){
-                SharedPreferences prefs = requireActivity()
-                        .getSharedPreferences(getString(R.string.shared_pref_file), 0);
-                prefs.edit().putBoolean(getString(R.string.logged_in_key), true).apply();
-                Toast.makeText(requireContext(), getString(R.string.logged_toast,
-                        binding.etUsername.getText().toString()), Toast.LENGTH_LONG).show();
-                NavHostFragment.findNavController(this).popBackStack();
+                completeLogin();
             }
         });
         viewModel.getErrorToast().observe(getViewLifecycleOwner(), error -> {
@@ -110,6 +106,44 @@ public class LoginFragment extends Fragment {
                 Snackbar.make(requireView(), error, BaseTransientBottomBar.LENGTH_LONG).show();
             }
         });
+        Objects.requireNonNull(NavHostFragment.findNavController(this).getCurrentBackStackEntry())
+                .getSavedStateHandle().getLiveData(RegistrationFragment.REGISTRATION_SUCCESS)
+                .observe(getViewLifecycleOwner(), loggedIn -> {
+                    if (Boolean.TRUE.equals(loggedIn)){ //LiveData returned by handle is of generic type, so must be checked.
+                        completeLogin();
+                    }
+                });
+    }
+
+    private void beginLoginFlow() {
+        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+        String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
+        if (username.isEmpty()){
+            Snackbar.make(requireView(), R.string.no_credentials_error, BaseTransientBottomBar.LENGTH_SHORT).show();
+            return;
+        }
+        if (!password.isEmpty()){
+            viewModel.login(username, password);
+        } else {
+            viewModel.login(username);
+        }
+    }
+
+    private void completeLogin() {
+        SharedPreferences prefs = requireActivity()
+                .getSharedPreferences(getString(R.string.shared_pref_file), 0);
+        prefs.edit().putBoolean(getString(R.string.logged_in_key), true).apply();
+
+        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+        Toast.makeText(requireContext(), getString(R.string.logged_toast,
+                username), Toast.LENGTH_LONG).show();
+
+        NavController navController = NavHostFragment.findNavController(this);
+        SavedStateHandle handle = Objects.requireNonNull(navController
+                .getPreviousBackStackEntry()).getSavedStateHandle();
+        handle.set(LOGIN_SUCCESS, true);
+
+        navController.popBackStack();
     }
 
 }

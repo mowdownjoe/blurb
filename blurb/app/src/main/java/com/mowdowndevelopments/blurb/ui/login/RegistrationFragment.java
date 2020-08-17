@@ -1,17 +1,19 @@
 package com.mowdowndevelopments.blurb.ui.login;
 
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -30,6 +32,8 @@ import java.util.Objects;
  * create an instance of this fragment.
  */
 public class RegistrationFragment extends Fragment {
+
+    public static final String REGISTRATION_SUCCESS = "com.mowdowndevelopments.blurb.REGISTRATION_CREATED";
 
     private FragmentRegistrationBinding binding;
     private LoginViewModel viewModel;
@@ -82,17 +86,7 @@ public class RegistrationFragment extends Fragment {
                     break;
             }
             if (loadingStatus == LoadingStatus.DONE){
-                SharedPreferences prefs = requireActivity()
-                        .getSharedPreferences(getString(R.string.shared_pref_file), 0);
-                boolean isStoredInSharedPrefs = prefs.edit()
-                        .putBoolean(getString(R.string.logged_in_key), true).commit();
-                if (isStoredInSharedPrefs) {
-                    Toast.makeText(requireContext(), getString(R.string.logged_toast,
-                            binding.etUsername.getText().toString()), Toast.LENGTH_LONG).show();
-                    NavHostFragment.findNavController(this).popBackStack(R.id.login_fragment, true);
-                } else {
-                    Toast.makeText(requireContext(), R.string.error_text, Toast.LENGTH_LONG).show();
-                }
+                completeRegistration();
             }
         });
         viewModel.getErrorToast().observe(getViewLifecycleOwner(), error -> {
@@ -100,13 +94,19 @@ public class RegistrationFragment extends Fragment {
                 Snackbar.make(requireView(), error, BaseTransientBottomBar.LENGTH_LONG).show();
             }
         });
+
+        SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
+                .getPreviousBackStackEntry()).getSavedStateHandle();
+        handle.set(REGISTRATION_SUCCESS, false);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         binding.btnRegister.setOnClickListener(view -> {
-            Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+            }
             beginRegistrationFlow();
         });
     }
@@ -124,6 +124,17 @@ public class RegistrationFragment extends Fragment {
         } else {
             viewModel.registerNewAccount(username, emailAddress);
         }
+    }
+
+    private void completeRegistration() {
+        SharedPreferences prefs = requireActivity()
+                .getSharedPreferences(getString(R.string.shared_pref_file), 0);
+        prefs.edit().putBoolean(getString(R.string.logged_in_key), true).apply();
+
+        NavController controller = NavHostFragment.findNavController(this);
+        Objects.requireNonNull(controller.getPreviousBackStackEntry())
+                .getSavedStateHandle().set(REGISTRATION_SUCCESS, true);
+        controller.popBackStack();
     }
 
 }

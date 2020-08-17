@@ -47,6 +47,7 @@ public class FeedListViewModel extends AndroidViewModel {
 
     public void loadFeeds(){
         if (status.getValue() == LoadingStatus.LOADING) return;
+        if (refreshing) return;
         status.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).getFeeds().enqueue(new Callback<GetFeedsResponse>() {
             @Override
@@ -72,6 +73,7 @@ public class FeedListViewModel extends AndroidViewModel {
     }
 
     public void refreshFeeds(){
+        if (status.getValue() == LoadingStatus.LOADING) return;
         if (refreshing) return;
         refreshing = true;
         Singletons.getNewsBlurAPI(getApplication()).getFeedsAndRefreshCounts().enqueue(new Callback<GetFeedsResponse>() {

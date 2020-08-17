@@ -8,16 +8,21 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
+import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOnClickListener {
 
@@ -29,6 +34,9 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = FragmentFeedListBinding.inflate(inflater, container, false);
+        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryDarkColor);
+        binding.srfRefreshTab.setOnRefreshListener(() -> viewModel.refreshFeeds());
+
         return binding.getRoot();
     }
 
@@ -76,10 +84,18 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         binding.rvFeedList.setHasFixedSize(true);
         binding.rvFeedList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        /*if (requireActivity().getSharedPreferences(getString(R.string.shared_pref_file), 0)
+        if (requireActivity().getSharedPreferences(getString(R.string.shared_pref_file), 0)
                 .getBoolean(getString(R.string.logged_in_key), false)){
             viewModel.loadFeeds();
-        }*/
+        }
+
+        SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
+                .getCurrentBackStackEntry()).getSavedStateHandle();
+        handle.getLiveData(LoginFragment.LOGIN_SUCCESS).observe(getViewLifecycleOwner(), loggedIn -> {
+            if (Boolean.TRUE.equals(loggedIn)){ //LiveData returned by handle is of generic type, so must be checked.
+                viewModel.loadFeeds();
+            }
+        });
     }
 
     @Override
