@@ -49,4 +49,22 @@ public interface NewsBlurAPI {
 
     @GET("/reader/river_stories?{concatenatedFeeds}")
     public Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") String concatenatedFeedQueries);
+
+    //TODO Create new ResponseModels for these Void calls
+
+    @POST("/reader/add_url")
+    @FormUrlEncoded
+    public Call<Void> addNewFeed(@Field("url") String url);
+
+    @POST("/reader/add_url")
+    @FormUrlEncoded
+    public Call<Void> addNewFeed(@Field("url") String url, @Field("folder") String folderName);
+
+    @POST("/reader/add_folder")
+    @FormUrlEncoded
+    public Call<Void> createNewFolder(@Field("folder") String folderName);
+
+    @POST("/reader/add_folder")
+    @FormUrlEncoded
+    public Call<Void> createNewFolder(@Field("folder") String folderName, @Field("parent_folder") String parentFolderName);
 }

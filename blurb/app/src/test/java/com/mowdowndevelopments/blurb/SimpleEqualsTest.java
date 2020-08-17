@@ -11,6 +11,5 @@ public class SimpleEqualsTest {
         Object testObject = true;
 
         assertEquals(Boolean.TRUE, testObject);
-        assertEquals(testObject, Boolean.TRUE);
     }
 }

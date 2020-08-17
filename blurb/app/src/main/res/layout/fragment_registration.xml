@@ -21,6 +21,8 @@
         android:layout_marginBottom="64dp"
         android:enabled="true"
         android:text="@string/action_register"
+        app:backgroundTint="@color/secondaryLightColor"
+        android:textColor="@color/primaryTextColor"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

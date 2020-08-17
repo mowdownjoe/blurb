@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowInsets;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -86,6 +87,9 @@ public class RegistrationFragment extends Fragment {
                     break;
             }
             if (loadingStatus == LoadingStatus.DONE){
+                String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+                Toast.makeText(requireContext(), getString(R.string.logged_toast,
+                        username), Toast.LENGTH_LONG).show();
                 completeRegistration();
             }
         });
@@ -135,6 +139,7 @@ public class RegistrationFragment extends Fragment {
         Objects.requireNonNull(controller.getPreviousBackStackEntry())
                 .getSavedStateHandle().set(REGISTRATION_SUCCESS, true);
         controller.popBackStack();
+
     }
 
 }

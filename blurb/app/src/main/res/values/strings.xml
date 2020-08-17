@@ -42,4 +42,6 @@
     <string name="missing_registration_error">Please enter a username and email address.</string>
     <string name="bad_credential_error"><![CDATA[You were not logged in. Check your username & password.]]></string>
     <string name="bad_registration_error">Your account was not created. Maybe your email or username is already in use.</string>
+    <string name="action_add_feed">Add feed…</string>
+    <string name="mi_add_folder">Add folder…</string>
 </resources>

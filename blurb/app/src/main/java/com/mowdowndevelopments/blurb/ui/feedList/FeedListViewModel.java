@@ -26,6 +26,27 @@ public class FeedListViewModel extends AndroidViewModel {
     private MutableLiveData<LoadingStatus> status;
     private MutableLiveData<String> errorMessage;
 
+    private Callback<Void> newFeedCallback = new Callback<Void>() {
+        @Override
+        public void onResponse(@NotNull Call<Void> call, @NotNull Response<Void> response) {
+            refreshing = false;
+            if (response.isSuccessful()) {
+                refreshFeeds();
+            } else {
+                String errorMsg = getApplication().getString(R.string.http_error, response.code());
+                errorMessage.postValue(errorMsg);
+                Log.e(TAG, "loadFeeds.onResponse: " + errorMsg);
+            }
+        }
+
+        @Override
+        public void onFailure(@NotNull Call<Void> call, @NotNull Throwable t) {
+            refreshing = false;
+            errorMessage.postValue(t.getLocalizedMessage());
+            Log.e(TAG, "loadFeeds.onFailure: " + t.getMessage(), t);
+        }
+    };
+
     public FeedListViewModel(@NonNull Application application) {
         super(application);
         status = new MutableLiveData<>(LoadingStatus.WAITING);
@@ -96,5 +117,33 @@ public class FeedListViewModel extends AndroidViewModel {
                 Log.e(TAG, "loadFeeds.onFailure: "+t.getMessage(), t);
             }
         });
+    }
+
+    public void addNewFeed(String url){
+        if (status.getValue() == LoadingStatus.LOADING) return;
+        if (refreshing) return;
+        refreshing = true;
+        Singletons.getNewsBlurAPI(getApplication()).addNewFeed(url).enqueue(newFeedCallback);
+    }
+
+    public void addNewFeed(String url, String folder){
+        if (status.getValue() == LoadingStatus.LOADING) return;
+        if (refreshing) return;
+        refreshing = true;
+        Singletons.getNewsBlurAPI(getApplication()).addNewFeed(url, folder).enqueue(newFeedCallback);
+    }
+
+    public void createNewFolder(String folderName){
+        if (status.getValue() == LoadingStatus.LOADING) return;
+        if (refreshing) return;
+        refreshing = true;
+        Singletons.getNewsBlurAPI(getApplication()).createNewFolder(folderName).enqueue(newFeedCallback);
+    }
+
+    public void createNewFolder(String folderName, String parentFolderName){
+        if (status.getValue() == LoadingStatus.LOADING) return;
+        if (refreshing) return;
+        refreshing = true;
+        Singletons.getNewsBlurAPI(getApplication()).createNewFolder(folderName, parentFolderName).enqueue(newFeedCallback);
     }
 }

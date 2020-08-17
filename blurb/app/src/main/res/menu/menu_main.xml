@@ -4,7 +4,7 @@
     tools:context="com.mowdowndevelopments.blurb.ui.navHost.MainActivity">
     <item
         android:icon="@drawable/ic_fav_feeds"
-        android:orderInCategory="1"
+        android:orderInCategory="4"
         app:showAsAction="ifRoom"
         android:id="@+id/action_show_favorites"
         android:title="@string/nav_dest_fav"/>

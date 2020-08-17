@@ -98,6 +98,9 @@ public class LoginFragment extends Fragment {
                     break;
             }
             if (loadingStatus == LoadingStatus.DONE){
+                String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+                Toast.makeText(requireContext(), getString(R.string.logged_toast,
+                        username), Toast.LENGTH_LONG).show();
                 completeLogin();
             }
         });
@@ -106,8 +109,9 @@ public class LoginFragment extends Fragment {
                 Snackbar.make(requireView(), error, BaseTransientBottomBar.LENGTH_LONG).show();
             }
         });
-        Objects.requireNonNull(NavHostFragment.findNavController(this).getCurrentBackStackEntry())
-                .getSavedStateHandle().getLiveData(RegistrationFragment.REGISTRATION_SUCCESS)
+        SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
+                .getCurrentBackStackEntry()).getSavedStateHandle();
+        handle.getLiveData(RegistrationFragment.REGISTRATION_SUCCESS)
                 .observe(getViewLifecycleOwner(), loggedIn -> {
                     if (Boolean.TRUE.equals(loggedIn)){ //LiveData returned by handle is of generic type, so must be checked.
                         completeLogin();
@@ -133,10 +137,6 @@ public class LoginFragment extends Fragment {
         SharedPreferences prefs = requireActivity()
                 .getSharedPreferences(getString(R.string.shared_pref_file), 0);
         prefs.edit().putBoolean(getString(R.string.logged_in_key), true).apply();
-
-        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
-        Toast.makeText(requireContext(), getString(R.string.logged_toast,
-                username), Toast.LENGTH_LONG).show();
 
         NavController navController = NavHostFragment.findNavController(this);
         SavedStateHandle handle = Objects.requireNonNull(navController
