@@ -86,7 +86,9 @@
     <action
         android:id="@+id/action_global_FavoriteStories"
         app:destination="@id/FavoriteStoriesFragment" />
-    <fragment android:id="@+id/app_preferences" />
+    <fragment
+        android:id="@+id/app_preferences"
+        android:label="@string/title_prefs" />
     <action
         android:id="@+id/action_global_preferences"
         app:destination="@id/app_preferences" />

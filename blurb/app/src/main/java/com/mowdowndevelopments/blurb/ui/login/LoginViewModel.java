@@ -1,7 +1,6 @@
 package com.mowdowndevelopments.blurb.ui.login;
 
 import android.app.Application;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -18,10 +17,9 @@ import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 public class LoginViewModel extends AndroidViewModel {
-
-    private static final String TAG = "LoginViewModel";
 
     private MutableLiveData<LoadingStatus> loginStatus;
     private MutableLiveData<String> errorToast;
@@ -34,23 +32,22 @@ public class LoginViewModel extends AndroidViewModel {
                     loginStatus.postValue(LoadingStatus.DONE);
                 } else {
                     loginStatus.postValue(LoadingStatus.ERROR);
-                    String errorMsg = getApplication().getString(R.string.bad_credential_error);
-                    errorToast.postValue(errorMsg);
-                    Log.w(TAG, "loginCallback.onResponse: User entered incorrect credentials.");
+                    errorToast.postValue(getApplication().getString(R.string.bad_credential_error));
+                    Timber.w("loginCallback.onResponse: User entered incorrect credentials.");
                 }
             } else {
                 loginStatus.postValue(LoadingStatus.ERROR);
                 //TODO Add messages to explain HTTP Error codes in plain language
                 String errorMsg = getApplication().getString(R.string.http_error, response.code());
                 errorToast.postValue(errorMsg);
-                Log.e(TAG, "loginCallback.onResponse: "+errorMsg);
+                Timber.e("loginCallback.onResponse: %s", errorMsg);
             }
         }
 
         @Override
         public void onFailure(@NotNull Call<AuthResponse> call, @NotNull Throwable t) {
             loginStatus.postValue(LoadingStatus.ERROR);
-            Log.e(TAG, "loginCallback.onFailure: "+t.getMessage(), t);
+            Timber.e(t, "loginCallback.onFailure: %s", t.getMessage());
             errorToast.postValue(t.getLocalizedMessage());
         }
     };
@@ -62,23 +59,22 @@ public class LoginViewModel extends AndroidViewModel {
                     loginStatus.postValue(LoadingStatus.DONE);
                 } else {
                     loginStatus.postValue(LoadingStatus.ERROR);
-                    String errorMsg = getApplication().getString(R.string.bad_registration_error);
-                    errorToast.postValue(errorMsg);
-                    Log.w(TAG, "registrationCallback.onResponse: User entered incorrect credentials.");
+                    errorToast.postValue(getApplication().getString(R.string.bad_registration_error));
+                    Timber.w("registrationCallback.onResponse: User entered incorrect credentials.");
                 }
             } else {
                 loginStatus.postValue(LoadingStatus.ERROR);
                 //TODO Add messages to explain HTTP Error codes in plain language
                 String errorMsg = getApplication().getString(R.string.http_error, response.code());
                 errorToast.postValue(errorMsg);
-                Log.e(TAG, "loginCallback.onResponse: "+errorMsg);
+                Timber.e("loginCallback.onResponse: %s", errorMsg);
             }
         }
 
         @Override
         public void onFailure(@NotNull Call<AuthResponse> call, @NotNull Throwable t) {
             loginStatus.postValue(LoadingStatus.ERROR);
-            Log.e(TAG, "loginCallback.onFailure: "+t.getMessage(), t);
+            Timber.e(t, "loginCallback.onFailure: %s", t.getMessage());
             errorToast.postValue(t.getLocalizedMessage());
         }
     };

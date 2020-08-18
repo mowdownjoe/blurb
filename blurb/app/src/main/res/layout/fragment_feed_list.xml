@@ -20,13 +20,13 @@
         android:id="@+id/srf_refresh_tab"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
+        android:visibility="visible"
         tools:visibility="visible">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_feed_list"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             tools:listitem="@layout/folder_list_item" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

@@ -3,16 +3,22 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/mi_view_all_feeds"
+        android:orderInCategory="1"
+        android:title="@string/item_view_all"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/mi_add_feed"
         android:icon="@drawable/ic_add_feed"
-        android:orderInCategory="1"
+        android:orderInCategory="5"
         android:title="@string/action_add_feed"
-        android:visible="false"
+        android:visible="true"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/mi_new_folder"
-        android:orderInCategory="5"
+        android:orderInCategory="6"
         android:title="@string/mi_add_folder"
-        android:visible="false"
+        android:visible="true"
         app:showAsAction="never" />
 </menu>

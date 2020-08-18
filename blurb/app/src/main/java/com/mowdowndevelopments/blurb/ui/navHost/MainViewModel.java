@@ -2,7 +2,6 @@ package com.mowdowndevelopments.blurb.ui.navHost;
 
 import android.app.Application;
 import android.content.SharedPreferences;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -18,11 +17,11 @@ import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 public class MainViewModel extends AndroidViewModel {
 
 
-    private static final String TAG = "MainViewModel";
     private MutableLiveData<LoadingStatus> logoutStatus;
     private MutableLiveData<String> errorMessage;
 
@@ -55,14 +54,14 @@ public class MainViewModel extends AndroidViewModel {
                     //TODO Add messages to explain HTTP Error codes in plain language
                     String errorMsg = getApplication().getString(R.string.http_error, response.code());
                     errorMessage.postValue(errorMsg);
-                    Log.e(TAG, "onResponse: "+errorMsg);
+                    Timber.e("onResponse: %s", errorMsg);
                 }
             }
 
             @Override
             public void onFailure(@NotNull Call<Void> call, @NotNull Throwable t) {
                 logoutStatus.postValue(LoadingStatus.ERROR);
-                Log.e(TAG, "onFailure: "+t.getMessage(), t);
+                Timber.e(t, "onFailure: %s", t.getMessage());
                 errorMessage.postValue(t.getLocalizedMessage());
             }
         });

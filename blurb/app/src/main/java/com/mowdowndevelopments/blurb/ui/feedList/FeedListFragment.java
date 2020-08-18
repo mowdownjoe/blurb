@@ -26,27 +26,29 @@ import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
 public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOnClickListener {
 
     FragmentFeedListBinding binding;
-    FeedListAdapter adapter;
+    FolderlessFeedListAdapter adapter;
     FeedListViewModel viewModel;
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         binding = FragmentFeedListBinding.inflate(inflater, container, false);
-        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
-        binding.srfRefreshTab.setOnRefreshListener(() -> viewModel.refreshFeeds());
-
         return binding.getRoot();
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
+        binding.srfRefreshTab.setOnRefreshListener(() -> viewModel.refreshFeeds());
+
         viewModel = new ViewModelProvider(this).get(FeedListViewModel.class);
         viewModel.getFeedsResponseData().observe(getViewLifecycleOwner(), getFeedsResponse -> {
             if (getFeedsResponse != null){
@@ -78,16 +80,16 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
                 Snackbar.make(view, message, BaseTransientBottomBar.LENGTH_LONG).show();
             }
         });
+
+        adapter = new FolderlessFeedListAdapter(this);
+        binding.rvFeedList.setAdapter(adapter);
+        binding.rvFeedList.setHasFixedSize(true);
+        binding.rvFeedList.setLayoutManager(new LinearLayoutManager(requireContext()));
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        adapter = new FeedListAdapter(this);
-        binding.rvFeedList.setAdapter(adapter);
-        binding.rvFeedList.setHasFixedSize(true);
-        binding.rvFeedList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         if (requireActivity().getSharedPreferences(getString(R.string.shared_pref_file), 0)
                 .getBoolean(getString(R.string.logged_in_key), false)){
@@ -123,6 +125,12 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
             case R.id.mi_new_folder:
                 navController.navigate(FeedListFragmentDirections.actionFeedListFragmentToNewFolderDialog()
                         .setFolderNames(folders.toArray(folderArray)));
+                return true;
+            case R.id.mi_view_all_feeds:
+                Collection<Feed> feeds = viewModel.getFeedsResponseData().getValue().getFeeds().values();
+                Feed[] feedArray = new Feed[feeds.size()];
+                navController.navigate(FeedListFragmentDirections
+                        .actionFeedListFragmentToRiverOfNewsFragment(feeds.toArray(feedArray)));
                 return true;
         }
         return super.onOptionsItemSelected(item);

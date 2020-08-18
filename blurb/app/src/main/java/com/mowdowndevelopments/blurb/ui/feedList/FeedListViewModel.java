@@ -1,7 +1,6 @@
 package com.mowdowndevelopments.blurb.ui.feedList;
 
 import android.app.Application;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -18,9 +17,10 @@ import org.jetbrains.annotations.NotNull;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import timber.log.Timber;
 
 public class FeedListViewModel extends AndroidViewModel {
-    private static final String TAG = "FeedListViewModel";
+
     private boolean refreshing = false;
     private MutableLiveData<GetFeedsResponse> feedsResponseData;
     private MutableLiveData<LoadingStatus> status;
@@ -35,7 +35,7 @@ public class FeedListViewModel extends AndroidViewModel {
             } else {
                 String errorMsg = getApplication().getString(R.string.http_error, response.code());
                 errorMessage.postValue(errorMsg);
-                Log.e(TAG, "loadFeeds.onResponse: " + errorMsg);
+                Timber.e("loadFeeds.onResponse: %s", errorMsg);
             }
         }
 
@@ -43,7 +43,7 @@ public class FeedListViewModel extends AndroidViewModel {
         public void onFailure(@NotNull Call<Void> call, @NotNull Throwable t) {
             refreshing = false;
             errorMessage.postValue(t.getLocalizedMessage());
-            Log.e(TAG, "loadFeeds.onFailure: " + t.getMessage(), t);
+            Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
         }
     };
 
@@ -80,7 +80,7 @@ public class FeedListViewModel extends AndroidViewModel {
                     status.postValue(LoadingStatus.ERROR);
                     String errorMsg = getApplication().getString(R.string.http_error, response.code());
                     errorMessage.postValue(errorMsg);
-                    Log.e(TAG, "loadFeeds.onResponse: "+errorMsg);
+                    Timber.e("loadFeeds.onResponse: %s", errorMsg);
                 }
             }
 
@@ -88,7 +88,7 @@ public class FeedListViewModel extends AndroidViewModel {
             public void onFailure(@NotNull Call<GetFeedsResponse> call, @NotNull Throwable t) {
                 status.postValue(LoadingStatus.ERROR);
                 errorMessage.postValue(t.getLocalizedMessage());
-                Log.e(TAG, "loadFeeds.onFailure: "+t.getMessage(), t);
+                Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
             }
         });
     }
@@ -106,7 +106,7 @@ public class FeedListViewModel extends AndroidViewModel {
                 } else {
                     String errorMsg = getApplication().getString(R.string.http_error, response.code());
                     errorMessage.postValue(errorMsg);
-                    Log.e(TAG, "loadFeeds.onResponse: "+errorMsg);
+                    Timber.e("loadFeeds.onResponse: %s", errorMsg);
                 }
             }
 
@@ -114,7 +114,7 @@ public class FeedListViewModel extends AndroidViewModel {
             public void onFailure(@NotNull Call<GetFeedsResponse> call, @NotNull Throwable t) {
                 refreshing = false;
                 errorMessage.postValue(t.getLocalizedMessage());
-                Log.e(TAG, "loadFeeds.onFailure: "+t.getMessage(), t);
+                Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
             }
         });
     }

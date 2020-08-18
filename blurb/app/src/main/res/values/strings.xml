@@ -44,4 +44,6 @@
     <string name="bad_registration_error">Your account was not created. Maybe your email or username is already in use.</string>
     <string name="action_add_feed">Add feed…</string>
     <string name="mi_add_folder">Add folder…</string>
+    <string name="title_prefs">Preferences</string>
+    <string name="item_view_all">View All Feeds</string>
 </resources>
