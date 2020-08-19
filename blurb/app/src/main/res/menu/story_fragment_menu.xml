@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mi_view_in_browser"
+        android:icon="@drawable/ic_globe"
+        android:orderInCategory="1"
+        android:title="@string/item_view_in"
+        app:showAsAction="always|withText" />
+</menu>

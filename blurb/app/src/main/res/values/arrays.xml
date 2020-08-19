@@ -1,0 +1,30 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="reply_entries">
+        <item>Reply</item>
+        <item>Reply to all</item>
+    </string-array>
+
+    <string-array name="reply_values">
+        <item>reply</item>
+        <item>reply_all</item>
+    </string-array>
+
+    <string-array name="sort_entries">
+        <item>Newest first</item>
+        <item>Oldest first</item>
+    </string-array>
+    <string-array name="sort_values">
+        <item>newest</item>
+        <item>oldest</item>
+    </string-array>
+
+    <string-array name="filter_entries">
+        <item>Unread only</item>
+        <item>All stories</item>
+    </string-array>
+    <string-array name="filter_values">
+        <item>unread</item>
+        <item>all</item>
+    </string-array>
+</resources>

@@ -56,14 +56,17 @@
             android:name="FeedToShow"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Feed" />
     </fragment>
-    <activity android:id="@+id/StoryPagerActivity" >
+    <activity
+        android:id="@+id/StoryPagerActivity"
+        android:name="com.mowdowndevelopments.blurb.ui.story.StoryPagerActivity"
+        tools:layout="@layout/story_pager_activity">
         <argument
             android:name="Stories"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Story[]" />
         <argument
             android:name="InitialStory"
-            app:argType="integer"
-            android:defaultValue="0" />
+            android:defaultValue="0"
+            app:argType="integer" />
     </activity>
     <fragment
         android:id="@+id/FavoriteStoriesFragment"
@@ -88,6 +91,7 @@
         app:destination="@id/FavoriteStoriesFragment" />
     <fragment
         android:id="@+id/app_preferences"
+        android:name="com.mowdowndevelopments.blurb.ui.settings.SettingsFragment"
         android:label="@string/title_prefs" />
     <action
         android:id="@+id/action_global_preferences"

@@ -46,4 +46,24 @@
     <string name="mi_add_folder">Add folder…</string>
     <string name="title_prefs">Preferences</string>
     <string name="item_view_all">View All Feeds</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="pref_sort">Default sort order</string>
+    <string name="pref_read_filter">Default story filter</string>
+    <string name="cat_display">Display preferences</string>
+    <string name="pref_empty_feeds">Show empty feeds</string>
+    <string name="pref_key_empty">show_empty_feeds</string>
+    <string name="item_view_in">View in browser...</string>
 </resources>

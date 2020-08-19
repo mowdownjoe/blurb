@@ -1,0 +1,49 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/cat_display">
+
+        <!--<EditTextPreference
+            app:key="signature"
+            app:title="@string/signature_title"
+            app:useSimpleSummaryProvider="true"
+            app:enabled="false"/>-->
+
+        <ListPreference
+            app:defaultValue="newest"
+            app:entries="@array/sort_entries"
+            app:entryValues="@array/sort_values"
+            app:key="sort_order"
+            app:title="@string/pref_sort"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:title="@string/pref_read_filter"
+            app:key="read_filter"
+            app:entries="@array/filter_entries"
+            app:entryValues="@array/filter_values"
+            app:defaultValue="unread"
+            app:useSimpleSummaryProvider="true"/>
+
+        <SwitchPreferenceCompat
+            app:key="@string/pref_key_empty"
+            app:title="@string/pref_empty_feeds"
+            app:defaultValue="true"/>
+
+    </PreferenceCategory>
+
+    <!--<PreferenceCategory app:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="@string/sync_title" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="@string/attachment_summary_off"
+            app:summaryOn="@string/attachment_summary_on"
+            app:title="@string/attachment_title" />
+
+    </PreferenceCategory>-->
+
+</PreferenceScreen>

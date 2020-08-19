@@ -7,6 +7,7 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -15,6 +16,8 @@ import com.mowdowndevelopments.blurb.NavGraphDirections;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.ActivityMainBinding;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
+
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -107,5 +110,18 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        NavDestination destination = Navigation.findNavController(this, R.id.nav_host_fragment)
+                .getCurrentDestination();
+        boolean isLoggedIn = getSharedPreferences(getString(R.string.shared_pref_file), 0)
+                .getBoolean(getString(R.string.logged_in_key), false);
+        if (!isLoggedIn && Objects.requireNonNull(destination).getId() == R.id.login_fragment) {
+            finishAndRemoveTask();
+        } else {
+            super.onBackPressed();
+        }
     }
 }

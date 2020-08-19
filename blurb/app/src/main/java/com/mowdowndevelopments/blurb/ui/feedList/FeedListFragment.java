@@ -35,7 +35,7 @@ import timber.log.Timber;
 public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOnClickListener {
 
     FragmentFeedListBinding binding;
-    FolderlessFeedListAdapter adapter;
+    FeedListAdapter adapter;
     FeedListViewModel viewModel;
 
     @Override
@@ -89,7 +89,7 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
             }
         });
 
-        adapter = new FolderlessFeedListAdapter(this);
+        adapter = new FeedListAdapter(this);
         binding.rvFeedList.setAdapter(adapter);
         binding.rvFeedList.setHasFixedSize(true);
         binding.rvFeedList.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -147,12 +147,14 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
 
     @Override
     public void onFeedItemClick(Feed f) {
+        Timber.d("Received request to display feed %s", f.getFeedTitle());
         NavHostFragment.findNavController(this).navigate(FeedListFragmentDirections
                 .actionFeedListFragmentToSingleFeedStoryFragment(f));
     }
 
     @Override
     public void onFolderItemClick(Folder f) {
+        Timber.d("Received request to display folder %s", f.getName());
         Feed[] feeds = new Feed[f.getFeeds().size()];
         NavHostFragment.findNavController(this).navigate(FeedListFragmentDirections
                 .actionFeedListFragmentToRiverOfNewsFragment(f.getFeeds().toArray(feeds)));
