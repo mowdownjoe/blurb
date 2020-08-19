@@ -19,6 +19,13 @@ import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.databinding.StoryFragmentBinding;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Objects;
+
 public class StoryFragment extends Fragment {
 
     public static final String ARG_STORY = "story_for_fragment";
@@ -45,9 +52,19 @@ public class StoryFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        Story story = requireArguments().getParcelable(ARG_STORY);
+
         viewModel = new ViewModelProvider(requireActivity()).get(StoryViewModel.class);
-        viewModel.setActiveStory(requireArguments().getParcelable(ARG_STORY));
-        // TODO: Use the ViewModel
+        viewModel.setActiveStory(story);
+
+        binding.storyTopBar.tvStoryAuthor.setText(Objects.requireNonNull(story).getAuthors());
+        binding.storyTopBar.tvStoryTitle.setText(story.getTitle());
+        Instant instant = Instant.ofEpochMilli(story.getTimestamp());
+        LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        binding.storyTopBar.tvStoryTime.setText(dateTime
+                .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
+        binding.wvStoryContent.loadData(story.getContent(), "text/html", null);
     }
 
     @Override

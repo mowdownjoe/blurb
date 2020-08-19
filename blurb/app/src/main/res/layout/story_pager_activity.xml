@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.navHost.MainActivity">
+    tools:context=".ui.navHost.MainActivity"
+    android:id="@+id/cl_pager_root">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"

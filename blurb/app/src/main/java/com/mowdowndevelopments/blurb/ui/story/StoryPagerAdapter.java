@@ -12,8 +12,9 @@ public class StoryPagerAdapter extends FragmentStateAdapter {
     //TODO Set up data for Adapter
     private Story[] stories;
 
-    public StoryPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+    public StoryPagerAdapter(@NonNull FragmentActivity fragmentActivity, Story[] stories) {
         super(fragmentActivity);
+        this.stories = stories;
     }
 
     @NonNull
@@ -22,7 +23,7 @@ public class StoryPagerAdapter extends FragmentStateAdapter {
         if (stories != null){
             return StoryFragment.newInstance(stories[position]);
         }
-        return null;
+        throw new IllegalStateException("Attempted to create a fragment from a null set of stories.");
     }
 
     @Override

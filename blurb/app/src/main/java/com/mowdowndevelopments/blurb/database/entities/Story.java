@@ -128,6 +128,10 @@ public class Story implements Parcelable {
         return Long.parseLong(timestampString);
     }
 
+    public String getTitle() {
+        return title;
+    }
+
     public String getStoryHash() {
         return storyHash;
     }
