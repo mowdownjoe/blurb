@@ -30,6 +30,8 @@ import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 
+import timber.log.Timber;
+
 public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOnClickListener {
 
     FragmentFeedListBinding binding;
@@ -39,12 +41,16 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+        Timber.v("Lifecycle: Creating view");
         binding = FragmentFeedListBinding.inflate(inflater, container, false);
+        setHasOptionsMenu(true);
         return binding.getRoot();
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        Timber.v("Lifecycle: View created");
 
         binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
         binding.srfRefreshTab.setOnRefreshListener(() -> viewModel.refreshFeeds());
@@ -52,7 +58,9 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         viewModel = new ViewModelProvider(this).get(FeedListViewModel.class);
         viewModel.getFeedsResponseData().observe(getViewLifecycleOwner(), getFeedsResponse -> {
             if (getFeedsResponse != null){
+                Timber.v("Data from network received.");
                 adapter.setData(getFeedsResponse);
+                binding.srfRefreshTab.setRefreshing(false);
             }
         });
         viewModel.getLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
@@ -109,6 +117,7 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.feed_list_menu, menu);
+        Timber.v("Inflated options menu.");
     }
 
     @Override

@@ -3,9 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="invisible"
-    tools:context=".ui.feedList.FeedListFragment"
-    tools:visibility="visible">
+    tools:context=".ui.feedList.FeedListFragment">
 
     <ProgressBar
         android:id="@+id/pb_loading_spinner"
@@ -20,8 +18,7 @@
         android:id="@+id/srf_refresh_tab"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="visible"
-        tools:visibility="visible">
+        android:visibility="visible">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_feed_list"

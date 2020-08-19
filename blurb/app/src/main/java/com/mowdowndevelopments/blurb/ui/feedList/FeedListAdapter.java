@@ -16,6 +16,8 @@ import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 import java.util.ArrayList;
 import java.util.Map;
 
+import timber.log.Timber;
+
 @SuppressWarnings("rawtypes")
 public class FeedListAdapter extends RecyclerView.Adapter {
 
@@ -93,6 +95,7 @@ public class FeedListAdapter extends RecyclerView.Adapter {
             }
         });
         notifyDataSetChanged();
+        Timber.v("New data received for adapter. Refreshing.");
     }
 
     private class OrphanFeedViewHolder extends BaseFeedViewHolder implements View.OnClickListener {

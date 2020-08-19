@@ -13,6 +13,8 @@ import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 
 import java.util.LinkedList;
 
+import timber.log.Timber;
+
 public class FolderlessFeedListAdapter extends RecyclerView.Adapter<FolderlessFeedListAdapter.FeedViewHolder> {
 
     private FeedListAdapter.ItemOnClickListener listener;
@@ -48,6 +50,7 @@ public class FolderlessFeedListAdapter extends RecyclerView.Adapter<FolderlessFe
     public void setData(GetFeedsResponse response){
         feeds = new LinkedList<>(response.getFeeds().values());
         notifyDataSetChanged();
+        Timber.v("New data received for adapter. Refreshing.");
     }
 
     class FeedViewHolder extends BaseFeedViewHolder implements View.OnClickListener {

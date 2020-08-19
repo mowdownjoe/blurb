@@ -69,6 +69,7 @@ public class FeedListViewModel extends AndroidViewModel {
     public void loadFeeds(){
         if (status.getValue() == LoadingStatus.LOADING) return;
         if (refreshing) return;
+        Timber.v("Loading feeds.");
         status.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).getFeeds().enqueue(new Callback<GetFeedsResponse>() {
             @Override
@@ -76,6 +77,7 @@ public class FeedListViewModel extends AndroidViewModel {
                 if (response.isSuccessful()) {
                     status.postValue(LoadingStatus.DONE);
                     feedsResponseData.postValue(response.body());
+                    Timber.v("Feeds loaded.");
                 } else {
                     status.postValue(LoadingStatus.ERROR);
                     String errorMsg = getApplication().getString(R.string.http_error, response.code());
