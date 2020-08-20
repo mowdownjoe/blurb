@@ -5,8 +5,8 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.ActivityNavigator;
 
-import com.mowdowndevelopments.blurb.StoryPagerActivityArgs;
 import com.mowdowndevelopments.blurb.databinding.StoryPagerActivityBinding;
 
 import java.util.Objects;
@@ -50,10 +50,23 @@ public class StoryPagerActivity extends AppCompatActivity {
 
     private void setUpViewModelObservers(){
         viewModel.getStories().observe(this, stories -> { //Observer should only be called once.
-            binding.vp2StoryPager.setAdapter(new StoryPagerAdapter(this, stories));
-            viewModel.getIndexToView().observe(this, storyIndex -> //May be called multiple times.
-                    binding.vp2StoryPager.setCurrentItem(storyIndex, false));
-            viewModel.setIndexToView(args.getInitialStory());
+            if (stories != null) {
+                binding.vp2StoryPager.setAdapter(new StoryPagerAdapter(this, stories));
+                viewModel.getIndexToView().observe(this, this::setPage);
+                viewModel.setIndexToView(args.getInitialStory());
+            }
         });
+    }
+
+    private void setPage(Integer storyIndex) { //Will be called multiple times in multi-pane.
+        if (storyIndex != null){
+            binding.vp2StoryPager.setCurrentItem(storyIndex, false);
+        }
+    }
+
+    @Override
+    public void finish() {
+        ActivityNavigator.applyPopAnimationsToPendingTransition(this);
+        super.finish();
     }
 }

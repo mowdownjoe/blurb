@@ -95,7 +95,7 @@ public class FeedListAdapter extends RecyclerView.Adapter {
             }
         });
         notifyDataSetChanged();
-        Timber.v("New data received for adapter. Refreshing.");
+        Timber.d("New data received for adapter. Refreshing.");
     }
 
     private class OrphanFeedViewHolder extends BaseFeedViewHolder implements View.OnClickListener {

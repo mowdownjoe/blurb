@@ -7,12 +7,16 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.mowdowndevelopments.blurb.AppExecutors;
 import com.mowdowndevelopments.blurb.R;
+import com.mowdowndevelopments.blurb.database.BlurbDb;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 import com.mowdowndevelopments.blurb.network.Singletons;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -69,7 +73,7 @@ public class FeedListViewModel extends AndroidViewModel {
     public void loadFeeds(){
         if (status.getValue() == LoadingStatus.LOADING) return;
         if (refreshing) return;
-        Timber.v("Loading feeds.");
+        Timber.d("Loading feeds.");
         status.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).getFeeds().enqueue(new Callback<GetFeedsResponse>() {
             @Override
@@ -77,7 +81,15 @@ public class FeedListViewModel extends AndroidViewModel {
                 if (response.isSuccessful()) {
                     status.postValue(LoadingStatus.DONE);
                     feedsResponseData.postValue(response.body());
-                    Timber.v("Feeds loaded.");
+                    AppExecutors.getInstance().diskIO().execute(() -> {
+                        try {
+                            BlurbDb.getInstance(getApplication()).blurbDao()
+                                    .addFeeds(Objects.requireNonNull(response.body()).getFeeds().values());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    Timber.d("Feeds loaded.");
                 } else {
                     status.postValue(LoadingStatus.ERROR);
                     String errorMsg = getApplication().getString(R.string.http_error, response.code());

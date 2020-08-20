@@ -1,18 +1,26 @@
 package com.mowdowndevelopments.blurb.ui.story;
 
+import android.app.Application;
+
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.mowdowndevelopments.blurb.database.entities.Story;
+import com.mowdowndevelopments.blurb.network.Singletons;
 
-public class StoryViewModel extends ViewModel {
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class StoryViewModel extends AndroidViewModel {
 
     private MutableLiveData<Story[]> stories;
     private MutableLiveData<Integer> indexToView;
     private Story activeStory = null;
 
-    public StoryViewModel() {
+    public StoryViewModel(Application app) {
+        super(app);
         stories = new MutableLiveData<>();
         indexToView = new MutableLiveData<>();
     }
@@ -41,5 +49,20 @@ public class StoryViewModel extends ViewModel {
         indexToView.setValue(newIndex);
     }
 
+    public void markStoryAsUnread(String storyHash){
+        Singletons.getNewsBlurAPI(getApplication()).markStoryAsUnread(storyHash).enqueue(new Callback<Void>() {
+            //TODO Fill out callback
+
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+
+            }
+        });
+    }
     // TODO: Implement the ViewModel
 }

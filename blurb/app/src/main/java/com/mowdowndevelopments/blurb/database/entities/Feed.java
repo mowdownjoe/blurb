@@ -26,6 +26,7 @@ public class Feed implements Parcelable, FeedListItem {
     static final String TABLE_NAME = "feeds";
 
     @PrimaryKey(autoGenerate = false)
+    @ColumnInfo(index = true)
     private int id;
     @Json(name = TITLE)
     @ColumnInfo(name = TITLE)

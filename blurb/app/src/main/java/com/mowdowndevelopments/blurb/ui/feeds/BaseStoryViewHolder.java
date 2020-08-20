@@ -16,7 +16,7 @@ import java.time.format.FormatStyle;
 
 public class BaseStoryViewHolder extends RecyclerView.ViewHolder {
 
-    StoryListItemBinding binding;
+    protected StoryListItemBinding binding;
 
     public BaseStoryViewHolder(@NonNull View itemView) {
         super(itemView);

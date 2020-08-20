@@ -36,7 +36,8 @@ class BaseFeedViewHolder extends RecyclerView.ViewHolder {
             binding.tvPreferredUnreadCount.setVisibility(View.INVISIBLE);
         }
         Picasso.get().load(feed.getFavIconUrl())
-                .error(R.drawable.ic_baseline_error_24)
+                .error(R.drawable.ic_globe)
+                .placeholder(R.drawable.ic_globe)
                 .into(binding.ivFavIcon);
 
     }

@@ -27,7 +27,7 @@ public class Singletons {
     private Singletons(){}
 
     public static OkHttpClient getOkHttpClient(Context c){
-        if (okHttpClient == null){ //TODO Implement new CookieHandler
+        if (okHttpClient == null){
             Dispatcher dispatcher = new Dispatcher((ExecutorService) AppExecutors.getInstance().networkIO());
             PersistentCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(c));
             okHttpClient = new  OkHttpClient.Builder()
@@ -56,7 +56,6 @@ public class Singletons {
 
     public static Moshi getMoshi() {
         if (moshi == null){
-            //TODO Add adapters for model classes?
             moshi = new Moshi.Builder()
                     .build();
         }

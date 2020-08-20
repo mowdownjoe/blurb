@@ -14,22 +14,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.mowdowndevelopments.blurb.databinding.FragmentMultiPaneStoryListBinding;
 import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;
 
+import org.jetbrains.annotations.NotNull;
+
 
 public class MultiPaneStoryListFragment extends Fragment implements StoryClickListener {
 
-    //TODO Multipane stuff
     private StoryViewModel viewModel;
     private FragmentMultiPaneStoryListBinding binding;
-    private MultiPaneStoryAdapter adapter;
+    private MultiPaneStoryListAdapter adapter;
+
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentMultiPaneStoryListBinding.inflate(inflater, container, false);
         return binding.getRoot();
@@ -39,7 +35,7 @@ public class MultiPaneStoryListFragment extends Fragment implements StoryClickLi
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        adapter = new MultiPaneStoryAdapter(this);
+        adapter = new MultiPaneStoryListAdapter(this);
         binding.rvStoriesMp.setHasFixedSize(true);
         binding.rvStoriesMp.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.rvStoriesMp.setAdapter(adapter);
@@ -50,11 +46,6 @@ public class MultiPaneStoryListFragment extends Fragment implements StoryClickLi
                 adapter.setStories(stories);
             }
         });
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
     }
 
     @Override

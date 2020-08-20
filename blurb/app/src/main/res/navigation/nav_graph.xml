@@ -47,7 +47,9 @@
     <action
         android:id="@+id/action_login_flow"
         app:destination="@id/login_graph"
-        app:launchSingleTop="true" />
+        app:enterAnim="@anim/slide_in_top"
+        app:launchSingleTop="true"
+        app:popExitAnim="@anim/slide_out_bottom" />
     <fragment android:id="@+id/SingleFeedStoryFragment" >
         <action
             android:id="@+id/action_SingleFeedStoryFragment_to_StoryPagerActivity"
@@ -55,6 +57,11 @@
         <argument
             android:name="FeedToShow"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Feed" />
+        <argument
+            android:name="faviconUrl"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null"/>
     </fragment>
     <activity
         android:id="@+id/StoryPagerActivity"

@@ -88,6 +88,9 @@ public class StoryFragment extends Fragment {
                         .build();
                 intent.launchUrl(requireContext(), Uri.parse(viewModel.getActiveStory().getPermalink()));
                 return true;
+            case R.id.mi_mark_as_unread:
+                viewModel.markStoryAsUnread(viewModel.getActiveStory().getStoryHash());
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }

@@ -50,7 +50,7 @@ public class FolderlessFeedListAdapter extends RecyclerView.Adapter<FolderlessFe
     public void setData(GetFeedsResponse response){
         feeds = new LinkedList<>(response.getFeeds().values());
         notifyDataSetChanged();
-        Timber.v("New data received for adapter. Refreshing.");
+        Timber.d("New data received for adapter. Refreshing.");
     }
 
     class FeedViewHolder extends BaseFeedViewHolder implements View.OnClickListener {

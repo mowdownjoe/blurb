@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.ForeignKey;
@@ -17,11 +18,11 @@ import java.util.Objects;
 @Keep
 @Entity(tableName = Story.TABLE_NAME,
         foreignKeys = @ForeignKey(entity = Feed.class,
-                childColumns = Feed.ID,
                 onDelete = ForeignKey.SET_NULL,
-                parentColumns = Story.FEED_ID))
+                childColumns = Story.ID,
+                parentColumns = Feed.ID))
 public class Story implements Parcelable {
-    static final String FEED_ID = "feed_id";
+
     static final String TABLE_NAME = "stories";
     private static final String HASH = "story_hash";
     private static final String TITLE = "story_title";
@@ -29,9 +30,10 @@ public class Story implements Parcelable {
     private static final String TIMESTAMP = "story_timestamp";
     private static final String AUTHORS = "story_authors";
     private static final String PERMALINK = "story_permalink";
-    private static final String ID = "story_feed_id";
+    static final String ID = "story_feed_id";
 
     @PrimaryKey
+    @NonNull
     @Json(name = HASH)
     @ColumnInfo(name = HASH)
     private String storyHash;
@@ -51,8 +53,11 @@ public class Story implements Parcelable {
     @ColumnInfo(name = PERMALINK)
     private String permalink;
     @Json(name = ID)
-    @ColumnInfo(name = ID)
+    @ColumnInfo(name = ID, index = true)
     private int feedId;
+    @Ignore
+    @Json(name = "read_status")
+    private int readStatus;
 
     public Story(String storyHash, String content, String title, String timestampString, String authors, String permalink, int feedId) {
         this.storyHash = storyHash;
@@ -62,6 +67,7 @@ public class Story implements Parcelable {
         this.authors = authors;
         this.permalink = permalink;
         this.feedId = feedId;
+        readStatus = 1;
     }
 
     @Ignore
@@ -73,6 +79,7 @@ public class Story implements Parcelable {
         this.authors = authors;
         this.permalink = permalink;
         feedId = -1;
+        readStatus = 1;
     }
 
     @Ignore
@@ -83,9 +90,23 @@ public class Story implements Parcelable {
         timestampString = orphanedStory.timestampString;
         authors = orphanedStory.authors;
         permalink = orphanedStory.permalink;
+        readStatus = orphanedStory.readStatus;
         this.feedId = feedId;
     }
 
+    @Ignore
+    public Story(String storyHash, String title, String content, String timestampString, String authors, String permalink, int feedId, int readStatus) {
+        this.storyHash = storyHash;
+        this.title = title;
+        this.content = content;
+        this.timestampString = timestampString;
+        this.authors = authors;
+        this.permalink = permalink;
+        this.feedId = feedId;
+        this.readStatus = readStatus;
+    }
+
+    @Ignore
     protected Story(Parcel in) {
         storyHash = in.readString();
         content = in.readString();
@@ -124,20 +145,16 @@ public class Story implements Parcelable {
         parcel.writeInt(feedId);
     }
 
-    public long getTimestamp(){
-        return Long.parseLong(timestampString);
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
     public String getStoryHash() {
         return storyHash;
     }
 
     public String getContent() {
         return content;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public String getTimestampString() {
@@ -154,6 +171,16 @@ public class Story implements Parcelable {
 
     public int getFeedId() {
         return feedId;
+    }
+
+    public int getReadStatus() {
+        return readStatus;
+    }
+
+    public boolean isRead() { return readStatus == 1; }
+
+    public long getTimestamp(){
+        return Long.parseLong(timestampString);
     }
 
     @Override

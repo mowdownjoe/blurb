@@ -67,4 +67,8 @@ public interface NewsBlurAPI {
     @POST("/reader/add_folder")
     @FormUrlEncoded
     public Call<Void> createNewFolder(@Field("folder") String folderName, @Field("parent_folder") String parentFolderName);
+
+    @POST("/reader/mark_story_hash_as_unread")
+    @FormUrlEncoded
+    Call<Void> markStoryAsUnread(@Field("story_hash") String storyHash);
 }
