@@ -56,14 +56,14 @@ public class LoginFragment extends Fragment {
         binding.btnLogin.setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
-            }
+            } //else case will use WindowInsetsCompat, which is still in alpha
             beginLoginFlow();
         });
         binding.etPassword.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (keyEvent != null){
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                     Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
-                }
+                } //else case will use WindowInsetsCompat, which is still in alpha
                 beginLoginFlow();
                 return true;
             }

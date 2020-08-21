@@ -9,6 +9,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
+import androidx.navigation.ui.AppBarConfiguration;
+import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -39,12 +41,14 @@ public class MainActivity extends AppCompatActivity {
                         .navigate(NavGraphDirections.actionLoginFlow());
             }
         });
-        viewModel.getErrorMessage().observe(this, message -> Snackbar
-                .make(binding.getRoot(), message, BaseTransientBottomBar.LENGTH_LONG)
-                .show());
+        viewModel.getErrorMessage().observe(this, message -> {
+            if (message != null && !message.isEmpty()){
+                Snackbar.make(binding.getRoot(), message, BaseTransientBottomBar.LENGTH_LONG).show();
+            }
+        });
 
-        Navigation.findNavController(this, R.id.nav_host_fragment)
-                .addOnDestinationChangedListener((controller, destination, arguments) -> {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                     if (menu != null) {
                         if (destination.getId() == R.id.login_fragment ||
                                 destination.getId() == R.id.account_creation_fragment){
@@ -56,6 +60,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+        AppBarConfiguration appBarConfig = new AppBarConfiguration
+                .Builder(R.id.FeedListFragment, R.id.login_fragment).build();
+        NavigationUI.setupWithNavController(binding.toolbar, navController, appBarConfig);
     }
 
     @Override

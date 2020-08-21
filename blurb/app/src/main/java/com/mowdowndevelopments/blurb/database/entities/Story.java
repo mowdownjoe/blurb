@@ -179,6 +179,14 @@ public class Story implements Parcelable {
 
     public boolean isRead() { return readStatus == 1; }
 
+    public void setisRead(boolean readStatus) {
+        if (readStatus){
+            this.readStatus = 1;
+        } else {
+            this.readStatus = 0;
+        }
+    }
+
     public long getTimestamp(){
         return Long.parseLong(timestampString);
     }

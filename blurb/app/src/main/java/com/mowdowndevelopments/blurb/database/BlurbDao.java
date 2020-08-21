@@ -41,4 +41,7 @@ public interface BlurbDao {
 
     @Query("select favicon_url from feeds where id = :id")
     String getFeedFaviconUrl(int id);
+
+    @Query("select exists(select 1 from stories where story_hash = :storyHash)")
+    LiveData<Boolean> doesStoryExist(String storyHash);
 }

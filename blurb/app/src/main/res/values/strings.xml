@@ -65,6 +65,10 @@
     <string name="cat_display">Display preferences</string>
     <string name="pref_empty_feeds">Show empty feeds</string>
     <string name="pref_key_empty">show_empty_feeds</string>
-    <string name="item_view_in">View in browser...</string>
+    <string name="item_view_in">View original…</string>
     <string name="mi_unread">Mark as unread</string>
+    <string name="dest_stories">Stories</string>
+    <string name="menu_share">Share…</string>
+    <string name="fab_remove_star">Remove from starred</string>
+    <string name="fab_add_star">Mark as starred</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.mowdowndevelopments.blurb.ui.story;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -29,8 +30,9 @@ import java.util.Objects;
 public class StoryFragment extends Fragment {
 
     public static final String ARG_STORY = "story_for_fragment";
-    private StoryViewModel viewModel;
+    StoryViewModel viewModel;
     StoryFragmentBinding binding;
+    private Menu menu;
 
     public static StoryFragment newInstance(Story story) {
         StoryFragment fragment = new StoryFragment();
@@ -65,6 +67,8 @@ public class StoryFragment extends Fragment {
         binding.storyTopBar.tvStoryTime.setText(dateTime
                 .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
         binding.wvStoryContent.loadData(story.getContent(), "text/html", null);
+
+        viewModel.enqueueMarkAsRead(story);
     }
 
     @Override
@@ -85,11 +89,20 @@ public class StoryFragment extends Fragment {
                 }
                 CustomTabsIntent intent = new CustomTabsIntent.Builder()
                         .setToolbarColor(toolbarColor)
+                        .setStartAnimations(requireContext(), R.anim.slide_in_top, R.anim.fast_fade_out)
+                        .setExitAnimations(requireContext(), R.anim.slide_out_top, R.anim.fast_fade_in)
                         .build();
                 intent.launchUrl(requireContext(), Uri.parse(viewModel.getActiveStory().getPermalink()));
                 return true;
             case R.id.mi_mark_as_unread:
-                viewModel.markStoryAsUnread(viewModel.getActiveStory().getStoryHash());
+                viewModel.removeFromMarkAsReadQueue(viewModel.getActiveStory());
+                return true;
+            case R.id.mi_share:
+                Intent shareIntent = new Intent(Intent.ACTION_SEND)
+                        .setType("text/plain")
+                        .putExtra(Intent.EXTRA_TITLE, viewModel.getActiveStory().getTitle())
+                        .putExtra(Intent.EXTRA_TEXT, viewModel.getActiveStory().getPermalink());
+                startActivity(Intent.createChooser(shareIntent, null));
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -9,6 +9,12 @@
         android:title="@string/item_view_in"
         app:showAsAction="ifRoom|withText" />
     <item
+        android:id="@+id/mi_share"
+        android:orderInCategory="2"
+        android:icon="@drawable/ic_baseline_share"
+        app:showAsAction="ifRoom"
+        android:title="@string/menu_share"/>
+    <item
         android:id="@+id/mi_mark_as_unread"
         android:orderInCategory="5"
         android:title="@string/mi_unread"

@@ -16,6 +16,7 @@ import com.mowdowndevelopments.blurb.network.Singletons;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -30,9 +31,9 @@ public class FeedListViewModel extends AndroidViewModel {
     private MutableLiveData<LoadingStatus> status;
     private MutableLiveData<String> errorMessage;
 
-    private Callback<Void> newFeedCallback = new Callback<Void>() {
+    private Callback<Map<String, Object>> newFeedCallback = new Callback<Map<String, Object>>() {
         @Override
-        public void onResponse(@NotNull Call<Void> call, @NotNull Response<Void> response) {
+        public void onResponse(@NotNull Call<Map<String, Object>> call, @NotNull Response<Map<String, Object>> response) {
             refreshing = false;
             if (response.isSuccessful()) {
                 refreshFeeds();
@@ -44,7 +45,7 @@ public class FeedListViewModel extends AndroidViewModel {
         }
 
         @Override
-        public void onFailure(@NotNull Call<Void> call, @NotNull Throwable t) {
+        public void onFailure(@NotNull Call<Map<String, Object>> call, @NotNull Throwable t) {
             refreshing = false;
             errorMessage.postValue(t.getLocalizedMessage());
             Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
