@@ -20,6 +20,8 @@ import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.databinding.StoryFragmentBinding;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -30,11 +32,13 @@ import java.util.Objects;
 public class StoryFragment extends Fragment {
 
     public static final String ARG_STORY = "story_for_fragment";
+
     StoryViewModel viewModel;
     StoryFragmentBinding binding;
     private Menu menu;
 
-    public static StoryFragment newInstance(Story story) {
+    @NotNull
+    public static StoryFragment newInstance(@NonNull Story story) {
         StoryFragment fragment = new StoryFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_STORY, story);
@@ -58,15 +62,16 @@ public class StoryFragment extends Fragment {
         Story story = requireArguments().getParcelable(ARG_STORY);
 
         viewModel = new ViewModelProvider(requireActivity()).get(StoryViewModel.class);
-        viewModel.setActiveStory(story);
+        viewModel.setActiveStory(Objects.requireNonNull(story));
 
-        binding.storyTopBar.tvStoryAuthor.setText(Objects.requireNonNull(story).getAuthors());
+        binding.storyTopBar.tvStoryAuthor.setText(story.getAuthors());
         binding.storyTopBar.tvStoryTitle.setText(story.getTitle());
+        binding.wvStoryContent.loadData(story.getContent(), "text/html", null);
+
         Instant instant = Instant.ofEpochMilli(story.getTimestamp());
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         binding.storyTopBar.tvStoryTime.setText(dateTime
                 .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));
-        binding.wvStoryContent.loadData(story.getContent(), "text/html", null);
 
         viewModel.enqueueMarkAsRead(story);
     }
@@ -75,6 +80,9 @@ public class StoryFragment extends Fragment {
     public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.story_fragment_menu, menu);
+        this.menu = menu;
+        toggleMenuItemVisibility(viewModel.getIsActiveStoryStarred().getValue());
+        viewModel.getIsActiveStoryStarred().observe(getViewLifecycleOwner(), this::toggleMenuItemVisibility);
     }
 
     @Override
@@ -96,6 +104,7 @@ public class StoryFragment extends Fragment {
                 return true;
             case R.id.mi_mark_as_unread:
                 viewModel.removeFromMarkAsReadQueue(viewModel.getActiveStory());
+                item.setVisible(false);
                 return true;
             case R.id.mi_share:
                 Intent shareIntent = new Intent(Intent.ACTION_SEND)
@@ -104,7 +113,25 @@ public class StoryFragment extends Fragment {
                         .putExtra(Intent.EXTRA_TEXT, viewModel.getActiveStory().getPermalink());
                 startActivity(Intent.createChooser(shareIntent, null));
                 return true;
+            case R.id.mi_star:
+                viewModel.markStoryAsStarred(viewModel.getActiveStory());
+                return true;
+            case R.id.mi_unstar:
+                viewModel.removeStoryFromStarred(viewModel.getActiveStory());
+                return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toggleMenuItemVisibility(Boolean isStarred) {
+        if (isStarred == null) return;
+        if (menu == null) return;
+        if (isStarred){
+            menu.findItem(R.id.mi_unstar).setVisible(true);
+            menu.findItem(R.id.mi_star).setVisible(false);
+        } else {
+            menu.findItem(R.id.mi_unstar).setVisible(false);
+            menu.findItem(R.id.mi_star).setVisible(true);
+        }
     }
 }

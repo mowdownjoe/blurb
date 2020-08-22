@@ -85,6 +85,7 @@ public class StoryViewModel extends AndroidViewModel {
 
     public void enqueueMarkAsRead(@NonNull Story story){
         if (story.isRead()) return;
+        if (readStories.contains(story)) return;
         story.setisRead(true);
         readStories.add(story);
     }
@@ -144,7 +145,9 @@ public class StoryViewModel extends AndroidViewModel {
                     @Override
                     public void onResponse(@NotNull Call<Map<String, Object>> call, @NotNull Response<Map<String, Object>> response) {
                         if (response.isSuccessful()){
-                            BlurbDb.getInstance(getApplication()).blurbDao().addStory(story);
+                            AppExecutors.getInstance().diskIO().execute(() -> BlurbDb
+                                    .getInstance(getApplication()).blurbDao().addStory(story));
+
                         } else {
                             snackbarMessage.postValue(getApplication().getString(R.string.http_error, response.code()));
                             Timber.w("Could not mark as starred. HTTP Error %o", response.code());
@@ -163,9 +166,11 @@ public class StoryViewModel extends AndroidViewModel {
         Singletons.getNewsBlurAPI(getApplication()).removeStarredStory(story.getStoryHash())
                 .enqueue(new Callback<Map<String, Object>>() {
                     @Override
-                    public void onResponse(Call<Map<String, Object>> call, Response<Map<String, Object>> response) {
+                    public void onResponse(@NotNull Call<Map<String, Object>> call, @NotNull Response<Map<String, Object>> response) {
                         if (response.isSuccessful()){
-                            BlurbDb.getInstance(getApplication()).blurbDao().removeStory(story);
+                            AppExecutors.getInstance().diskIO().execute(() -> BlurbDb
+                                    .getInstance(getApplication()).blurbDao().removeStory(story));
+
                         } else {
                             snackbarMessage.postValue(getApplication().getString(R.string.http_error, response.code()));
                             Timber.w("Could not mark as starred. HTTP Error %o", response.code());
@@ -173,7 +178,7 @@ public class StoryViewModel extends AndroidViewModel {
                     }
 
                     @Override
-                    public void onFailure(Call<Map<String, Object>> call, Throwable t) {
+                    public void onFailure(@NotNull Call<Map<String, Object>> call, @NotNull Throwable t) {
                         snackbarMessage.postValue(t.getLocalizedMessage());
                         Timber.e(t);
                     }

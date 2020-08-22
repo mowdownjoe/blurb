@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <item
         android:id="@+id/mi_view_in_browser"
@@ -14,6 +15,22 @@
         android:icon="@drawable/ic_baseline_share"
         app:showAsAction="ifRoom"
         android:title="@string/menu_share"/>
+    <item
+        android:id="@+id/mi_star"
+        android:icon="@drawable/ic_favorite"
+        android:orderInCategory="3"
+        android:title="@string/fab_add_star"
+        android:visible="false"
+        app:showAsAction="ifRoom"
+        tools:visible="true"/>
+    <item
+        android:id="@+id/mi_unstar"
+        android:icon="@drawable/ic_unfavorite"
+        android:orderInCategory="3"
+        android:title="@string/fab_remove_star"
+        android:visible="false"
+        app:showAsAction="ifRoom"
+        tools:visible="true"/>
     <item
         android:id="@+id/mi_mark_as_unread"
         android:orderInCategory="5"

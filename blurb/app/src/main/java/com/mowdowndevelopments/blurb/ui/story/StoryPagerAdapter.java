@@ -9,7 +9,6 @@ import com.mowdowndevelopments.blurb.database.entities.Story;
 
 public class StoryPagerAdapter extends FragmentStateAdapter {
 
-    //TODO Set up data for Adapter
     private Story[] stories;
 
     public StoryPagerAdapter(@NonNull FragmentActivity fragmentActivity, Story[] stories) {

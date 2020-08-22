@@ -28,9 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link RegistrationFragment#newInstance} factory method to
- * create an instance of this fragment.
  */
 public class RegistrationFragment extends Fragment {
 
@@ -43,11 +40,6 @@ public class RegistrationFragment extends Fragment {
         // Required empty public constructor
     }
 
-
-    public static RegistrationFragment newInstance(String param1, String param2) {
-
-        return new RegistrationFragment();
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

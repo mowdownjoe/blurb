@@ -4,9 +4,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cl_top_bar_root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:backgroundTint="@color/primaryLightColor"
-    android:backgroundTintMode="screen">
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/bar_background"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/primaryLightColor"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
     <TextView
         android:id="@+id/tv_story_title"

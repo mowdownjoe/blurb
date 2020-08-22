@@ -13,6 +13,8 @@ import androidx.room.PrimaryKey;
 
 import com.squareup.moshi.Json;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Objects;
 
 @Keep
@@ -59,7 +61,7 @@ public class Story implements Parcelable {
     @Json(name = "read_status")
     private int readStatus;
 
-    public Story(String storyHash, String content, String title, String timestampString, String authors, String permalink, int feedId) {
+    public Story(@NotNull String storyHash, String content, String title, String timestampString, String authors, String permalink, int feedId) {
         this.storyHash = storyHash;
         this.content = content;
         this.title = title;
@@ -71,7 +73,7 @@ public class Story implements Parcelable {
     }
 
     @Ignore
-    public Story(String storyHash, String title, String content, String timestampString, String authors, String permalink) {
+    public Story(@NotNull String storyHash, String content, String title, String timestampString, String authors, String permalink) {
         this.storyHash = storyHash;
         this.title = title;
         this.content = content;
@@ -95,7 +97,7 @@ public class Story implements Parcelable {
     }
 
     @Ignore
-    public Story(String storyHash, String title, String content, String timestampString, String authors, String permalink, int feedId, int readStatus) {
+    public Story(@NotNull String storyHash, String title, String content, String timestampString, String authors, String permalink, int feedId, int readStatus) {
         this.storyHash = storyHash;
         this.title = title;
         this.content = content;
@@ -108,7 +110,7 @@ public class Story implements Parcelable {
 
     @Ignore
     protected Story(Parcel in) {
-        storyHash = in.readString();
+        storyHash = Objects.requireNonNull(in.readString());
         content = in.readString();
         title = in.readString();
         timestampString = in.readString();
@@ -145,6 +147,7 @@ public class Story implements Parcelable {
         parcel.writeInt(feedId);
     }
 
+    @NotNull
     public String getStoryHash() {
         return storyHash;
     }
