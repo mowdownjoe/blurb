@@ -5,14 +5,19 @@ import android.os.Bundle;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
+import androidx.test.espresso.IdlingRegistry;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 
 import org.junit.Test;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.swipeLeft;
+import static androidx.test.espresso.action.ViewActions.swipeRight;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -88,6 +93,11 @@ public class StoryPagerActivityTest {
                 .putExtras(extras);
         ActivityScenario<StoryPagerActivity> scenario = ActivityScenario.launch(intent);
 
+        AtomicReference<ViewPager2> pager = new AtomicReference<>();
+        scenario.onActivity(activity -> pager.set(activity.binding.vp2StoryPager));
+        ViewPager2IdlingResource idlingResource = new ViewPager2IdlingResource(pager.get());
+        IdlingRegistry.getInstance().register(idlingResource);
+
         //THEN
         onView(withId(R.id.tv_story_title)).check(matches(withText(testStory.getTitle())));
         onView(withId(R.id.tv_story_author)).check(matches(withText(testStory.getAuthors())));
@@ -109,6 +119,58 @@ public class StoryPagerActivityTest {
         scenario.onActivity(activity -> {
             assertNotNull(activity.binding.vp2StoryPager.getAdapter());
             assertEquals(1, activity.binding.vp2StoryPager.getCurrentItem());
+        });
+
+        IdlingRegistry.getInstance().unregister(idlingResource);
+    }
+
+    @Test
+    public void initialStory_MultipleStories_UiSwipesBetweenStories(){
+        //GIVEN
+        Story testStory = new Story(
+                "123456:654321",
+                "html here",
+                "test story pls ignore",
+                "123456789",
+                "Nobody",
+                "127.0.0.1"
+        );
+        Story testStory2 = new Story(
+                "abcdef:fedcba",
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+                "This is a different story",
+                "12345678910",
+                "Somebody",
+                "192.168.1.1"
+        );
+
+        //WHEN
+        Bundle extras = new StoryPagerActivityArgs.Builder(new Story[]{testStory, testStory2})
+                .setInitialStory(1)
+                .build()
+                .toBundle();
+        Intent intent = new Intent(ApplicationProvider.getApplicationContext(), StoryPagerActivity.class)
+                .putExtras(extras);
+        ActivityScenario<StoryPagerActivity> scenario = ActivityScenario.launch(intent);
+
+        //THEN
+        onView(withId(R.id.tv_story_title)).check(matches(withText(testStory2.getTitle())));
+        onView(withId(R.id.tv_story_author)).check(matches(withText(testStory2.getAuthors())));
+        onWebView(withId(R.id.wv_story_content)).forceJavascriptEnabled()
+                .check(webContent(withBody(withTextContent(testStory2.getContent()))));
+
+        scenario.onActivity(activity -> {
+            assertNotNull(activity.binding.vp2StoryPager.getAdapter());
+            assertEquals(2, activity.binding.vp2StoryPager.getAdapter().getItemCount());
+            assertEquals(1, activity.binding.vp2StoryPager.getCurrentItem());
+            activity.viewModel.removeFromMarkAsReadQueue(activity.viewModel.getActiveStory());
+        });
+
+        onView(withId(R.id.vp2_story_pager)).perform(swipeRight());
+
+        scenario.onActivity(activity -> {
+            assertNotNull(activity.binding.vp2StoryPager.getAdapter());
+            assertEquals(0, activity.binding.vp2StoryPager.getCurrentItem());
         });
     }
 
