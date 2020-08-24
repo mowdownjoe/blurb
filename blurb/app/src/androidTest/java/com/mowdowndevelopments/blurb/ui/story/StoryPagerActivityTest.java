@@ -93,6 +93,7 @@ public class StoryPagerActivityTest {
                 .putExtras(extras);
         ActivityScenario<StoryPagerActivity> scenario = ActivityScenario.launch(intent);
 
+        //While instantiating an idling resource mid-test is strange, we need a reference to the activity's ViewPager.
         AtomicReference<ViewPager2> pager = new AtomicReference<>();
         scenario.onActivity(activity -> pager.set(activity.binding.vp2StoryPager));
         ViewPager2IdlingResource idlingResource = new ViewPager2IdlingResource(pager.get());

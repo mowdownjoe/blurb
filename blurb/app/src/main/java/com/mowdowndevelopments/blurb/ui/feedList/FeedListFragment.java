@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
@@ -22,6 +23,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
+import com.mowdowndevelopments.blurb.ui.dialogs.NewFolderDialogFragment;
 import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
 
 import org.jetbrains.annotations.NotNull;
@@ -109,6 +111,17 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         handle.getLiveData(LoginFragment.LOGIN_SUCCESS).observe(getViewLifecycleOwner(), loggedIn -> {
             if (Boolean.TRUE.equals(loggedIn)){ //LiveData returned by handle is of generic type, so must be checked.
                 viewModel.loadFeeds();
+            }
+        });
+        handle.getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT).observe(getViewLifecycleOwner(), o -> {
+            if (o != null) {
+                if (!(o instanceof Pair)) return;
+                Pair<String, String> dialogResult = (Pair<String, String>) o;
+                if (dialogResult.second.trim().isEmpty()){
+                    viewModel.createNewFolder(dialogResult.first);
+                } else {
+                    viewModel.createNewFolder(dialogResult.first, dialogResult.second);
+                }
             }
         });
     }

@@ -63,11 +63,6 @@
         <argument
             android:name="FeedToShow"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Feed" />
-        <argument
-            android:name="faviconUrl"
-            app:argType="string"
-            app:nullable="true"
-            android:defaultValue="@null"/>
     </fragment>
     <activity
         android:id="@+id/StoryPagerActivity"
@@ -130,11 +125,14 @@
         app:destination="@id/about_dialog"
         app:enterAnim="@anim/dialog_from_overflow"
         app:popExitAnim="@anim/dialog_to_overflow" />
-    <dialog android:id="@+id/new_folder_dialog" >
+    <dialog
+        android:id="@+id/new_folder_dialog"
+        android:name="com.mowdowndevelopments.blurb.ui.dialogs.NewFolderDialogFragment"
+        tools:layout="@layout/fragment_new_folder_dialog">
         <argument
             android:name="folderNames"
+            android:defaultValue="@null"
             app:argType="string[]"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            app:nullable="true" />
     </dialog>
 </navigation>

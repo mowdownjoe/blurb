@@ -19,7 +19,7 @@ public class ViewPager2IdlingResource implements IdlingResource {
 
     @Override
     public boolean isIdleNow() {
-        boolean idle = pager.getScrollState() == ViewPager2.SCROLL_STATE_IDLE;
+        boolean idle = (pager.getScrollState() == ViewPager2.SCROLL_STATE_IDLE);
         if (idle && callback != null){
             callback.onTransitionToIdle();
         }

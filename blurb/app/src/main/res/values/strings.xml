@@ -71,4 +71,8 @@
     <string name="menu_share">Share…</string>
     <string name="fab_remove_star">Remove from starred</string>
     <string name="fab_add_star">Mark as starred</string>
+    <string name="title_folder_dialog">Create Folder</string>
+    <string name="hint_folder">New Folder Name</string>
+    <string name="dialog_btn_add_folder">Add folder</string>
+    <string name="label_nested">Nested under:</string>
 </resources>
