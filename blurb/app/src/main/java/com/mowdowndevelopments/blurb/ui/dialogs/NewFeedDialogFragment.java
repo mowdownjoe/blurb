@@ -15,34 +15,38 @@ import androidx.lifecycle.SavedStateHandle;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.mowdowndevelopments.blurb.NewFolderDialogArgs;
+import com.mowdowndevelopments.blurb.AddFeedDialogArgs;
 import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.databinding.FragmentNewFolderDialogBinding;
+import com.mowdowndevelopments.blurb.databinding.DialogFragmentNewFeedBinding;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ *
+ */
+public class NewFeedDialogFragment extends DialogFragment {
 
-public class NewFolderDialogFragment extends DialogFragment {
+    public static final String ARG_RESULT = "com.mowdowndevelopments.blurb.FEED_RESULT";
 
-    public static final String ARG_DIALOG_RESULT = "com.mowdowndevelopments.blurb.RESULT";
+    DialogFragmentNewFeedBinding binding;
+    private ArrayAdapter<String> spinnerAdapter = null;
 
-    FragmentNewFolderDialogBinding binding;
-    private ArrayAdapter<String> adapter = null;
+    //TODO Implement AutoComplete from API
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
-        binding = FragmentNewFolderDialogBinding.inflate(inflater);
-        NewFolderDialogArgs args = NewFolderDialogArgs.fromBundle(requireArguments());
+        binding = DialogFragmentNewFeedBinding.inflate(inflater);
+        AddFeedDialogArgs args = AddFeedDialogArgs.fromBundle(requireArguments());
 
         String[] folders = args.getFolderNames();
         if (folders != null) {
-            adapter = new ArrayAdapter<>(requireContext(),
+            spinnerAdapter = new ArrayAdapter<>(requireContext(),
                     android.R.layout.simple_spinner_dropdown_item, Arrays.asList(folders));
-            binding.spinFolderList.setAdapter(adapter);
+            binding.spinFolderList.setAdapter(spinnerAdapter);
         } else {
             binding.spinFolderList.setVisibility(View.GONE);
             binding.tvSpinnerLabel.setVisibility(View.GONE);
@@ -50,24 +54,24 @@ public class NewFolderDialogFragment extends DialogFragment {
 
         builder.setView(binding.getRoot())
                 .setNegativeButton(R.string.btn_cancel, (dialog, i) -> dialog.cancel())
-                .setPositiveButton(R.string.dialog_btn_add_folder, (dialog, i) -> {
-                    String newFolderName = Objects.requireNonNull(binding.etNewFolderName.getText()).toString();
-                    if (newFolderName.isEmpty()) return;
+                .setPositiveButton(R.string.dialog_btn_add_feed, (dialog, i) -> {
+                    String feedUrl = binding.etNewFeedName.getText().toString();
+                    if (feedUrl.isEmpty()) return;
 
                     NavController controller = NavHostFragment.findNavController(this);
                     SavedStateHandle handle = Objects.requireNonNull(controller.getPreviousBackStackEntry())
                             .getSavedStateHandle();
 
-                    String nestedUnder;
-                    if (adapter != null){
-                        nestedUnder = adapter.getItem(binding.spinFolderList.getSelectedItemPosition());
+                    String folderToUse;
+                    if (spinnerAdapter != null){
+                        folderToUse = spinnerAdapter.getItem(binding.spinFolderList.getSelectedItemPosition());
                     } else {
-                        nestedUnder = "";
+                        folderToUse = "";
                     }
-                    Pair<String, String> result = new Pair<>(newFolderName, nestedUnder);
-                    handle.set(ARG_DIALOG_RESULT, result);
+                    Pair<String, String> result = new Pair<>(feedUrl, folderToUse);
+                    handle.set(ARG_RESULT, result);
                     dialog.dismiss();
                 });
-        return builder.create();
+        return super.onCreateDialog(savedInstanceState);
     }
 }

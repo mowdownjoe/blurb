@@ -23,6 +23,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
+import com.mowdowndevelopments.blurb.ui.dialogs.NewFeedDialogFragment;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFolderDialogFragment;
 import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
 
@@ -113,14 +114,25 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
                 viewModel.loadFeeds();
             }
         });
-        handle.getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT).observe(getViewLifecycleOwner(), o -> {
-            if (o != null) {
-                if (!(o instanceof Pair)) return;
-                Pair<String, String> dialogResult = (Pair<String, String>) o;
-                if (dialogResult.second.trim().isEmpty()){
+        handle.getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT).observe(getViewLifecycleOwner(), result -> {
+            if (result != null) {
+                if (!(result instanceof Pair)) return;
+                Pair<String, String> dialogResult = (Pair<String, String>) result;
+                if (dialogResult.second == null || dialogResult.second.trim().isEmpty()){
                     viewModel.createNewFolder(dialogResult.first);
                 } else {
                     viewModel.createNewFolder(dialogResult.first, dialogResult.second);
+                }
+            }
+        });
+        handle.getLiveData(NewFeedDialogFragment.ARG_RESULT).observe(getViewLifecycleOwner(), result -> {
+            if (result != null){
+                if (!(result instanceof Pair)) return;
+                Pair<String, String> dialogResult = (Pair<String, String>) result;
+                if (dialogResult.second == null || dialogResult.second.trim().isEmpty()){
+                    viewModel.addNewFeed(dialogResult.first);
+                } else {
+                    viewModel.addNewFeed(dialogResult.first, dialogResult.second);
                 }
             }
         });

@@ -112,12 +112,15 @@
     <action
         android:id="@+id/action_global_preferences"
         app:destination="@id/app_preferences" />
-    <dialog android:id="@+id/add_feed_dialog" >
+    <dialog
+        android:id="@+id/add_feed_dialog"
+        android:name="com.mowdowndevelopments.blurb.ui.dialogs.NewFeedDialogFragment"
+        tools:layout="@layout/dialog_fragment_new_feed">
         <argument
             android:name="folderNames"
+            android:defaultValue="@null"
             app:argType="string[]"
-            app:nullable="true"
-            android:defaultValue="@null" />
+            app:nullable="true" />
     </dialog>
     <dialog android:id="@+id/about_dialog" />
     <action

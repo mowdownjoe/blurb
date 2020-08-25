@@ -1,6 +1,7 @@
 package com.mowdowndevelopments.blurb.network;
 
 import com.mowdowndevelopments.blurb.network.ResponseModels.AuthResponse;
+import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 
@@ -85,4 +86,7 @@ public interface NewsBlurAPI {
     @POST("/reader/mark_story_hash_as_unstarred")
     @FormUrlEncoded
     Call<Map<String, Object>> removeStarredStory(@Field("story_hash") String storyHash);
+
+    @GET("/rss_feeds/feed_autocomplete")
+    Call<AutoCompleteResponse> getAutoCompleteResults(@Query("Term") String searchTerm);
 }

@@ -75,4 +75,9 @@
     <string name="hint_folder">New Folder Name</string>
     <string name="dialog_btn_add_folder">Add folder</string>
     <string name="label_nested">Nested under:</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="title_new_feed">Add New Feed</string>
+    <string name="feed_hint">Feed URL</string>
+    <string name="folder_title">Put in folder:</string>
+    <string name="dialog_btn_add_feed">Add feed</string>
 </resources>
