@@ -10,9 +10,12 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
+import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
 import com.mowdowndevelopments.blurb.network.Singletons;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -22,13 +25,16 @@ import timber.log.Timber;
 public class MainViewModel extends AndroidViewModel {
 
 
+    private MutableLiveData<List<AutoCompleteResponse>> autoCompleteDialogData;
     private MutableLiveData<LoadingStatus> logoutStatus;
     private MutableLiveData<String> errorMessage;
+    private boolean loadingForDialog = false;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
         errorMessage = new MutableLiveData<>();
         logoutStatus = new MutableLiveData<>(LoadingStatus.WAITING);
+        autoCompleteDialogData = new MutableLiveData<>();
     }
 
     public LiveData<String> getErrorMessage() {
@@ -37,6 +43,10 @@ public class MainViewModel extends AndroidViewModel {
 
     public LiveData<LoadingStatus> getLogoutStatus() {
         return logoutStatus;
+    }
+
+    public LiveData<List<AutoCompleteResponse>> getAutoCompleteDialogData() {
+        return autoCompleteDialogData;
     }
 
     public void logout(){
@@ -63,6 +73,27 @@ public class MainViewModel extends AndroidViewModel {
                 logoutStatus.postValue(LoadingStatus.ERROR);
                 Timber.e(t, "onFailure: %s", t.getMessage());
                 errorMessage.postValue(t.getLocalizedMessage());
+            }
+        });
+    }
+
+    //Used for NewFeedDialogFragment;
+    public void loadDataForFeedAutoComplete(String searchTerm){
+        if (loadingForDialog) return;
+        loadingForDialog = true;
+        Singletons.getNewsBlurAPI(getApplication()).getAutoCompleteResults(searchTerm).enqueue(new Callback<List<AutoCompleteResponse>>() {
+            //Will fail silently
+            @Override
+            public void onResponse(Call<List<AutoCompleteResponse>> call, Response<List<AutoCompleteResponse>> response) {
+                loadingForDialog = false;
+                if (response.isSuccessful()){
+                    autoCompleteDialogData.postValue(response.body());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<AutoCompleteResponse>> call, Throwable t) {
+                loadingForDialog = false;
             }
         });
     }

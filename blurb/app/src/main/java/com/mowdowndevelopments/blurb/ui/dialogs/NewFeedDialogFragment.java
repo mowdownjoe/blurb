@@ -2,6 +2,8 @@ package com.mowdowndevelopments.blurb.ui.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -12,12 +14,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.util.Pair;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.SavedStateHandle;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.mowdowndevelopments.blurb.AddFeedDialogArgs;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.DialogFragmentNewFeedBinding;
+import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
+import com.mowdowndevelopments.blurb.ui.navHost.MainViewModel;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -31,8 +35,22 @@ public class NewFeedDialogFragment extends DialogFragment {
 
     DialogFragmentNewFeedBinding binding;
     private ArrayAdapter<String> spinnerAdapter = null;
+    private NewFeedAutoCompleteAdapter autoCompleteAdapter;
+    private MainViewModel viewModel;
 
-    //TODO Implement AutoComplete from API
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        autoCompleteAdapter = new NewFeedAutoCompleteAdapter(requireContext());
+
+        viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        viewModel.getAutoCompleteDialogData().observe(getViewLifecycleOwner(), autoCompleteResponses -> {
+            if (autoCompleteResponses != null){
+                autoCompleteAdapter.setResponseData(autoCompleteResponses);
+            }
+        });
+    }
 
     @NonNull
     @Override
@@ -40,7 +58,31 @@ public class NewFeedDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         binding = DialogFragmentNewFeedBinding.inflate(inflater);
-        AddFeedDialogArgs args = AddFeedDialogArgs.fromBundle(requireArguments());
+        NewFeedDialogFragmentArgs args = NewFeedDialogFragmentArgs.fromBundle(requireArguments());
+
+        binding.etNewFeedName.setAdapter(autoCompleteAdapter);
+        binding.etNewFeedName.setOnItemClickListener((adapterView, view, position, id) -> {
+            AutoCompleteResponse feed = autoCompleteAdapter.getItem(position);
+            binding.etNewFeedName.setText(feed.getUrl());
+        });
+        binding.etNewFeedName.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                //unused
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (charSequence.length() >= binding.etNewFeedName.getThreshold()){
+                    viewModel.loadDataForFeedAutoComplete(charSequence.toString());
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                //unused
+            }
+        });
 
         String[] folders = args.getFolderNames();
         if (folders != null) {

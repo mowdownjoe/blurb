@@ -15,7 +15,6 @@ import androidx.lifecycle.SavedStateHandle;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.mowdowndevelopments.blurb.NewFolderDialogArgs;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.FragmentNewFolderDialogBinding;
 
@@ -36,7 +35,7 @@ public class NewFolderDialogFragment extends DialogFragment {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         binding = FragmentNewFolderDialogBinding.inflate(inflater);
-        NewFolderDialogArgs args = NewFolderDialogArgs.fromBundle(requireArguments());
+        NewFolderDialogFragmentArgs args = NewFolderDialogFragmentArgs.fromBundle(requireArguments());
 
         String[] folders = args.getFolderNames();
         if (folders != null) {

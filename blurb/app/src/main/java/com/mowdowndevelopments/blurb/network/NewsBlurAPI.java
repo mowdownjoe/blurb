@@ -5,6 +5,7 @@ import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse
 import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -75,10 +76,6 @@ public interface NewsBlurAPI {
     @FormUrlEncoded
     Call<Map<String, Object>> markStoryAsUnread(@Field("story_hash") String storyHash);
 
-    @POST("/reader/mark_story_hashes_as_read")
-    @FormUrlEncoded
-    Call<Map<String, Object>> markStoryAsRead(@Field("story_hash") String storyHash);
-
     @POST("/reader/mark_story_hash_as_starred")
     @FormUrlEncoded
     Call<Map<String, Object>> markStoryAsStarred(@Field("story_hash") String storyHash);
@@ -88,5 +85,5 @@ public interface NewsBlurAPI {
     Call<Map<String, Object>> removeStarredStory(@Field("story_hash") String storyHash);
 
     @GET("/rss_feeds/feed_autocomplete")
-    Call<AutoCompleteResponse> getAutoCompleteResults(@Query("Term") String searchTerm);
+    Call<List<AutoCompleteResponse>> getAutoCompleteResults(@Query("term") String searchTerm);
 }
