@@ -8,23 +8,26 @@ import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.util.Pair;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.FragmentNewFolderDialogBinding;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Objects;
 
 
 public class NewFolderDialogFragment extends DialogFragment {
 
     public static final String ARG_DIALOG_RESULT = "com.mowdowndevelopments.blurb.RESULT";
+    public enum ResultKeys {
+        NEW_FOLDER, NESTED_UNDER
+    }
 
     FragmentNewFolderDialogBinding binding;
     private ArrayAdapter<String> adapter = null;
@@ -32,7 +35,7 @@ public class NewFolderDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         binding = FragmentNewFolderDialogBinding.inflate(inflater);
         NewFolderDialogFragmentArgs args = NewFolderDialogFragmentArgs.fromBundle(requireArguments());
@@ -51,7 +54,10 @@ public class NewFolderDialogFragment extends DialogFragment {
                 .setNegativeButton(R.string.btn_cancel, (dialog, i) -> dialog.cancel())
                 .setPositiveButton(R.string.dialog_btn_add_folder, (dialog, i) -> {
                     String newFolderName = Objects.requireNonNull(binding.etNewFolderName.getText()).toString();
-                    if (newFolderName.isEmpty()) return;
+                    if (newFolderName.trim().isEmpty()){
+                        dialog.dismiss();
+                        return;
+                    }
 
                     NavController controller = NavHostFragment.findNavController(this);
                     SavedStateHandle handle = Objects.requireNonNull(controller.getPreviousBackStackEntry())
@@ -59,12 +65,17 @@ public class NewFolderDialogFragment extends DialogFragment {
 
                     String nestedUnder;
                     if (adapter != null){
-                        nestedUnder = adapter.getItem(binding.spinFolderList.getSelectedItemPosition());
+                        nestedUnder = adapter.getItem(binding.spinFolderList.getSelectedItemPosition())
+                                .trim();
                     } else {
                         nestedUnder = "";
                     }
-                    Pair<String, String> result = new Pair<>(newFolderName, nestedUnder);
-                    handle.set(ARG_DIALOG_RESULT, result);
+                    EnumMap<ResultKeys, String> results = new EnumMap<>(ResultKeys.class);
+                    results.put(ResultKeys.NEW_FOLDER, newFolderName);
+                    if (!nestedUnder.isEmpty()) {
+                        results.put(ResultKeys.NESTED_UNDER, nestedUnder);
+                    }
+                    handle.set(ARG_DIALOG_RESULT, results);
                     dialog.dismiss();
                 });
         return builder.create();

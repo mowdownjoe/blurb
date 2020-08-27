@@ -6,24 +6,25 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.util.Pair;
 import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.DialogFragmentNewFeedBinding;
 import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
 import com.mowdowndevelopments.blurb.ui.navHost.MainViewModel;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Objects;
 
 /**
@@ -32,6 +33,9 @@ import java.util.Objects;
 public class NewFeedDialogFragment extends DialogFragment {
 
     public static final String ARG_RESULT = "com.mowdowndevelopments.blurb.FEED_RESULT";
+    public enum ResultKeys {
+        FEED, FOLDER
+    }
 
     DialogFragmentNewFeedBinding binding;
     private ArrayAdapter<String> spinnerAdapter = null;
@@ -43,8 +47,13 @@ public class NewFeedDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
 
         autoCompleteAdapter = new NewFeedAutoCompleteAdapter(requireContext());
-
         viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         viewModel.getAutoCompleteDialogData().observe(getViewLifecycleOwner(), autoCompleteResponses -> {
             if (autoCompleteResponses != null){
                 autoCompleteAdapter.setResponseData(autoCompleteResponses);
@@ -55,17 +64,17 @@ public class NewFeedDialogFragment extends DialogFragment {
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity());
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
         binding = DialogFragmentNewFeedBinding.inflate(inflater);
         NewFeedDialogFragmentArgs args = NewFeedDialogFragmentArgs.fromBundle(requireArguments());
 
-        binding.etNewFeedName.setAdapter(autoCompleteAdapter);
-        binding.etNewFeedName.setOnItemClickListener((adapterView, view, position, id) -> {
+        binding.etNewFeedUrl.setAdapter(autoCompleteAdapter);
+        binding.etNewFeedUrl.setOnItemClickListener((adapterView, view, position, id) -> {
             AutoCompleteResponse feed = autoCompleteAdapter.getItem(position);
-            binding.etNewFeedName.setText(feed.getUrl());
+            binding.etNewFeedUrl.setText(feed.getUrl());
         });
-        binding.etNewFeedName.addTextChangedListener(new TextWatcher() {
+        binding.etNewFeedUrl.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 //unused
@@ -73,14 +82,16 @@ public class NewFeedDialogFragment extends DialogFragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.length() >= binding.etNewFeedName.getThreshold()){
+                if (charSequence.length() >= binding.etNewFeedUrl.getThreshold()){
                     viewModel.loadDataForFeedAutoComplete(charSequence.toString());
                 }
             }
 
             @Override
             public void afterTextChanged(Editable editable) {
-                //unused
+                if (viewModel.getAutoCompleteDialogData().getValue() != null){
+                    binding.etNewFeedUrl.showDropDown();
+                }
             }
         });
 
@@ -97,8 +108,11 @@ public class NewFeedDialogFragment extends DialogFragment {
         builder.setView(binding.getRoot())
                 .setNegativeButton(R.string.btn_cancel, (dialog, i) -> dialog.cancel())
                 .setPositiveButton(R.string.dialog_btn_add_feed, (dialog, i) -> {
-                    String feedUrl = binding.etNewFeedName.getText().toString();
-                    if (feedUrl.isEmpty()) return;
+                    String feedUrl = binding.etNewFeedUrl.getText().toString().trim();
+                    if (feedUrl.isEmpty()){
+                        dialog.dismiss();
+                        return;
+                    }
 
                     NavController controller = NavHostFragment.findNavController(this);
                     SavedStateHandle handle = Objects.requireNonNull(controller.getPreviousBackStackEntry())
@@ -106,14 +120,25 @@ public class NewFeedDialogFragment extends DialogFragment {
 
                     String folderToUse;
                     if (spinnerAdapter != null){
-                        folderToUse = spinnerAdapter.getItem(binding.spinFolderList.getSelectedItemPosition());
+                        folderToUse = spinnerAdapter.getItem(binding.spinFolderList.getSelectedItemPosition())
+                                .trim();
                     } else {
                         folderToUse = "";
                     }
-                    Pair<String, String> result = new Pair<>(feedUrl, folderToUse);
-                    handle.set(ARG_RESULT, result);
+                    EnumMap<ResultKeys, String> results = new EnumMap<>(ResultKeys.class);
+                    results.put(ResultKeys.FEED, feedUrl);
+                    if (!folderToUse.isEmpty()) {
+                        results.put(ResultKeys.FOLDER, folderToUse);
+                    }
+                    handle.set(ARG_RESULT, results);
                     dialog.dismiss();
                 });
-        return super.onCreateDialog(savedInstanceState);
+        return builder.create();
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        return binding.getRoot();
     }
 }

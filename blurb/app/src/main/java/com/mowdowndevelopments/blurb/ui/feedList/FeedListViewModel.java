@@ -82,14 +82,6 @@ public class FeedListViewModel extends AndroidViewModel {
                 if (response.isSuccessful()) {
                     status.postValue(LoadingStatus.DONE);
                     feedsResponseData.postValue(response.body());
-                    AppExecutors.getInstance().diskIO().execute(() -> {
-                        try {
-                            BlurbDb.getInstance(getApplication()).blurbDao()
-                                    .addFeeds(Objects.requireNonNull(response.body()).getFeeds().values());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
                     Timber.d("Feeds loaded.");
                 } else {
                     status.postValue(LoadingStatus.ERROR);
@@ -104,6 +96,21 @@ public class FeedListViewModel extends AndroidViewModel {
                 status.postValue(LoadingStatus.ERROR);
                 errorMessage.postValue(t.getLocalizedMessage());
                 Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
+            }
+        });
+    }
+
+    public void postFeedsToDb() {
+        @NotNull GetFeedsResponse response = Objects.requireNonNull(feedsResponseData.getValue());
+        postFeedsToDb(response);
+    }
+
+    public void postFeedsToDb(GetFeedsResponse feedData){
+        AppExecutors.getInstance().diskIO().execute(() -> {
+            try {
+                BlurbDb.getInstance(getApplication()).blurbDao().addFeeds(feedData.getFeeds().values());
+            } catch (Exception e) {
+                Timber.w(e);
             }
         });
     }

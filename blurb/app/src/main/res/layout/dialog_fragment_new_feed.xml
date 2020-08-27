@@ -15,12 +15,12 @@
         android:layout_marginBottom="8dp"
         android:spinnerMode="dropdown"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/et_new_feed_name"
-        app:layout_constraintStart_toStartOf="@+id/et_new_feed_name"
+        app:layout_constraintEnd_toEndOf="@+id/et_new_feed_url"
+        app:layout_constraintStart_toStartOf="@+id/et_new_feed_url"
         app:layout_constraintTop_toBottomOf="@+id/tv_spinner_label" />
 
     <com.google.android.material.textfield.MaterialAutoCompleteTextView
-        android:id="@+id/et_new_feed_name"
+        android:id="@+id/et_new_feed_url"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -51,6 +51,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:text="@string/folder_title"
-        app:layout_constraintStart_toStartOf="@+id/et_new_feed_name"
-        app:layout_constraintTop_toBottomOf="@+id/et_new_feed_name" />
+        app:layout_constraintStart_toStartOf="@+id/et_new_feed_url"
+        app:layout_constraintTop_toBottomOf="@+id/et_new_feed_url" />
 </androidx.constraintlayout.widget.ConstraintLayout>

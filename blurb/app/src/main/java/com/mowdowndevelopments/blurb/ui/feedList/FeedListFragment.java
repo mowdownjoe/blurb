@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
@@ -30,6 +29,7 @@ import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.Objects;
 import java.util.Set;
 
@@ -64,6 +64,7 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
                 Timber.d("Data from network received.");
                 adapter.setData(getFeedsResponse);
                 binding.srfRefreshTab.setRefreshing(false);
+                viewModel.postFeedsToDb(getFeedsResponse);
             }
         });
         viewModel.getLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
@@ -116,23 +117,27 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         });
         handle.getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT).observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
-                if (!(result instanceof Pair)) return;
-                Pair<String, String> dialogResult = (Pair<String, String>) result;
-                if (dialogResult.second == null || dialogResult.second.trim().isEmpty()){
-                    viewModel.createNewFolder(dialogResult.first);
+                if (!(result instanceof EnumMap)) return;
+                EnumMap<NewFolderDialogFragment.ResultKeys, String> resultMap =
+                        (EnumMap<NewFolderDialogFragment.ResultKeys, String>) result;
+                if (resultMap.containsKey(NewFolderDialogFragment.ResultKeys.NESTED_UNDER)){
+                    viewModel.createNewFolder(resultMap.get(NewFolderDialogFragment.ResultKeys.NEW_FOLDER),
+                            resultMap.get(NewFolderDialogFragment.ResultKeys.NESTED_UNDER));
                 } else {
-                    viewModel.createNewFolder(dialogResult.first, dialogResult.second);
+                    viewModel.createNewFolder(resultMap.get(NewFolderDialogFragment.ResultKeys.NEW_FOLDER));
                 }
             }
         });
         handle.getLiveData(NewFeedDialogFragment.ARG_RESULT).observe(getViewLifecycleOwner(), result -> {
             if (result != null){
-                if (!(result instanceof Pair)) return;
-                Pair<String, String> dialogResult = (Pair<String, String>) result;
-                if (dialogResult.second == null || dialogResult.second.trim().isEmpty()){
-                    viewModel.addNewFeed(dialogResult.first);
+                if (!(result instanceof EnumMap)) return;
+                EnumMap<NewFeedDialogFragment.ResultKeys, String> resultMap =
+                        (EnumMap<NewFeedDialogFragment.ResultKeys, String>) result;
+                if (resultMap.containsKey(NewFeedDialogFragment.ResultKeys.FOLDER)){
+                    viewModel.addNewFeed(resultMap.get(NewFeedDialogFragment.ResultKeys.FEED),
+                            resultMap.get(NewFeedDialogFragment.ResultKeys.FOLDER));
                 } else {
-                    viewModel.addNewFeed(dialogResult.first, dialogResult.second);
+                    viewModel.addNewFeed(resultMap.get(NewFeedDialogFragment.ResultKeys.FEED));
                 }
             }
         });

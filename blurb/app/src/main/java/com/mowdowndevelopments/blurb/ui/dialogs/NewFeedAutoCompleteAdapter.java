@@ -4,22 +4,24 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.Filter;
-import android.widget.Filterable;
+import android.widget.ArrayAdapter;
 
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.AutocompleteItemBinding;
 import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class NewFeedAutoCompleteAdapter extends BaseAdapter implements Filterable {
+public class NewFeedAutoCompleteAdapter extends ArrayAdapter<AutoCompleteResponse> {
 
     private Context context;
     private List<AutoCompleteResponse> feeds;
 
     public NewFeedAutoCompleteAdapter(Context context) {
+        super(context, R.layout.autocomplete_item, new ArrayList<>());
         this.context = context;
     }
 
@@ -39,22 +41,19 @@ public class NewFeedAutoCompleteAdapter extends BaseAdapter implements Filterabl
         return null;
     }
 
+    @NotNull
     @Override
-    public long getItemId(int i) {
-        return i;
-    }
-
-    @Override
-    public View getView(int position, View view, ViewGroup parent) {
+    public View getView(int position, View view, @NotNull ViewGroup parent) {
         if (view == null){
             LayoutInflater inflater = LayoutInflater.from(context);
             view = inflater.inflate(R.layout.autocomplete_item, parent,false);
         }
         AutocompleteItemBinding binding = AutocompleteItemBinding.bind(view);
         if (feeds != null){
-            binding.tvFeedLabel.setText(feeds.get(position).getFeedTitle());
-            binding.tvFeedSubCount.setText(feeds.get(position).getSubscriberCount());
-            binding.tvTagline.setText(feeds.get(position).getTagline());
+            AutoCompleteResponse response = feeds.get(position);
+            binding.tvFeedLabel.setText(response.getFeedTitle());
+            binding.tvFeedSubCount.setText(Integer.toString(response.getSubscriberCount()));
+            binding.tvTagline.setText(response.getTagline());
         }
         return binding.getRoot();
     }
@@ -62,11 +61,5 @@ public class NewFeedAutoCompleteAdapter extends BaseAdapter implements Filterabl
     public void setResponseData(List<AutoCompleteResponse> data){
         feeds = data;
         notifyDataSetChanged();
-    }
-
-    @Override
-    public Filter getFilter() {
-        //API handles its own filtering and only returns 4 results.
-        return null;
     }
 }
