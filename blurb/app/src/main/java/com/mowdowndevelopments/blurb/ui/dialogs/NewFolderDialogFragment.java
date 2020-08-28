@@ -2,7 +2,6 @@ package com.mowdowndevelopments.blurb.ui.dialogs;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 
@@ -36,11 +35,9 @@ public class NewFolderDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
-        LayoutInflater inflater = requireActivity().getLayoutInflater();
-        binding = FragmentNewFolderDialogBinding.inflate(inflater);
-        NewFolderDialogFragmentArgs args = NewFolderDialogFragmentArgs.fromBundle(requireArguments());
+        binding = FragmentNewFolderDialogBinding.inflate(requireActivity().getLayoutInflater());
 
-        String[] folders = args.getFolderNames();
+        String[] folders = NewFolderDialogFragmentArgs.fromBundle(requireArguments()).getFolderNames();
         if (folders != null) {
             adapter = new ArrayAdapter<>(requireContext(),
                     android.R.layout.simple_spinner_dropdown_item, Arrays.asList(folders));

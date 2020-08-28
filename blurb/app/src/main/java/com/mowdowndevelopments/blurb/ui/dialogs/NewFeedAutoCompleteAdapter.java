@@ -52,7 +52,7 @@ public class NewFeedAutoCompleteAdapter extends ArrayAdapter<AutoCompleteRespons
         if (feeds != null){
             AutoCompleteResponse response = feeds.get(position);
             binding.tvFeedLabel.setText(response.getFeedTitle());
-            binding.tvFeedSubCount.setText(Integer.toString(response.getSubscriberCount()));
+            binding.tvFeedSubCount.setText(String.format("%o", response.getSubscriberCount()));
             binding.tvTagline.setText(response.getTagline());
         }
         return binding.getRoot();

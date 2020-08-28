@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.AppExecutors;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.BlurbDb;
@@ -48,7 +49,8 @@ public class FeedListViewModel extends AndroidViewModel {
         public void onFailure(@NotNull Call<Map<String, Object>> call, @NotNull Throwable t) {
             refreshing = false;
             errorMessage.postValue(t.getLocalizedMessage());
-            Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
+            FirebaseCrashlytics.getInstance().log(String.format("loginCallback.onFailure: %s", t.getMessage()));
+            FirebaseCrashlytics.getInstance().recordException(t);
         }
     };
 
@@ -59,14 +61,17 @@ public class FeedListViewModel extends AndroidViewModel {
         errorMessage = new MutableLiveData<>();
     }
 
+    @NonNull
     public LiveData<GetFeedsResponse> getFeedsResponseData() {
         return feedsResponseData;
     }
 
+    @NonNull
     public LiveData<LoadingStatus> getLoadingStatus() {
         return status;
     }
 
+    @NonNull
     public LiveData<String> getErrorMessage() {
         return errorMessage;
     }
@@ -96,6 +101,8 @@ public class FeedListViewModel extends AndroidViewModel {
                 status.postValue(LoadingStatus.ERROR);
                 errorMessage.postValue(t.getLocalizedMessage());
                 Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
+                FirebaseCrashlytics.getInstance().log(String.format("loginCallback.onFailure: %s", t.getMessage()));
+                FirebaseCrashlytics.getInstance().recordException(t);
             }
         });
     }

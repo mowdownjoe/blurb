@@ -22,6 +22,13 @@ class BaseFeedViewHolder extends RecyclerView.ViewHolder {
 
     @SuppressLint("SetTextI18n")
     public void bind(Feed feed){
+        if (!itemView.getContext()
+                .getSharedPreferences(itemView.getContext().getString(R.string.shared_pref_file), 0)
+                .getBoolean(itemView.getContext().getString(R.string.pref_empty_feeds), true)
+                && feed.getUnreadCount() + feed.getPreferredUnreadCount() <= 0){
+            itemView.setVisibility(View.GONE);
+            return;
+        }
         binding.tvFeedTitle.setText(feed.getFeedTitle());
         if (feed.getUnreadCount() > 0){
             binding.tvUnreadCount.setVisibility(View.VISIBLE);

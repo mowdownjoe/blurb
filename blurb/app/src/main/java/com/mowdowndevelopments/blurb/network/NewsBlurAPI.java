@@ -1,5 +1,7 @@
 package com.mowdowndevelopments.blurb.network;
 
+import androidx.annotation.NonNull;
+
 import com.mowdowndevelopments.blurb.network.ResponseModels.AuthResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
@@ -21,20 +23,20 @@ public interface NewsBlurAPI {
 
     @POST("/api/login")
     @FormUrlEncoded
-    Call<AuthResponse> login(@Field("username") String username, @Field("password") String password);
+    Call<AuthResponse> login(@Field("username") @NonNull String username, @Field("password") @NonNull String password);
 
     @POST("/api/login")
     @FormUrlEncoded
-    Call<AuthResponse> login(@Field("username") String username);
+    Call<AuthResponse> login(@Field("username") @NonNull String username);
 
     @POST("/api/logout")
     Call<Void> logout();
 
     @POST("/api/signup")
     @FormUrlEncoded
-    Call<AuthResponse> signup(@Field("username") String username,
-                              @Field("password") String password,
-                              @Field("email") String emailAddress);
+    Call<AuthResponse> signup(@Field("username") @NonNull String username,
+                              @Field("password") @NonNull String password,
+                              @Field("email") @NonNull String emailAddress);
 
     @POST("/api/signup")
     @FormUrlEncoded
@@ -48,42 +50,43 @@ public interface NewsBlurAPI {
 
     @GET("/reader/feed/{id}")
     Call<FeedContentsResponse> getFeedContents(@Path("id") int feedId,
-                                               @Query("read_filter") String filter,
+                                               @Query("read_filter") @NonNull String filter,
                                                @Query("include_story_content") boolean includeStoryContent);
 
     @GET("/reader/river_stories?{concatenatedFeeds}")
-    Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") String concatenatedFeedQueries);
+    Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") @NonNull String concatenatedFeedQueries);
 
     //TODO Create new ResponseModels for these Map<String, Object> calls
 
     @POST("/reader/add_url")
     @FormUrlEncoded
-    Call<Map<String, Object>> addNewFeed(@Field("url") String url);
+    Call<Map<String, Object>> addNewFeed(@Field("url") @NonNull String url);
 
     @POST("/reader/add_url")
     @FormUrlEncoded
-    Call<Map<String, Object>> addNewFeed(@Field("url") String url, @Field("folder") String folderName);
+    Call<Map<String, Object>> addNewFeed(@Field("url") @NonNull String url, @Field("folder") @NonNull String folderName);
 
     @POST("/reader/add_folder")
     @FormUrlEncoded
-    Call<Map<String, Object>> createNewFolder(@Field("folder") String folderName);
+    Call<Map<String, Object>> createNewFolder(@Field("folder") @NonNull String folderName);
 
     @POST("/reader/add_folder")
     @FormUrlEncoded
-    Call<Map<String, Object>> createNewFolder(@Field("folder") String folderName, @Field("parent_folder") String parentFolderName);
+    Call<Map<String, Object>> createNewFolder(@Field("folder") @NonNull String folderName,
+                                              @Field("parent_folder") @NonNull String parentFolderName);
 
     @POST("/reader/mark_story_hash_as_unread")
     @FormUrlEncoded
-    Call<Map<String, Object>> markStoryAsUnread(@Field("story_hash") String storyHash);
+    Call<Map<String, Object>> markStoryAsUnread(@Field("story_hash") @NonNull String storyHash);
 
     @POST("/reader/mark_story_hash_as_starred")
     @FormUrlEncoded
-    Call<Map<String, Object>> markStoryAsStarred(@Field("story_hash") String storyHash);
+    Call<Map<String, Object>> markStoryAsStarred(@Field("story_hash") @NonNull String storyHash);
 
     @POST("/reader/mark_story_hash_as_unstarred")
     @FormUrlEncoded
-    Call<Map<String, Object>> removeStarredStory(@Field("story_hash") String storyHash);
+    Call<Map<String, Object>> removeStarredStory(@Field("story_hash") @NonNull String storyHash);
 
     @GET("/rss_feeds/feed_autocomplete")
-    Call<List<AutoCompleteResponse>> getAutoCompleteResults(@Query("term") String searchTerm);
+    Call<List<AutoCompleteResponse>> getAutoCompleteResults(@Query("term") @NonNull String searchTerm);
 }

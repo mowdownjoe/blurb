@@ -104,3 +104,4 @@ lint/tmp/
 /.idea/codeStyles/Project.xml
 /.idea/jarRepositories.xml
 /.idea/runConfigurations.xml
+/app/google-services.json

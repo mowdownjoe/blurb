@@ -80,4 +80,12 @@
     <string name="feed_hint">Feed URL</string>
     <string name="folder_title">Put in folder:</string>
     <string name="dialog_btn_add_feed">Add feed</string>
+    <string name="menu_about">About this…</string>
+    <string name="pref_filter_key">read_filter</string>
+    <string name="pref_filter_order">sort_order</string>
+    <string name="pref_cat_analytics">Analytics</string>
+    <string name="pref_crashlytics_title">Enable automatic crash reporting</string>
+    <string name="pref_crashlytics_key">crashlytics</string>
+    <string name="pref_crashlytics_summary_off">Opt in to automatically send crash reports to the developer. This will include sending diagnostic data about how you use Blurb.</string>
+    <string name="pref_crashlytics_summary_on">You have opted in to automatically send crash reports and diagnostic data about your usage of Blurb to the developer.</string>
 </resources>

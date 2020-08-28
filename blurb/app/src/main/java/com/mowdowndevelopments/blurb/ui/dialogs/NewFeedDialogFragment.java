@@ -57,6 +57,7 @@ public class NewFeedDialogFragment extends DialogFragment {
         viewModel.getAutoCompleteDialogData().observe(getViewLifecycleOwner(), autoCompleteResponses -> {
             if (autoCompleteResponses != null){
                 autoCompleteAdapter.setResponseData(autoCompleteResponses);
+                binding.etNewFeedUrl.showDropDown();
             }
         });
     }
@@ -65,9 +66,7 @@ public class NewFeedDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
-        LayoutInflater inflater = requireActivity().getLayoutInflater();
-        binding = DialogFragmentNewFeedBinding.inflate(inflater);
-        NewFeedDialogFragmentArgs args = NewFeedDialogFragmentArgs.fromBundle(requireArguments());
+        binding = DialogFragmentNewFeedBinding.inflate(requireActivity().getLayoutInflater());
 
         binding.etNewFeedUrl.setAdapter(autoCompleteAdapter);
         binding.etNewFeedUrl.setOnItemClickListener((adapterView, view, position, id) -> {
@@ -89,13 +88,11 @@ public class NewFeedDialogFragment extends DialogFragment {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                if (viewModel.getAutoCompleteDialogData().getValue() != null){
-                    binding.etNewFeedUrl.showDropDown();
-                }
+                //unused
             }
         });
 
-        String[] folders = args.getFolderNames();
+        String[] folders = NewFeedDialogFragmentArgs.fromBundle(requireArguments()).getFolderNames();
         if (folders != null) {
             spinnerAdapter = new ArrayAdapter<>(requireContext(),
                     android.R.layout.simple_spinner_dropdown_item, Arrays.asList(folders));
@@ -106,7 +103,10 @@ public class NewFeedDialogFragment extends DialogFragment {
         }
 
         builder.setView(binding.getRoot())
-                .setNegativeButton(R.string.btn_cancel, (dialog, i) -> dialog.cancel())
+                .setNegativeButton(R.string.btn_cancel, (dialog, i) -> {
+                    viewModel.clearAutoCompleteDialogData();
+                    dialog.cancel();
+                })
                 .setPositiveButton(R.string.dialog_btn_add_feed, (dialog, i) -> {
                     String feedUrl = binding.etNewFeedUrl.getText().toString().trim();
                     if (feedUrl.isEmpty()){
@@ -131,6 +131,7 @@ public class NewFeedDialogFragment extends DialogFragment {
                         results.put(ResultKeys.FOLDER, folderToUse);
                     }
                     handle.set(ARG_RESULT, results);
+                    viewModel.clearAutoCompleteDialogData();
                     dialog.dismiss();
                 });
         return builder.create();

@@ -13,12 +13,18 @@
         android:id="@+id/action_logout"
         android:title="@string/action_sign_out"/>
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_about"
         android:orderInCategory="99"
+        android:title="@string/menu_about"
+        android:visible="false"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="98"
         android:title="@string/action_settings"
         app:showAsAction="never" />
     <item android:id="@+id/action_donate"
-        android:orderInCategory="98"
+        android:orderInCategory="97"
         android:title="@string/action_support"
         app:showAsAction="never"/>
 </menu>

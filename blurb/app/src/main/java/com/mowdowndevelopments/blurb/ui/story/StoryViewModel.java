@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.AppExecutors;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.BlurbDb;
@@ -107,18 +108,18 @@ public class StoryViewModel extends AndroidViewModel {
             }
 
             MediaType type = MediaType.parse("application/x-www-form-urlencoded");
-            RequestBody body = RequestBody.create(type, stringBuilder.toString());
             Request request = new Request.Builder()
                     .url("https://newsblur.com/reader/mark_story_hashes_as_read")
-                    .post(body)
+                    .post(RequestBody.create(type, stringBuilder.toString()))
                     .addHeader("content-type", "application/x-www-form-urlencoded")
                     .build();
 
             Singletons.getOkHttpClient(getApplication()).newCall(request).enqueue(new okhttp3.Callback() {
                 @Override
-                public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
+                public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) {
                     if (response.isSuccessful()){
                         Timber.d("Marked queue as read.");
+                        readStories.clear();
                     } else {
                         Toast.makeText(getApplication(), getApplication()
                                 .getString(R.string.http_error, response.code()), Toast.LENGTH_SHORT).show();
@@ -129,12 +130,14 @@ public class StoryViewModel extends AndroidViewModel {
                 @Override
                 public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
                     Timber.e(e);
+                    FirebaseCrashlytics.getInstance().recordException(e);
                     Toast.makeText(getApplication(), e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         } catch (UnsupportedEncodingException e) {
             Timber.e(e);
             Toast.makeText(getApplication(), e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+            FirebaseCrashlytics.getInstance().recordException(e);
         }
 
     }
@@ -158,6 +161,7 @@ public class StoryViewModel extends AndroidViewModel {
                     public void onFailure(@NotNull Call<Map<String, Object>> call, @NotNull Throwable t) {
                         snackbarMessage.postValue(t.getLocalizedMessage());
                         Timber.e(t);
+                        FirebaseCrashlytics.getInstance().recordException(t);
                     }
                 });
     }
@@ -181,6 +185,7 @@ public class StoryViewModel extends AndroidViewModel {
                     public void onFailure(@NotNull Call<Map<String, Object>> call, @NotNull Throwable t) {
                         snackbarMessage.postValue(t.getLocalizedMessage());
                         Timber.e(t);
+                        FirebaseCrashlytics.getInstance().recordException(t);
                     }
                 });
     }

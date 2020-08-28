@@ -12,13 +12,13 @@
             app:defaultValue="newest"
             app:entries="@array/sort_entries"
             app:entryValues="@array/sort_values"
-            app:key="sort_order"
+            app:key="@string/pref_filter_order"
             app:title="@string/pref_sort"
             app:useSimpleSummaryProvider="true" />
 
         <ListPreference
             app:title="@string/pref_read_filter"
-            app:key="read_filter"
+            app:key="@string/pref_filter_key"
             app:entries="@array/filter_entries"
             app:entryValues="@array/filter_values"
             app:defaultValue="unread"
@@ -31,19 +31,15 @@
 
     </PreferenceCategory>
 
-    <!--<PreferenceCategory app:title="@string/sync_header">
+    <PreferenceCategory app:title="@string/pref_cat_analytics">
 
         <SwitchPreferenceCompat
-            app:key="sync"
-            app:title="@string/sync_title" />
+            app:title="@string/pref_crashlytics_title"
+            app:key="@string/pref_crashlytics_key"
+            app:defaultValue="false"
+            app:summaryOff="@string/pref_crashlytics_summary_off"
+            app:summaryOn="@string/pref_crashlytics_summary_on"/>
 
-        <SwitchPreferenceCompat
-            app:dependency="sync"
-            app:key="attachment"
-            app:summaryOff="@string/attachment_summary_off"
-            app:summaryOn="@string/attachment_summary_on"
-            app:title="@string/attachment_title" />
-
-    </PreferenceCategory>-->
+    </PreferenceCategory>
 
 </PreferenceScreen>

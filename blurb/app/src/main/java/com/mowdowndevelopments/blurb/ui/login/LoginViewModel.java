@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 import com.mowdowndevelopments.blurb.network.ResponseModels.AuthResponse;
@@ -49,6 +50,8 @@ public class LoginViewModel extends AndroidViewModel {
             loginStatus.postValue(LoadingStatus.ERROR);
             Timber.e(t, "loginCallback.onFailure: %s", t.getMessage());
             errorToast.postValue(t.getLocalizedMessage());
+            FirebaseCrashlytics.getInstance().log(String.format("loginCallback.onFailure: %s", t.getMessage()));
+            FirebaseCrashlytics.getInstance().recordException(t);
         }
     };
     private final Callback<AuthResponse> registrationCallback= new Callback<AuthResponse>() {
@@ -76,11 +79,15 @@ public class LoginViewModel extends AndroidViewModel {
             loginStatus.postValue(LoadingStatus.ERROR);
             Timber.e(t, "loginCallback.onFailure: %s", t.getMessage());
             errorToast.postValue(t.getLocalizedMessage());
+            FirebaseCrashlytics.getInstance().log(String.format("loginCallback.onFailure: %s", t.getMessage()));
+            FirebaseCrashlytics.getInstance().recordException(t);
         }
     };
 
+    @NonNull
     public LiveData<LoadingStatus> getLoginStatus(){ return loginStatus; }
 
+    @NonNull
     public LiveData<String> getErrorToast() {
         return errorToast;
     }
@@ -91,25 +98,25 @@ public class LoginViewModel extends AndroidViewModel {
         errorToast = new MutableLiveData<>();
     }
 
-    public void login(String username, String password){
+    public void login(@NonNull String username, String password){
         if (loginStatus.getValue() == LoadingStatus.LOADING) return;
         loginStatus.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).login(username, password).enqueue(loginCallback);
     }
 
-    public void login(String username){
+    public void login(@NonNull String username){
         if (loginStatus.getValue() == LoadingStatus.LOADING) return;
         loginStatus.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).login(username).enqueue(loginCallback);
     }
 
-    public void registerNewAccount(String username, String password, String emailAddress){
+    public void registerNewAccount(@NonNull String username, String password, @NonNull String emailAddress){
         if (loginStatus.getValue() == LoadingStatus.LOADING) return;
         loginStatus.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).signup(username, password, emailAddress).enqueue(registrationCallback);
     }
 
-    public void registerNewAccount(String username, String emailAddress){
+    public void registerNewAccount(@NonNull String username, @NonNull String emailAddress){
         if (loginStatus.getValue() == LoadingStatus.LOADING) return;
         loginStatus.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).signup(username, emailAddress).enqueue(registrationCallback);

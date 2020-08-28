@@ -7,19 +7,17 @@ import android.view.MenuItem;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
-import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.NavGraphDirections;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.ActivityMainBinding;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
-
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -33,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
+
+        FirebaseCrashlytics.getInstance()
+                .setCrashlyticsCollectionEnabled(getSharedPreferences(getString(R.string.shared_pref_file), 0)
+                        .getBoolean(getString(R.string.pref_crashlytics_key), false));
 
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.getLogoutStatus().observe(this, loadingStatus -> {
@@ -60,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+
         AppBarConfiguration appBarConfig = new AppBarConfiguration
                 .Builder(R.id.FeedListFragment, R.id.login_fragment).build();
         NavigationUI.setupWithNavController(binding.toolbar, navController, appBarConfig);
@@ -114,21 +117,11 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_donate:
                 //TODO Implement In-app billing
                 return true;
+            case R.id.action_about:
+                navController.navigate(NavGraphDirections.actionGlobalAboutDialog());
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        NavDestination destination = Navigation.findNavController(this, R.id.nav_host_fragment)
-                .getCurrentDestination();
-        boolean isLoggedIn = getSharedPreferences(getString(R.string.shared_pref_file), 0)
-                .getBoolean(getString(R.string.logged_in_key), false);
-        if (!isLoggedIn && Objects.requireNonNull(destination).getId() == R.id.login_fragment) {
-            finishAndRemoveTask();
-        } else {
-            super.onBackPressed();
-        }
     }
 }

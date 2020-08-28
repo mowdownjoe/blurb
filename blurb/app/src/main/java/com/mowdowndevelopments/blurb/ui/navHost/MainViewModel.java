@@ -8,6 +8,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
@@ -49,6 +50,10 @@ public class MainViewModel extends AndroidViewModel {
         return autoCompleteDialogData;
     }
 
+    public void clearAutoCompleteDialogData(){
+        autoCompleteDialogData.setValue(null);
+    }
+
     public void logout(){
         logoutStatus.postValue(LoadingStatus.LOADING);
         Singletons.getNewsBlurAPI(getApplication()).logout().enqueue(new Callback<Void>() {
@@ -73,6 +78,8 @@ public class MainViewModel extends AndroidViewModel {
                 logoutStatus.postValue(LoadingStatus.ERROR);
                 Timber.e(t, "onFailure: %s", t.getMessage());
                 errorMessage.postValue(t.getLocalizedMessage());
+                FirebaseCrashlytics.getInstance().log(String.format("loginCallback.onFailure: %s", t.getMessage()));
+                FirebaseCrashlytics.getInstance().recordException(t);
             }
         });
     }
@@ -84,7 +91,7 @@ public class MainViewModel extends AndroidViewModel {
         Singletons.getNewsBlurAPI(getApplication()).getAutoCompleteResults(searchTerm).enqueue(new Callback<List<AutoCompleteResponse>>() {
             //Will fail silently
             @Override
-            public void onResponse(Call<List<AutoCompleteResponse>> call, Response<List<AutoCompleteResponse>> response) {
+            public void onResponse(@NotNull Call<List<AutoCompleteResponse>> call, @NotNull Response<List<AutoCompleteResponse>> response) {
                 loadingForDialog = false;
                 if (response.isSuccessful()){
                     autoCompleteDialogData.postValue(response.body());
@@ -92,7 +99,7 @@ public class MainViewModel extends AndroidViewModel {
             }
 
             @Override
-            public void onFailure(Call<List<AutoCompleteResponse>> call, Throwable t) {
+            public void onFailure(@NotNull Call<List<AutoCompleteResponse>> call, @NotNull Throwable t) {
                 loadingForDialog = false;
             }
         });
