@@ -28,6 +28,8 @@ class BaseFeedViewHolder extends RecyclerView.ViewHolder {
                 && feed.getUnreadCount() + feed.getPreferredUnreadCount() <= 0){
             itemView.setVisibility(View.GONE);
             return;
+        } else {
+            itemView.setVisibility(View.VISIBLE);
         }
         binding.tvFeedTitle.setText(feed.getFeedTitle());
         if (feed.getUnreadCount() > 0){

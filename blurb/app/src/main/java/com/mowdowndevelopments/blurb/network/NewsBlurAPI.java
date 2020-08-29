@@ -48,10 +48,10 @@ public interface NewsBlurAPI {
     @GET("/reader/feeds?flat=true&update_counts=true")
     Call<GetFeedsResponse> getFeedsAndRefreshCounts();
 
-    @GET("/reader/feed/{id}")
+    @GET("/reader/feed/{id}?include_story_content=true")
     Call<FeedContentsResponse> getFeedContents(@Path("id") int feedId,
                                                @Query("read_filter") @NonNull String filter,
-                                               @Query("include_story_content") boolean includeStoryContent);
+                                               @Query("order") @NonNull String sortOrder);
 
     @GET("/reader/river_stories?{concatenatedFeeds}")
     Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") @NonNull String concatenatedFeedQueries);

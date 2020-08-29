@@ -93,7 +93,7 @@ public class NewsBlurAPITest {
         try {
             serverResponse = Singletons.getNewsBlurAPI(server.url("/").toString(),
                     ApplicationProvider.getApplicationContext())
-                    .getFeedContents(42, "all", true).execute();
+                    .getFeedContents(42, "all", "oldest").execute();
         } catch (IOException e) {
             e.printStackTrace();
             fail(e.getMessage());

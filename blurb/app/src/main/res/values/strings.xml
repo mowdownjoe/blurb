@@ -60,8 +60,8 @@
     <string name="attachment_summary_on">Automatically download attachments for incoming emails
     </string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <string name="pref_sort">Default sort order</string>
-    <string name="pref_read_filter">Default story filter</string>
+    <string name="pref_sort_title">Default sort order</string>
+    <string name="pref_filter_title">Default story filter</string>
     <string name="cat_display">Display preferences</string>
     <string name="pref_empty_feeds">Show empty feeds</string>
     <string name="pref_key_empty">show_empty_feeds</string>
@@ -82,7 +82,7 @@
     <string name="dialog_btn_add_feed">Add feed</string>
     <string name="menu_about">About this…</string>
     <string name="pref_filter_key">read_filter</string>
-    <string name="pref_filter_order">sort_order</string>
+    <string name="pref_sort_key">sort_order</string>
     <string name="pref_cat_analytics">Analytics</string>
     <string name="pref_crashlytics_title">Enable automatic crash reporting</string>
     <string name="pref_crashlytics_key">crashlytics</string>

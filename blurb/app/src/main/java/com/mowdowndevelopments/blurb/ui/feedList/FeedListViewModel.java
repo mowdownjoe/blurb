@@ -49,6 +49,7 @@ public class FeedListViewModel extends AndroidViewModel {
         public void onFailure(@NotNull Call<Map<String, Object>> call, @NotNull Throwable t) {
             refreshing = false;
             errorMessage.postValue(t.getLocalizedMessage());
+            Timber.e(t, "loadFeeds.onFailure: %s", t.getMessage());
             FirebaseCrashlytics.getInstance().log(String.format("loginCallback.onFailure: %s", t.getMessage()));
             FirebaseCrashlytics.getInstance().recordException(t);
         }

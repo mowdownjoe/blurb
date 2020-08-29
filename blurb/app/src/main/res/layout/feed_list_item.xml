@@ -35,8 +35,8 @@
 
     <ImageView
         android:id="@+id/iv_fav_icon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="@dimen/favicon_width"
+        android:layout_height="@dimen/favicon_height"
         android:layout_marginStart="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/tv_feed_title"
         app:layout_constraintStart_toStartOf="parent"

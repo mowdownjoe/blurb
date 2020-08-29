@@ -7,8 +7,8 @@
 
     <ImageView
         android:id="@+id/iv_story_favicon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="@dimen/favicon_width"
+        android:layout_height="@dimen/favicon_height"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"

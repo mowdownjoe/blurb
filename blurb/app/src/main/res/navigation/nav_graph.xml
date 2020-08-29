@@ -52,7 +52,10 @@
         app:enterAnim="@anim/slide_in_top"
         app:launchSingleTop="true"
         app:popExitAnim="@anim/slide_out_bottom" />
-    <fragment android:id="@+id/SingleFeedStoryFragment" >
+    <fragment
+        android:id="@+id/SingleFeedStoryFragment"
+        android:name="com.mowdowndevelopments.blurb.ui.feeds.single.SingleFeedFragment"
+        tools:layout="@layout/single_feed_fragment">
         <action
             android:id="@+id/action_SingleFeedStoryFragment_to_StoryPagerActivity"
             app:destination="@id/StoryPagerActivity"
