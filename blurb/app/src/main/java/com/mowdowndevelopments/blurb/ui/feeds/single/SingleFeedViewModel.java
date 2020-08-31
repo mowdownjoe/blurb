@@ -4,61 +4,93 @@ import android.app.Application;
 import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.LivePagedListBuilder;
+import androidx.paging.PagedList;
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
+import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
-import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
-import com.mowdowndevelopments.blurb.network.Singletons;
 import com.mowdowndevelopments.blurb.ui.feeds.BaseFeedViewModel;
 
-import org.jetbrains.annotations.NotNull;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import timber.log.Timber;
-
 public class SingleFeedViewModel extends BaseFeedViewModel {
-    public SingleFeedViewModel(@NonNull Application application) {
-        super(application);
+
+    final private Observer<LoadingStatus> statusObserver = this::setLoadingStatus;
+    final private Observer<String> errorMessageObserver = this::setErrorMessage;
+    private SingleFeedDataSource mostRecentDataSource;
+    private LiveData<PagedList<Story>> storyList;
+
+    public LiveData<PagedList<Story>> getStoryList() {
+        return storyList;
     }
 
-    //TODO Handle pagination?
-
-    public void loadStories(Feed feed){
-        SharedPreferences prefs = getApplication()
-                .getSharedPreferences(getApplication().getString(R.string.shared_pref_file), 0);
-        String sortOrder = prefs.getString(getApplication().getString(R.string.pref_sort_key), "newest");
-        String readFilter = prefs.getString(getApplication().getString(R.string.pref_filter_key), "unread");
-        loadStories(feed, sortOrder, readFilter);
+    public SingleFeedViewModel(@NonNull Application app, int feedId) { //TODO Modify constructor to pass in feed ID
+        super(app);
+        SharedPreferences prefs = app.getSharedPreferences(app.getString(R.string.shared_pref_file), 0);
+        String sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest");
+        String filter = prefs.getString(app.getString(R.string.pref_sort_key), "all");
+        SingleFeedDataSourceFactory factory = new SingleFeedDataSourceFactory(
+                getApplication(),
+                feedId,
+                sortOrder,
+                filter
+        );
+        mostRecentDataSource = factory.create();
+        storyList = new LivePagedListBuilder<>(factory, 6).build();
+        setInternalObservers();
     }
 
-    public void loadStories(Feed feed, String sortOrder, String readFilter){
-        setLoadingStatus(LoadingStatus.LOADING);
-        Singletons.getNewsBlurAPI(getApplication()).getFeedContents(feed.getId(), readFilter, sortOrder)
-                .enqueue(new Callback<FeedContentsResponse>() {
-                    @Override
-                    public void onResponse(@NotNull Call<FeedContentsResponse> call, @NotNull Response<FeedContentsResponse> response) {
-                        if (response.isSuccessful()){
-                            setLoadingStatus(LoadingStatus.DONE);
-                            //TODO Load into PagedList?
-                        } else {
-                            setLoadingStatus(LoadingStatus.ERROR);
-                            String errorMsg = getApplication().getString(R.string.http_error, response.code());
-                            setErrorMessage(errorMsg);
-                            Timber.e("SingleFeedViewModel.loadStories.onResponse: %s", errorMsg);
-                        }
-                    }
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        cleanUpObservers();
+    }
 
-                    @Override
-                    public void onFailure(@NotNull Call<FeedContentsResponse> call, @NotNull Throwable t) {
-                        setLoadingStatus(LoadingStatus.ERROR);
-                        setErrorMessage(t.getLocalizedMessage());
-                        Timber.e(t, "SingleFeedViewModel.loadStories.onFailure: %s", t.getMessage());
-                        FirebaseCrashlytics.getInstance().recordException(t);
-                    }
-                });
+    private void setInternalObservers(){
+        mostRecentDataSource.getErrorMessage().observeForever(errorMessageObserver);
+        mostRecentDataSource.getLoadingStatus().observeForever(statusObserver);
+    }
+
+    private void cleanUpObservers() {
+        mostRecentDataSource.getErrorMessage().removeObserver(errorMessageObserver);
+        mostRecentDataSource.getLoadingStatus().removeObserver(statusObserver);
+    }
+
+    public void simpleRefresh(){
+        mostRecentDataSource.invalidate();
+    }
+
+    public void refreshWithNewParameters(Feed feed, String sortOrder, String filter){
+        cleanUpObservers();
+        SingleFeedDataSourceFactory factory = new SingleFeedDataSourceFactory(
+                getApplication(),
+                feed.getId(),
+                sortOrder,
+                filter
+        );
+        mostRecentDataSource = factory.create();
+        setInternalObservers();
+    }
+
+    static class Factory extends ViewModelProvider.AndroidViewModelFactory{
+
+        private int feedId;
+        private Application app;
+        public Factory(@NonNull Application application, int feedId) {
+            super(application);
+            app = application;
+            this.feedId = feedId;
+        }
+
+        @SuppressWarnings("unchecked")
+        @NonNull
+        @Override
+        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
+            return (T) new SingleFeedViewModel(app, feedId);
+        }
     }
 }

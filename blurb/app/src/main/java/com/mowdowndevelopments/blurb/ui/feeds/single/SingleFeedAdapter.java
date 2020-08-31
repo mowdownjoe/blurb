@@ -5,25 +5,46 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.paging.PagedListAdapter;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.DiffUtil;
 
+import com.mowdowndevelopments.blurb.AppExecutors;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.database.entities.Story;
-import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
 import com.mowdowndevelopments.blurb.ui.feeds.BaseStoryViewHolder;
 import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;
 import com.squareup.picasso.Picasso;
 
-public class SingleFeedAdapter extends RecyclerView.Adapter<SingleFeedAdapter.SingleFeedStoryViewHolder> {
-
-    //TODO Extend from PagedListAdapter?
+public class SingleFeedAdapter extends PagedListAdapter<Story, SingleFeedAdapter.SingleFeedStoryViewHolder> {
 
     private Feed feed;
     private StoryClickListener listener;
-    private Story[] stories;
 
-    public SingleFeedAdapter(Feed feed, StoryClickListener listener) {
+    public static final DiffUtil.ItemCallback<Story> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<Story>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull Story oldItem, @NonNull Story newItem) {
+                    return oldItem.getStoryHash().equals(newItem.getStoryHash());
+                }
+
+                @Override
+                public boolean areContentsTheSame(@NonNull Story oldItem, @NonNull Story newItem) {
+                    return oldItem.equals(newItem);
+                }
+            };
+
+    public SingleFeedAdapter(@NonNull Feed feed, @NonNull StoryClickListener listener) {
+        super(DIFF_CALLBACK);
+        this.feed = feed;
+        this.listener = listener;
+    }
+
+    public SingleFeedAdapter(@NonNull AsyncDifferConfig<Story> config,
+                             @NonNull Feed feed,
+                             @NonNull StoryClickListener listener) {
+        super(config);
         this.feed = feed;
         this.listener = listener;
     }
@@ -38,20 +59,15 @@ public class SingleFeedAdapter extends RecyclerView.Adapter<SingleFeedAdapter.Si
 
     @Override
     public void onBindViewHolder(@NonNull SingleFeedStoryViewHolder holder, int position) {
-        holder.bind(stories[position]);
-    }
-
-    @Override
-    public int getItemCount() {
-        if (stories != null){
-            return stories.length;
+        if (getCurrentList() != null) {
+            holder.bind(getCurrentList().get(position));
         }
-        return 0;
     }
 
-    public void setData(FeedContentsResponse data){
-        stories = data.getStories();
-        notifyDataSetChanged();
+    public static AsyncDifferConfig<Story> getAsyncDifferConfig(){
+        return new AsyncDifferConfig.Builder<>(DIFF_CALLBACK)
+                .setBackgroundThreadExecutor(AppExecutors.getInstance().networkIO())
+                .build();
     }
 
     class SingleFeedStoryViewHolder extends BaseStoryViewHolder implements View.OnClickListener {

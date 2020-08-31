@@ -53,6 +53,12 @@ public interface NewsBlurAPI {
                                                @Query("read_filter") @NonNull String filter,
                                                @Query("order") @NonNull String sortOrder);
 
+    @GET("/reader/feed/{id}?include_story_content=true")
+    Call<FeedContentsResponse> getFeedContents(@Path("id") int feedId,
+                                               @Query("read_filter") @NonNull String filter,
+                                               @Query("order") @NonNull String sortOrder,
+                                               @Query("page") int pageNumber);
+
     @GET("/reader/river_stories?{concatenatedFeeds}")
     Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") @NonNull String concatenatedFeedQueries);
 

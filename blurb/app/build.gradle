@@ -27,6 +27,11 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    sourceSets {
+        androidTest.java.srcDirs += "src/test-common/java"
+        test.java.srcDirs += "src/test-common/java"
+    }
+
     buildFeatures {
         viewBinding true
     }
@@ -47,8 +52,8 @@ dependencies {
     def retrofit_version = "2.9.0"
     def room_version = "2.2.5"
     def truth_version = '1.0.1'
-    def androidX_testCore_version = "1.2.0"
-    def espresso_version = "3.2.0"
+    def androidX_testCore_version = '1.3.0'
+    def espresso_version = '3.3.0'
     def work_version = "2.4.0"
     def paging_version = "2.1.2"
 
@@ -102,7 +107,7 @@ dependencies {
 
     testImplementation 'junit:junit:4.13'
     testImplementation "com.squareup.okhttp3:mockwebserver:$okHttp_version"
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation "androidx.test.espresso:espresso-core:$espresso_version"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espresso_version"
     androidTestImplementation "androidx.test.espresso:espresso-web:$espresso_version"
