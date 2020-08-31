@@ -109,7 +109,7 @@ public class StoryViewModel extends AndroidViewModel {
 
             MediaType type = MediaType.parse("application/x-www-form-urlencoded");
             Request request = new Request.Builder()
-                    .url("https://newsblur.com/reader/mark_story_hashes_as_read")
+                    .url(Singletons.BASE_URL+"reader/mark_story_hashes_as_read")
                     .post(RequestBody.create(type, stringBuilder.toString()))
                     .addHeader("content-type", "application/x-www-form-urlencoded")
                     .build();

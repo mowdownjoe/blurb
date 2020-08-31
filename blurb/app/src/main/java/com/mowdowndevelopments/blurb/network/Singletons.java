@@ -19,7 +19,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory;
 public class Singletons {
 
     private static final int CACHE_SIZE = 536870912;
-    private static final String BASE_URL = "https://newsblur.com/";
+    public static final String BASE_URL = "https://newsblur.com/";
     private static Retrofit retrofit = null;
     private static OkHttpClient okHttpClient = null;
     private static Moshi moshi = null;

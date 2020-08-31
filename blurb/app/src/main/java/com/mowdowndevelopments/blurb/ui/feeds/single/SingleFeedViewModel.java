@@ -25,6 +25,8 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
         super(application);
     }
 
+    //TODO Handle pagination?
+
     public void loadStories(Feed feed){
         SharedPreferences prefs = getApplication()
                 .getSharedPreferences(getApplication().getString(R.string.shared_pref_file), 0);
@@ -41,7 +43,7 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
                     public void onResponse(@NotNull Call<FeedContentsResponse> call, @NotNull Response<FeedContentsResponse> response) {
                         if (response.isSuccessful()){
                             setLoadingStatus(LoadingStatus.DONE);
-                            setFeedData(response.body());
+                            //TODO Load into PagedList?
                         } else {
                             setLoadingStatus(LoadingStatus.ERROR);
                             String errorMsg = getApplication().getString(R.string.http_error, response.code());

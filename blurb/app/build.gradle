@@ -50,6 +50,7 @@ dependencies {
     def androidX_testCore_version = "1.2.0"
     def espresso_version = "3.2.0"
     def work_version = "2.4.0"
+    def paging_version = "2.1.2"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "androidx.appcompat:appcompat:1.2.0"
@@ -71,6 +72,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.1.1'
     debugImplementation "androidx.fragment:fragment-testing:$androidX_fragment_version" //Bugged in test source set
     implementation 'androidx.browser:browser:1.2.0'
+    implementation "androidx.paging:paging-runtime:$paging_version"
 
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle_version"
@@ -116,4 +118,5 @@ dependencies {
     testImplementation "androidx.test:core:$androidX_testCore_version"
     androidTestImplementation "androidx.test:core:$androidX_testCore_version"
     androidTestImplementation "androidx.work:work-testing:$work_version"
+    testImplementation "androidx.paging:paging-common:$paging_version"
 }

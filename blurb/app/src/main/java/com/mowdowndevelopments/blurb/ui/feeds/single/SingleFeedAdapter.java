@@ -17,6 +17,8 @@ import com.squareup.picasso.Picasso;
 
 public class SingleFeedAdapter extends RecyclerView.Adapter<SingleFeedAdapter.SingleFeedStoryViewHolder> {
 
+    //TODO Extend from PagedListAdapter?
+
     private Feed feed;
     private StoryClickListener listener;
     private Story[] stories;
