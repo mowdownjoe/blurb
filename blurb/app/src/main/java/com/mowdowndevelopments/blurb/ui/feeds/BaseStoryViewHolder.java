@@ -30,6 +30,5 @@ public class BaseStoryViewHolder extends RecyclerView.ViewHolder {
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         binding.tvStoryTime.setText(dateTime
                 .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
-        //TODO Get favicon URL and Feed Name from DB
     }
 }

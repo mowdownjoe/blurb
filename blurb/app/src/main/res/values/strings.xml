@@ -91,4 +91,7 @@
     <string name="dialog_sort_title">Sort order:</string>
     <string name="dialog_filter_title">Show entries:</string>
     <string name="btn_set_filter">Set filters</string>
+    <string name="m_title_mark_all">Mark All as Read</string>
+    <string name="m_title_sort_filter">Sort order/filter unread</string>
+    <string name="err_fail_mark_all">Could not mark feed as read.\n</string>
 </resources>

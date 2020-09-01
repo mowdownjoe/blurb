@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -115,29 +116,27 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
                 viewModel.loadFeeds();
             }
         });
-        handle.getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT).observe(getViewLifecycleOwner(), result -> {
+        MutableLiveData<EnumMap<NewFolderDialogFragment.ResultKeys, String>> folderLiveData
+                = handle.getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT);
+        folderLiveData.observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
-                if (!(result instanceof EnumMap)) return;
-                EnumMap<NewFolderDialogFragment.ResultKeys, String> resultMap =
-                        (EnumMap<NewFolderDialogFragment.ResultKeys, String>) result;
-                if (resultMap.containsKey(NewFolderDialogFragment.ResultKeys.NESTED_UNDER)){
-                    viewModel.createNewFolder(resultMap.get(NewFolderDialogFragment.ResultKeys.NEW_FOLDER),
-                            resultMap.get(NewFolderDialogFragment.ResultKeys.NESTED_UNDER));
+                if (result.containsKey(NewFolderDialogFragment.ResultKeys.NESTED_UNDER)){
+                    viewModel.createNewFolder(result.get(NewFolderDialogFragment.ResultKeys.NEW_FOLDER),
+                            result.get(NewFolderDialogFragment.ResultKeys.NESTED_UNDER));
                 } else {
-                    viewModel.createNewFolder(resultMap.get(NewFolderDialogFragment.ResultKeys.NEW_FOLDER));
+                    viewModel.createNewFolder(result.get(NewFolderDialogFragment.ResultKeys.NEW_FOLDER));
                 }
             }
         });
-        handle.getLiveData(NewFeedDialogFragment.ARG_RESULT).observe(getViewLifecycleOwner(), result -> {
+        MutableLiveData<EnumMap<NewFeedDialogFragment.ResultKeys, String>> feedLiveData
+                = handle.getLiveData(NewFeedDialogFragment.ARG_RESULT);
+        feedLiveData.observe(getViewLifecycleOwner(), result -> {
             if (result != null){
-                if (!(result instanceof EnumMap)) return;
-                EnumMap<NewFeedDialogFragment.ResultKeys, String> resultMap =
-                        (EnumMap<NewFeedDialogFragment.ResultKeys, String>) result;
-                if (resultMap.containsKey(NewFeedDialogFragment.ResultKeys.FOLDER)){
-                    viewModel.addNewFeed(resultMap.get(NewFeedDialogFragment.ResultKeys.FEED),
-                            resultMap.get(NewFeedDialogFragment.ResultKeys.FOLDER));
+                if (result.containsKey(NewFeedDialogFragment.ResultKeys.FOLDER)){
+                    viewModel.addNewFeed(result.get(NewFeedDialogFragment.ResultKeys.FEED),
+                            result.get(NewFeedDialogFragment.ResultKeys.FOLDER));
                 } else {
-                    viewModel.addNewFeed(resultMap.get(NewFeedDialogFragment.ResultKeys.FEED));
+                    viewModel.addNewFeed(result.get(NewFeedDialogFragment.ResultKeys.FEED));
                 }
             }
         });

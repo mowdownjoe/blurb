@@ -2,28 +2,34 @@ package com.mowdowndevelopments.blurb.ui.feeds.single;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.paging.PagedList;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.SingleFeedStoryFragmentArgs;
-import com.mowdowndevelopments.blurb.SingleFeedStoryFragmentDirections;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.databinding.SingleFeedFragmentBinding;
 import com.mowdowndevelopments.blurb.ui.dialogs.SortOrderDialogFragment;
 import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;
 import com.squareup.picasso.Picasso;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -33,20 +39,23 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
 
     SingleFeedFragmentBinding binding;
     private SingleFeedViewModel viewModel;
-    private SingleFeedStoryFragmentArgs args;
+    private SingleFeedFragmentArgs args;
     private SingleFeedAdapter adapter;
+    private Observer<PagedList<Story>> listObserver = stories -> {
+        if (stories != null) {
+            adapter.submitList(stories);
+        }
+    };
 
     public static SingleFeedFragment newInstance() {
         return new SingleFeedFragment();
     }
 
-    //TODO Dialog to change sort/filter?
-
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        args = SingleFeedStoryFragmentArgs.fromBundle(requireArguments());
+        args = SingleFeedFragmentArgs.fromBundle(requireArguments());
         Feed feed = args.getFeedToShow();
         adapter = new SingleFeedAdapter(feed, this);
         Picasso.get().load(feed.getFavIconUrl()).fetch(); //Warm up Picasso's cache.
@@ -57,6 +66,7 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
                              @Nullable Bundle savedInstanceState) {
         binding = SingleFeedFragmentBinding.inflate(inflater, container, false);
         binding.rvStoryList.setAdapter(adapter);
+        setHasOptionsMenu(true);
         return binding.getRoot();
     }
 
@@ -72,14 +82,33 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
                 Snackbar.make(binding.getRoot(), message, BaseTransientBottomBar.LENGTH_LONG).show();
             }
         });
-        viewModel.getStoryList().observe(getViewLifecycleOwner(), stories -> {
-            if (stories != null){
-                adapter.submitList(stories);
-            }
-        });
+
+        viewModel.getStoryList().observe(getViewLifecycleOwner(), listObserver);
         viewModel.getLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
             switch (loadingStatus){
                 //TODO Observe Loading Status
+                case LOADING:
+                    binding.rvStoryList.setVisibility(View.INVISIBLE);
+                    binding.tvErrorText.setVisibility(View.INVISIBLE);
+                    binding.pbLoadingSpinner.setVisibility(View.VISIBLE);
+                    break;
+                case WAITING:
+                case DONE:
+                    binding.rvStoryList.setVisibility(View.VISIBLE);
+                    binding.tvErrorText.setVisibility(View.INVISIBLE);
+                    binding.pbLoadingSpinner.setVisibility(View.INVISIBLE);
+                    binding.srfRefreshTab.setRefreshing(false);
+                    break;
+                case ERROR:
+                    binding.tvErrorText.setVisibility(View.VISIBLE);
+                    binding.pbLoadingSpinner.setVisibility(View.INVISIBLE);
+                    binding.rvStoryList.setVisibility(View.VISIBLE);
+                    binding.srfRefreshTab.setRefreshing(false);
+                    break;
+            }
+        });
+        viewModel.getPageLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
+            switch (loadingStatus){
                 case LOADING:
                     break;
                 case WAITING:
@@ -94,31 +123,68 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        //viewModel.loadStories(args.getFeedToShow());
 
         NavController controller = NavHostFragment.findNavController(this);
         SavedStateHandle handle = Objects.requireNonNull(controller.getCurrentBackStackEntry())
                 .getSavedStateHandle();
 
-        handle.getLiveData(SortOrderDialogFragment.ARG_RESULT).observe(getViewLifecycleOwner(), result -> {
-            if (!(result instanceof EnumMap)) return;
-            EnumMap<SortOrderDialogFragment.ResultKeys, String> resultMap =
-                    (EnumMap<SortOrderDialogFragment.ResultKeys, String>) result;
-            //TODO Solve setting new loading params for Paging library
+        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
+        binding.srfRefreshTab.setOnRefreshListener(() -> {
+            if (handle.contains(SortOrderDialogFragment.ARG_RESULT)){
+                EnumMap<SortOrderDialogFragment.ResultKeys, String> result =
+                        Objects.requireNonNull(handle.get(SortOrderDialogFragment.ARG_RESULT));
+                refreshListAndCheckObserver(result);
+            } else {
+                viewModel.simpleRefresh();
+            }
         });
 
-        binding.srfRefreshTab.setOnRefreshListener(() -> {
-            //TODO Refresh
+        LiveData<EnumMap<SortOrderDialogFragment.ResultKeys, String>> handleLiveData =
+                handle.getLiveData(SortOrderDialogFragment.ARG_RESULT);
+        handleLiveData.observe(getViewLifecycleOwner(), result -> {
+            if (result != null) {
+                refreshListAndCheckObserver(result);
+            }
         });
-        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
+    }
+
+    private void refreshListAndCheckObserver(@NotNull EnumMap<SortOrderDialogFragment.ResultKeys, String> result) {
+        viewModel.refreshWithNewParameters(args.getFeedToShow(),
+                result.get(SortOrderDialogFragment.ResultKeys.SORT),
+                result.get(SortOrderDialogFragment.ResultKeys.FILTER));
+        if (!viewModel.getStoryList().hasActiveObservers()){
+            viewModel.getStoryList().removeObservers(getViewLifecycleOwner());
+            viewModel.getStoryList().observe(getViewLifecycleOwner(), listObserver);
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.feed_menu, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        NavController controller = NavHostFragment.findNavController(this);
+        switch (item.getItemId()){
+            case R.id.mi_mark_all_read:
+                viewModel.markAllAsRead();
+                controller.popBackStack();
+                return true;
+            case R.id.mi_sort_filter:
+                controller.navigate(SingleFeedFragmentDirections
+                        .actionSingleFeedStoryFragmentToSortFilterDialog());
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onStoryClick(int position) {
-        //TODO change when paging is set up
         List<Story> storyList = adapter.getCurrentList();
         Story[] stories = new Story[storyList.size()];
-        NavHostFragment.findNavController(this).navigate(SingleFeedStoryFragmentDirections
+        NavHostFragment.findNavController(this).navigate(SingleFeedFragmentDirections
                 .actionSingleFeedStoryFragmentToStoryPagerActivity(storyList.toArray(stories))
                 .setInitialStory(position));
     }

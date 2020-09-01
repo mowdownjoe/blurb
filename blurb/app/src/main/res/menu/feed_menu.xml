@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/mi_sort_filter"
+        android:enabled="false"
+        android:icon="@drawable/ic_filter_list"
+        android:orderInCategory="1"
+        android:title="@string/m_title_sort_filter"
+        android:visible="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/mi_mark_all_read"
+        android:icon="@drawable/ic_check_circle_24"
+        android:title="@string/m_title_mark_all"
+        app:showAsAction="ifRoom"
+        android:orderInCategory="2"/>
+</menu>

@@ -5,8 +5,10 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.paging.DataSource;
 import androidx.paging.PageKeyedDataSource;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
@@ -28,15 +30,20 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
     private int feedId;
     private String sortOrder;
     private String filter;
-    private MutableLiveData<LoadingStatus> loadingStatus;
+    private MutableLiveData<LoadingStatus> pageLoadingStatus;
+    private MutableLiveData<LoadingStatus> initialLoadingStatus;
     private MutableLiveData<String> errorMessage;
 
-    public LiveData<LoadingStatus> getLoadingStatus() {
-        return loadingStatus;
+    public LiveData<LoadingStatus> getPageLoadingStatus() {
+        return pageLoadingStatus;
     }
 
     public LiveData<String> getErrorMessage() {
         return errorMessage;
+    }
+
+    public LiveData<LoadingStatus> getInitialLoadingStatus(){
+        return initialLoadingStatus;
     }
 
     public SingleFeedDataSource(Context context, int id, String sortOrder, String filter) {
@@ -46,29 +53,31 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
         this.sortOrder = sortOrder;
         this.filter = filter;
         errorMessage = new MutableLiveData<>();
-        loadingStatus = new MutableLiveData<>();
+        pageLoadingStatus = new MutableLiveData<>();
+        initialLoadingStatus = new MutableLiveData<>();
     }
 
 
     @Override
     public void loadInitial(@NonNull LoadInitialParams<Integer> params, @NonNull LoadInitialCallback<Integer, Story> callback) {
-        loadingStatus.setValue(LoadingStatus.LOADING);
+        initialLoadingStatus.setValue(LoadingStatus.LOADING);
         Callback<FeedContentsResponse> responseCallback = new Callback<FeedContentsResponse>() {
             @Override
-            public void onResponse(Call<FeedContentsResponse> call, Response<FeedContentsResponse> response) {
+            public void onResponse(@NotNull Call<FeedContentsResponse> call, @NotNull Response<FeedContentsResponse> response) {
                 if (response.isSuccessful()) {
                     callback.onResult(Arrays.asList(response.body().getStories()), null, 2);
-                    loadingStatus.postValue(LoadingStatus.DONE);
+                    initialLoadingStatus.postValue(LoadingStatus.DONE);
                 } else {
-                    loadingStatus.postValue(LoadingStatus.ERROR);
+                    initialLoadingStatus.postValue(LoadingStatus.ERROR);
                     errorMessage.postValue(context.getString(R.string.http_error, response.code()));
                 }
             }
 
             @Override
-            public void onFailure(Call<FeedContentsResponse> call, Throwable t) {
-                loadingStatus.postValue(LoadingStatus.ERROR);
+            public void onFailure(@NotNull Call<FeedContentsResponse> call, @NotNull Throwable t) {
+                initialLoadingStatus.postValue(LoadingStatus.ERROR);
                 errorMessage.postValue(t.getLocalizedMessage());
+                FirebaseCrashlytics.getInstance().recordException(t);
                 Timber.e(t);
             }
         };
@@ -77,12 +86,12 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
 
     @Override
     public void loadAfter(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, Story> callback) {
-        loadingStatus.postValue(LoadingStatus.LOADING);
+        pageLoadingStatus.postValue(LoadingStatus.LOADING);
         Callback<FeedContentsResponse> responseCallback = new Callback<FeedContentsResponse>() {
             @Override
-            public void onResponse(@NotNull Call<FeedContentsResponse> call, Response<FeedContentsResponse> response) {
+            public void onResponse(@NotNull Call<FeedContentsResponse> call, @NotNull Response<FeedContentsResponse> response) {
                 if (response.isSuccessful()){
-                    loadingStatus.postValue(LoadingStatus.DONE);
+                    pageLoadingStatus.postValue(LoadingStatus.DONE);
                     Story[] stories = response.body().getStories();
                     if (stories.length > 0) {
                         callback.onResult(Arrays.asList(stories), params.key +1);
@@ -90,15 +99,16 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
                         callback.onResult(Arrays.asList(stories), null);
                     }
                 } else {
-                    loadingStatus.postValue(LoadingStatus.ERROR);
+                    pageLoadingStatus.postValue(LoadingStatus.ERROR);
                     errorMessage.postValue(context.getString(R.string.http_error, response.code()));
                 }
             }
 
             @Override
             public void onFailure(@NotNull Call<FeedContentsResponse> call, @NotNull Throwable t) {
-                loadingStatus.postValue(LoadingStatus.ERROR);
+                pageLoadingStatus.postValue(LoadingStatus.ERROR);
                 errorMessage.postValue(t.getLocalizedMessage());
+                FirebaseCrashlytics.getInstance().recordException(t);
                 Timber.e(t);
             }
         };
@@ -108,5 +118,26 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
     @Override
     public void loadBefore(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, Story> callback) {
         //Will only append to initial load, not prepend
+    }
+
+    static class Factory extends DataSource.Factory<Integer, Story> {
+
+        private Context context;
+        private int feedId;
+        private String sortOrder;
+        private String filter;
+
+        public Factory(Context context, int feedId, String sortOrder, String filter) {
+            this.context = context;
+            this.feedId = feedId;
+            this.sortOrder = sortOrder;
+            this.filter = filter;
+        }
+
+        @NonNull
+        @Override
+        public SingleFeedDataSource create() {
+            return new SingleFeedDataSource(context, feedId, sortOrder, filter);
+        }
     }
 }

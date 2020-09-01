@@ -6,6 +6,7 @@ import com.mowdowndevelopments.blurb.network.ResponseModels.AuthResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
 import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
+import com.mowdowndevelopments.blurb.network.ResponseModels.GetStarredHashesResponse;
 
 import java.util.List;
 import java.util.Map;
@@ -62,8 +63,6 @@ public interface NewsBlurAPI {
     @GET("/reader/river_stories?{concatenatedFeeds}")
     Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") @NonNull String concatenatedFeedQueries);
 
-    //TODO Create new ResponseModels for these Map<String, Object> calls
-
     @POST("/reader/add_url")
     @FormUrlEncoded
     Call<Map<String, Object>> addNewFeed(@Field("url") @NonNull String url);
@@ -95,4 +94,7 @@ public interface NewsBlurAPI {
 
     @GET("/rss_feeds/feed_autocomplete")
     Call<List<AutoCompleteResponse>> getAutoCompleteResults(@Query("term") @NonNull String searchTerm);
+
+    @GET("/reader/starred_story_hashes")
+    Call<GetStarredHashesResponse> getStarredStoryHashes();
 }
