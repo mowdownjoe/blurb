@@ -7,7 +7,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.LivePagedListBuilder;
@@ -43,10 +42,6 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
     private MutableLiveData<LoadingStatus> pageLoadingStatus;
     private LiveData<PagedList<Story>> storyList;
 
-    final private Observer<LoadingStatus> statusObserver = this::setLoadingStatus;
-    final private Observer<String> errorMessageObserver = this::setErrorMessage;
-    final private Observer<LoadingStatus> pageLoadingObserver = loadingStatus -> pageLoadingStatus.postValue(loadingStatus);
-
     public LiveData<PagedList<Story>> getStoryList() {
         return storyList;
     }
@@ -57,6 +52,7 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
 
     public SingleFeedViewModel(@NonNull Application app, int feedId) {
         super(app);
+        Timber.d("Initializing ViewModel");
         SharedPreferences prefs = app.getSharedPreferences(app.getString(R.string.shared_pref_file), 0);
         String sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest");
         String filter = prefs.getString(app.getString(R.string.pref_sort_key), "all");
@@ -69,27 +65,6 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
         mostRecentDataSource = factory.create();
         storyList = new LivePagedListBuilder<>(factory, PAGE_SIZE).build();
         pageLoadingStatus = new MutableLiveData<>();
-        setInternalObservers();
-    }
-
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        cleanUpObservers();
-    }
-
-    private void setInternalObservers(){
-        mostRecentDataSource.getErrorMessage().observeForever(errorMessageObserver);
-        mostRecentDataSource.getPageLoadingStatus().observeForever(pageLoadingObserver);
-        mostRecentDataSource.getInitialLoadingStatus().observeForever(statusObserver);
-    }
-
-    private void cleanUpObservers() {
-        if (mostRecentDataSource.getErrorMessage().hasObservers()) {
-            mostRecentDataSource.getErrorMessage().removeObserver(errorMessageObserver);
-            mostRecentDataSource.getPageLoadingStatus().observeForever(pageLoadingObserver);
-            mostRecentDataSource.getInitialLoadingStatus().removeObserver(statusObserver);
-        }
     }
 
     public void simpleRefresh(){
@@ -97,7 +72,6 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
     }
 
     public void refreshWithNewParameters(@NotNull Feed feed, String sortOrder, String filter){
-        cleanUpObservers();
         SingleFeedDataSource.Factory factory = new SingleFeedDataSource.Factory(
                 getApplication(),
                 feed.getId(),
@@ -106,7 +80,6 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
         );
         mostRecentDataSource = factory.create();
         storyList = new LivePagedListBuilder<>(factory, PAGE_SIZE).build();
-        setInternalObservers();
     }
 
     public void markAllAsRead(){
@@ -163,6 +136,7 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
             super(application);
             app = application;
             this.feedId = feedId;
+            Timber.d("Creating Factory for ViewModel");
         }
 
         @SuppressWarnings("unchecked")

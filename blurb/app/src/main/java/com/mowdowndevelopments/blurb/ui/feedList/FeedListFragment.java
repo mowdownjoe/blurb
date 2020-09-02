@@ -11,12 +11,13 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -26,6 +27,7 @@ import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFeedDialogFragment;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFolderDialogFragment;
 import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
+import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -111,14 +113,15 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
 
         SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
                 .getCurrentBackStackEntry()).getSavedStateHandle();
-        handle.getLiveData(LoginFragment.LOGIN_SUCCESS).observe(getViewLifecycleOwner(), loggedIn -> {
-            if (Boolean.TRUE.equals(loggedIn)){ //LiveData returned by handle is of generic type, so must be checked.
+        handle.<Boolean>getLiveData(LoginFragment.LOGIN_SUCCESS).observe(getViewLifecycleOwner(), loggedIn -> {
+            if (loggedIn){
                 viewModel.loadFeeds();
+                WorkManager.getInstance(requireContext())
+                        .enqueue(new OneTimeWorkRequest.Builder(FetchStarredStoriesWorker.class).build());
             }
         });
-        MutableLiveData<EnumMap<NewFolderDialogFragment.ResultKeys, String>> folderLiveData
-                = handle.getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT);
-        folderLiveData.observe(getViewLifecycleOwner(), result -> {
+        handle.<EnumMap<NewFolderDialogFragment.ResultKeys, String>>getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT)
+                .observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
                 if (result.containsKey(NewFolderDialogFragment.ResultKeys.NESTED_UNDER)){
                     viewModel.createNewFolder(result.get(NewFolderDialogFragment.ResultKeys.NEW_FOLDER),
@@ -128,9 +131,8 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
                 }
             }
         });
-        MutableLiveData<EnumMap<NewFeedDialogFragment.ResultKeys, String>> feedLiveData
-                = handle.getLiveData(NewFeedDialogFragment.ARG_RESULT);
-        feedLiveData.observe(getViewLifecycleOwner(), result -> {
+        handle.<EnumMap<NewFeedDialogFragment.ResultKeys, String>>getLiveData(NewFeedDialogFragment.ARG_RESULT)
+                .observe(getViewLifecycleOwner(), result -> {
             if (result != null){
                 if (result.containsKey(NewFeedDialogFragment.ResultKeys.FOLDER)){
                     viewModel.addNewFeed(result.get(NewFeedDialogFragment.ResultKeys.FEED),

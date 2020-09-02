@@ -94,4 +94,5 @@
     <string name="m_title_mark_all">Mark All as Read</string>
     <string name="m_title_sort_filter">Sort order/filter unread</string>
     <string name="err_fail_mark_all">Could not mark feed as read.\n</string>
+    <string name="error_star_fetch">Unable to fetch starred stories\n</string>
 </resources>

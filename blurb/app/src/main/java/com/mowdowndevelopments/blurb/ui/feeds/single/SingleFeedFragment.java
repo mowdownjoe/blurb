@@ -10,19 +10,19 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.paging.PagedList;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.databinding.SingleFeedFragmentBinding;
 import com.mowdowndevelopments.blurb.ui.dialogs.SortOrderDialogFragment;
@@ -41,11 +41,7 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
     private SingleFeedViewModel viewModel;
     private SingleFeedFragmentArgs args;
     private SingleFeedAdapter adapter;
-    private Observer<PagedList<Story>> listObserver = stories -> {
-        if (stories != null) {
-            adapter.submitList(stories);
-        }
-    };
+    private Observer<PagedList<Story>> listObserver = stories -> adapter.submitList(stories);
 
     public static SingleFeedFragment newInstance() {
         return new SingleFeedFragment();
@@ -54,25 +50,28 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         args = SingleFeedFragmentArgs.fromBundle(requireArguments());
-        Feed feed = args.getFeedToShow();
-        adapter = new SingleFeedAdapter(feed, this);
-        Picasso.get().load(feed.getFavIconUrl()).fetch(); //Warm up Picasso's cache.
+        Picasso.get().load(args.getFeedToShow().getFavIconUrl()).fetch(); //Warm up Picasso's cache.
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = SingleFeedFragmentBinding.inflate(inflater, container, false);
-        binding.rvStoryList.setAdapter(adapter);
         setHasOptionsMenu(true);
+
+        Objects.requireNonNull(((AppCompatActivity) requireActivity()).getSupportActionBar())
+                .setTitle(args.getFeedToShow().getFeedTitle());
         return binding.getRoot();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        adapter = new SingleFeedAdapter(args.getFeedToShow(), this);
+        binding.rvStoryList.setAdapter(adapter);
+        binding.rvStoryList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         viewModel = new ViewModelProvider(this, new SingleFeedViewModel
                 .Factory(requireActivity().getApplication(), args.getFeedToShow().getId()))
@@ -139,9 +138,8 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
             }
         });
 
-        LiveData<EnumMap<SortOrderDialogFragment.ResultKeys, String>> handleLiveData =
-                handle.getLiveData(SortOrderDialogFragment.ARG_RESULT);
-        handleLiveData.observe(getViewLifecycleOwner(), result -> {
+        handle.<EnumMap<SortOrderDialogFragment.ResultKeys, String>>getLiveData(SortOrderDialogFragment.ARG_RESULT)
+                .observe(getViewLifecycleOwner(), result -> {
             if (result != null) {
                 refreshListAndCheckObserver(result);
             }

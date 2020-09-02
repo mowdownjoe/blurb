@@ -124,11 +124,9 @@ public class LoginFragment extends Fragment {
         });
         SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
                 .getCurrentBackStackEntry()).getSavedStateHandle();
-        handle.getLiveData(RegistrationFragment.REGISTRATION_SUCCESS)
+        handle.<Boolean>getLiveData(RegistrationFragment.REGISTRATION_SUCCESS)
                 .observe(getViewLifecycleOwner(), loggedIn -> {
-                    if (Boolean.TRUE.equals(loggedIn)){ //LiveData returned by handle is of generic type, so must be checked.
-                        completeLogin();
-                    }
+                    if (loggedIn) completeLogin();
                 });
     }
 

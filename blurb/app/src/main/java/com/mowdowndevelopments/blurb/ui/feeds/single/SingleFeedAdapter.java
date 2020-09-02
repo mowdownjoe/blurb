@@ -17,6 +17,8 @@ import com.mowdowndevelopments.blurb.ui.feeds.BaseStoryViewHolder;
 import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;
 import com.squareup.picasso.Picasso;
 
+import timber.log.Timber;
+
 public class SingleFeedAdapter extends PagedListAdapter<Story, SingleFeedAdapter.SingleFeedStoryViewHolder> {
 
     private Feed feed;
@@ -54,6 +56,7 @@ public class SingleFeedAdapter extends PagedListAdapter<Story, SingleFeedAdapter
     public SingleFeedStoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.story_list_item, parent, false);
+        Timber.v("Inflated new viewholder.");
         return new SingleFeedStoryViewHolder(view);
     }
 
@@ -79,6 +82,7 @@ public class SingleFeedAdapter extends PagedListAdapter<Story, SingleFeedAdapter
 
         @Override
         public void bind(Story story) {
+            Timber.v("Binding new viewholder.");
             super.bind(story);
             binding.tvFeedName.setText(feed.getFeedTitle());
             Picasso.get().load(feed.getFavIconUrl())
