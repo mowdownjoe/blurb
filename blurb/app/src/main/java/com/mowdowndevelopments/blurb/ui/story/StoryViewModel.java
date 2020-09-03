@@ -87,13 +87,13 @@ public class StoryViewModel extends AndroidViewModel {
     public void enqueueMarkAsRead(@NonNull Story story){
         if (story.isRead()) return;
         if (readStories.contains(story)) return;
-        story.setisRead(true);
+        story.setIsRead(true);
         readStories.add(story);
     }
 
     public void removeFromMarkAsReadQueue(@NonNull Story story){
         if (!story.isRead()) return;
-        story.setisRead(false);
+        story.setIsRead(false);
         readStories.remove(story);
     }
 

@@ -12,12 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
@@ -41,7 +39,6 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
     private SingleFeedViewModel viewModel;
     private SingleFeedFragmentArgs args;
     private SingleFeedAdapter adapter;
-    private Observer<PagedList<Story>> listObserver = stories -> adapter.submitList(stories);
 
     public static SingleFeedFragment newInstance() {
         return new SingleFeedFragment();
@@ -76,16 +73,19 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         viewModel = new ViewModelProvider(this, new SingleFeedViewModel
                 .Factory(requireActivity().getApplication(), args.getFeedToShow().getId()))
                 .get(SingleFeedViewModel.class);
+        setupObservers();
+    }
+
+    private void setupObservers() {
         viewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null && !message.isEmpty()){
                 Snackbar.make(binding.getRoot(), message, BaseTransientBottomBar.LENGTH_LONG).show();
             }
         });
 
-        viewModel.getStoryList().observe(getViewLifecycleOwner(), listObserver);
+        viewModel.getStoryList().observe(getViewLifecycleOwner(), stories -> adapter.submitList(stories));
         viewModel.getLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
             switch (loadingStatus){
-                //TODO Observe Loading Status
                 case LOADING:
                     binding.rvStoryList.setVisibility(View.INVISIBLE);
                     binding.tvErrorText.setVisibility(View.INVISIBLE);
@@ -109,11 +109,12 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         viewModel.getPageLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
             switch (loadingStatus){
                 case LOADING:
-                    break;
-                case WAITING:
-                case DONE:
+                    binding.srfRefreshTab.setRefreshing(true);
                     break;
                 case ERROR:
+                case WAITING:
+                case DONE:
+                    binding.srfRefreshTab.setRefreshing(false);
                     break;
             }
         });
@@ -147,13 +148,8 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
     }
 
     private void refreshListAndCheckObserver(@NotNull EnumMap<SortOrderDialogFragment.ResultKeys, String> result) {
-        viewModel.refreshWithNewParameters(args.getFeedToShow(),
-                result.get(SortOrderDialogFragment.ResultKeys.SORT),
+        viewModel.refreshWithNewParameters(result.get(SortOrderDialogFragment.ResultKeys.SORT),
                 result.get(SortOrderDialogFragment.ResultKeys.FILTER));
-        if (!viewModel.getStoryList().hasActiveObservers()){
-            viewModel.getStoryList().removeObservers(getViewLifecycleOwner());
-            viewModel.getStoryList().observe(getViewLifecycleOwner(), listObserver);
-        }
     }
 
     @Override

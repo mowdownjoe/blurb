@@ -182,7 +182,7 @@ public class Story implements Parcelable {
 
     public boolean isRead() { return readStatus == 1; }
 
-    public void setisRead(boolean readStatus) {
+    public void setIsRead(boolean readStatus) {
         if (readStatus){
             this.readStatus = 1;
         } else {

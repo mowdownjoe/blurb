@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.paging.LivePagedListBuilder;
@@ -14,7 +14,6 @@ import androidx.paging.PagedList;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 import com.mowdowndevelopments.blurb.network.Singletons;
@@ -37,10 +36,10 @@ import timber.log.Timber;
 public class SingleFeedViewModel extends BaseFeedViewModel {
 
     private static final int PAGE_SIZE = 6;
-    private SingleFeedDataSource mostRecentDataSource;
 
-    private MutableLiveData<LoadingStatus> pageLoadingStatus;
+    private LiveData<LoadingStatus> pageLoadingStatus;
     private LiveData<PagedList<Story>> storyList;
+    private SingleFeedDataSource.Factory factory;
 
     public LiveData<PagedList<Story>> getStoryList() {
         return storyList;
@@ -55,31 +54,33 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
         Timber.d("Initializing ViewModel");
         SharedPreferences prefs = app.getSharedPreferences(app.getString(R.string.shared_pref_file), 0);
         String sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest");
-        String filter = prefs.getString(app.getString(R.string.pref_sort_key), "all");
-        SingleFeedDataSource.Factory factory = new SingleFeedDataSource.Factory(
-                getApplication(),
-                feedId,
-                sortOrder,
-                filter
-        );
-        mostRecentDataSource = factory.create();
-        storyList = new LivePagedListBuilder<>(factory, PAGE_SIZE).build();
-        pageLoadingStatus = new MutableLiveData<>();
+        String filter = prefs.getString(app.getString(R.string.pref_sort_key), "unread");
+        factory = new SingleFeedDataSource.Factory(getApplication(), feedId, sortOrder, filter);
+        storyList = new LivePagedListBuilder<>(factory, PAGE_SIZE)
+                .build();
+        pageLoadingStatus = Transformations
+                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getPageLoadingStatus);
+    }
+
+    @Override
+    public LiveData<LoadingStatus> getLoadingStatus() {
+        return Transformations
+                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getInitialLoadingStatus);
+    }
+
+    @Override
+    public LiveData<String> getErrorMessage() {
+        return Transformations
+                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getErrorMessage);
     }
 
     public void simpleRefresh(){
-        mostRecentDataSource.invalidate();
+        Objects.requireNonNull(factory.getMostRecentDataSource().getValue()).invalidate();
     }
 
-    public void refreshWithNewParameters(@NotNull Feed feed, String sortOrder, String filter){
-        SingleFeedDataSource.Factory factory = new SingleFeedDataSource.Factory(
-                getApplication(),
-                feed.getId(),
-                sortOrder,
-                filter
-        );
-        mostRecentDataSource = factory.create();
-        storyList = new LivePagedListBuilder<>(factory, PAGE_SIZE).build();
+    public void refreshWithNewParameters(String sortOrder, String filter){
+        Objects.requireNonNull(factory.getMostRecentDataSource().getValue())
+                .resetWithNewParameters(sortOrder, filter);
     }
 
     public void markAllAsRead(){

@@ -56,14 +56,13 @@ public class SingleFeedAdapter extends PagedListAdapter<Story, SingleFeedAdapter
     public SingleFeedStoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.story_list_item, parent, false);
-        Timber.v("Inflated new viewholder.");
         return new SingleFeedStoryViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull SingleFeedStoryViewHolder holder, int position) {
         if (getCurrentList() != null) {
-            holder.bind(getCurrentList().get(position));
+            holder.bind(getItem(position));
         }
     }
 

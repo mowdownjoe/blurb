@@ -1,6 +1,7 @@
 package com.mowdowndevelopments.blurb.ui.feedList;
 
 import android.app.Application;
+import android.database.sqlite.SQLiteConstraintException;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -117,7 +118,7 @@ public class FeedListViewModel extends AndroidViewModel {
         AppExecutors.getInstance().diskIO().execute(() -> {
             try {
                 BlurbDb.getInstance(getApplication()).blurbDao().addFeeds(feedData.getFeeds().values());
-            } catch (Exception e) {
+            } catch (SQLiteConstraintException e) {
                 Timber.w(e);
             }
         });
