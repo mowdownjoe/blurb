@@ -1,4 +1,4 @@
-package com.mowdowndevelopments.blurb.ui.feeds.single;
+package com.mowdowndevelopments.blurb.ui.feeds.river;
 
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -14,6 +14,7 @@ import androidx.paging.PagedList;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.R;
+import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 import com.mowdowndevelopments.blurb.network.Singletons;
@@ -33,53 +34,40 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import timber.log.Timber;
 
-public class SingleFeedViewModel extends BaseFeedViewModel {
+public class RiverOfNewsViewModel extends BaseFeedViewModel {
+    private static int PAGE_SIZE = 13;
+    private RiverOfNewsDataSource.Factory dataFactory;
+    final LiveData<PagedList<Story>> storyList;
 
-    private static final int PAGE_SIZE = 6;
-
-    private LiveData<LoadingStatus> pageLoadingStatus;
-    private LiveData<PagedList<Story>> storyList;
-    private SingleFeedDataSource.Factory factory;
-
-    public LiveData<PagedList<Story>> getStoryList() {
-        return storyList;
-    }
-
-    public LiveData<LoadingStatus> getPageLoadingStatus() {
-        return pageLoadingStatus;
-    }
-
-    public SingleFeedViewModel(@NonNull Application app, int feedId) {
+    public RiverOfNewsViewModel(@NonNull Application app, Feed... feeds) {
         super(app);
-        Timber.d("Initializing ViewModel");
         SharedPreferences prefs = app.getSharedPreferences(app.getString(R.string.shared_pref_file), 0);
         String sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest");
         String filter = prefs.getString(app.getString(R.string.pref_sort_key), "unread");
-        factory = new SingleFeedDataSource.Factory(getApplication(), feedId, sortOrder, filter);
-        storyList = new LivePagedListBuilder<>(factory, PAGE_SIZE).build();
-        pageLoadingStatus = Transformations
-                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getPageLoadingStatus);
+        dataFactory = new RiverOfNewsDataSource.Factory(app, filter, sortOrder, feeds);
+        storyList = new LivePagedListBuilder<>(dataFactory, PAGE_SIZE).build();
     }
 
     @Override
     public LiveData<LoadingStatus> getLoadingStatus() {
-        return Transformations
-                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getInitialLoadingStatus);
+        return Transformations.switchMap(dataFactory.getMostRecentDataSource(), RiverOfNewsDataSource::getInitialLoadStatus);
     }
 
     @Override
     public LiveData<String> getErrorMessage() {
-        return Transformations
-                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getErrorMessage);
+        return Transformations.switchMap(dataFactory.getMostRecentDataSource(), RiverOfNewsDataSource::getErrorMessage);
+    }
+
+    public LiveData<LoadingStatus> getPageLoadingStatus(){
+        return Transformations.switchMap(dataFactory.getMostRecentDataSource(), RiverOfNewsDataSource::getPageLoadStatus);
     }
 
     public void simpleRefresh(){
-        Objects.requireNonNull(factory.getMostRecentDataSource().getValue()).invalidate();
+        Objects.requireNonNull(dataFactory.getMostRecentDataSource().getValue()).invalidate();
     }
 
-    public void refreshWithNewParameters(String sortOrder, String filter){
-        Objects.requireNonNull(factory.getMostRecentDataSource().getValue())
-                .resetWithNewParameters(sortOrder, filter);
+    public void refreshWithNewParameters(String readFilter, String sortOrder){
+        Objects.requireNonNull(dataFactory.getMostRecentDataSource().getValue()).resetWithNewParameters(readFilter, sortOrder);
     }
 
     public void markAllAsRead(){
@@ -130,20 +118,21 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
 
     static class Factory extends ViewModelProvider.AndroidViewModelFactory{
 
-        private int feedId;
+
+        private Feed[] feeds;
         private Application app;
-        public Factory(@NonNull Application application, int feedId) {
+
+        public Factory(@NonNull Application application, Feed... feeds) {
             super(application);
+            this.feeds = feeds;
             app = application;
-            this.feedId = feedId;
-            Timber.d("Creating Factory for ViewModel");
         }
 
         @SuppressWarnings("unchecked")
         @NonNull
         @Override
         public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new SingleFeedViewModel(app, feedId);
+            return (T) new RiverOfNewsViewModel(app, feeds);
         }
     }
 }

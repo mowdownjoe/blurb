@@ -1,5 +1,6 @@
 package com.mowdowndevelopments.blurb.ui.navHost;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +14,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.NavGraphDirections;
 import com.mowdowndevelopments.blurb.R;
@@ -32,9 +34,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
 
+        SharedPreferences prefs = getSharedPreferences(getString(R.string.shared_pref_file), 0);
         FirebaseCrashlytics.getInstance()
-                .setCrashlyticsCollectionEnabled(getSharedPreferences(getString(R.string.shared_pref_file), 0)
-                        .getBoolean(getString(R.string.pref_crashlytics_key), false));
+                .setCrashlyticsCollectionEnabled(prefs.getBoolean(getString(R.string.pref_crashlytics_key), false));
 
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.getLogoutStatus().observe(this, loadingStatus -> {
@@ -51,17 +53,22 @@ public class MainActivity extends AppCompatActivity {
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                    if (menu != null) {
-                        if (destination.getId() == R.id.login_fragment ||
-                                destination.getId() == R.id.account_creation_fragment){
-                            menu.findItem(R.id.action_show_favorites).setVisible(false);
-                            menu.findItem(R.id.action_logout).setVisible(false);
-                        } else {
-                            menu.findItem(R.id.action_show_favorites).setVisible(true);
-                            menu.findItem(R.id.action_logout).setVisible(true);
-                        }
-                    }
-                });
+            if (prefs.getBoolean(getString(R.string.pref_analytics_key), false)){
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.DESTINATION, destination.getNavigatorName());
+                FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
+            }
+            if (menu != null) {
+                if (destination.getId() == R.id.login_fragment ||
+                        destination.getId() == R.id.account_creation_fragment) {
+                    menu.findItem(R.id.action_show_favorites).setVisible(false);
+                    menu.findItem(R.id.action_logout).setVisible(false);
+                } else {
+                    menu.findItem(R.id.action_show_favorites).setVisible(true);
+                    menu.findItem(R.id.action_logout).setVisible(true);
+                }
+            }
+        });
 
         AppBarConfiguration appBarConfig = new AppBarConfiguration
                 .Builder(R.id.FeedListFragment, R.id.login_fragment).build();

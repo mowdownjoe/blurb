@@ -21,6 +21,8 @@ import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.databinding.StoryFragmentBinding;
 
 import org.jetbrains.annotations.NotNull;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -56,8 +58,8 @@ public class StoryFragment extends Fragment {
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         Story story = requireArguments().getParcelable(ARG_STORY);
 
@@ -66,9 +68,14 @@ public class StoryFragment extends Fragment {
 
         binding.storyTopBar.tvStoryAuthor.setText(story.getAuthors());
         binding.storyTopBar.tvStoryTitle.setText(story.getTitle());
-        binding.wvStoryContent.loadData(story.getContent(), "text/html", null);
 
-        Instant instant = Instant.ofEpochMilli(story.getTimestamp());
+        Document doc = Jsoup.parse(story.getContent()); //Format HTML before passing to WebView
+        doc.select("img").attr("width", "100%");
+        doc.select("figure").attr("style", "width: 80%");
+        doc.select("iframe").attr("style", "width: 100%");
+        binding.wvStoryContent.loadData(doc.html(), "text/html", null);
+
+        Instant instant = Instant.ofEpochSecond(story.getTimestamp());
         LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
         binding.storyTopBar.tvStoryTime.setText(dateTime
                 .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)));

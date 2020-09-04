@@ -1,5 +1,6 @@
 package com.mowdowndevelopments.blurb.ui.feedList;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,6 +22,7 @@ import androidx.work.WorkManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
@@ -41,8 +43,8 @@ import timber.log.Timber;
 public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOnClickListener {
 
     FragmentFeedListBinding binding;
-    FeedListAdapter adapter;
     FeedListViewModel viewModel;
+    FeedListAdapter adapter;
 
     @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -64,7 +66,6 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         viewModel = new ViewModelProvider(this).get(FeedListViewModel.class);
         viewModel.getFeedsResponseData().observe(getViewLifecycleOwner(), getFeedsResponse -> {
             if (getFeedsResponse != null){
-                Timber.d("Data from network received.");
                 adapter.setData(getFeedsResponse);
                 binding.srfRefreshTab.setRefreshing(false);
                 viewModel.postFeedsToDb(getFeedsResponse);
@@ -178,14 +179,30 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
 
     @Override
     public void onFeedItemClick(Feed f) {
-        Timber.d("Received request to display feed %s", f.getFeedTitle());
+        SharedPreferences prefs = requireActivity().getSharedPreferences(getString(R.string.shared_pref_file), 0);
+        if (prefs.getBoolean(getString(R.string.pref_analytics_key), false)) {
+            Bundle bundle = new Bundle();
+            bundle.putInt(FirebaseAnalytics.Param.QUANTITY, adapter.getFeedCount());
+            bundle.putString(FirebaseAnalytics.Param.DESTINATION, f.getFeedAddress());
+            bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, f.getFeedTitle());
+            FirebaseAnalytics.getInstance(requireContext())
+                    .logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+        }
+
         NavHostFragment.findNavController(this).navigate(FeedListFragmentDirections
                 .actionFeedListFragmentToSingleFeedStoryFragment(f));
     }
 
     @Override
     public void onFolderItemClick(Folder f) {
-        Timber.d("Received request to display folder %s", f.getName());
+        SharedPreferences prefs = requireActivity().getSharedPreferences(getString(R.string.shared_pref_file), 0);
+        if (prefs.getBoolean(getString(R.string.pref_analytics_key), false)) {
+            Bundle bundle = new Bundle();
+            bundle.putInt(FirebaseAnalytics.Param.QUANTITY, adapter.getFeedCount());
+            FirebaseAnalytics.getInstance(requireContext())
+                    .logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+        }
+
         Feed[] feeds = new Feed[f.getFeeds().size()];
         NavHostFragment.findNavController(this).navigate(FeedListFragmentDirections
                 .actionFeedListFragmentToRiverOfNewsFragment(f.getFeeds().toArray(feeds)));

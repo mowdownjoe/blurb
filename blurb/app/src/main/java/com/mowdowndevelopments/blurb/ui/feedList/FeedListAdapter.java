@@ -79,6 +79,19 @@ public class FeedListAdapter extends RecyclerView.Adapter {
         return 0;
     }
 
+    public int getFeedCount(){
+        if (feedListItems == null) return 0;
+        int count = 0;
+        for (FeedListItem item : feedListItems) {
+            if (item instanceof Folder){
+                count += ((Folder) item).getFeeds().size();
+            } else {
+                ++count;
+            }
+        }
+        return count;
+    }
+
     public void setData(GetFeedsResponse response){
         feedListItems = new ArrayList<>();
         Map<String, Feed> feedMap = response.getFeeds();

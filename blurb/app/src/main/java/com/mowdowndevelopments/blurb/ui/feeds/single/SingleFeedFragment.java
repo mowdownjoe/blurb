@@ -76,6 +76,33 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         setupObservers();
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        NavController controller = NavHostFragment.findNavController(this);
+        SavedStateHandle handle = Objects.requireNonNull(controller.getCurrentBackStackEntry())
+                .getSavedStateHandle();
+
+        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
+        binding.srfRefreshTab.setOnRefreshListener(() -> {
+            if (handle.contains(SortOrderDialogFragment.ARG_RESULT)){
+                EnumMap<SortOrderDialogFragment.ResultKeys, String> result =
+                        Objects.requireNonNull(handle.get(SortOrderDialogFragment.ARG_RESULT));
+                refreshList(result);
+            } else {
+                viewModel.simpleRefresh();
+            }
+        });
+
+        handle.<EnumMap<SortOrderDialogFragment.ResultKeys, String>>getLiveData(SortOrderDialogFragment.ARG_RESULT)
+                .observe(getViewLifecycleOwner(), result -> {
+            if (result != null) {
+                refreshList(result);
+            }
+        });
+    }
+
     private void setupObservers() {
         viewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
             if (message != null && !message.isEmpty()){
@@ -120,34 +147,7 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         });
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        NavController controller = NavHostFragment.findNavController(this);
-        SavedStateHandle handle = Objects.requireNonNull(controller.getCurrentBackStackEntry())
-                .getSavedStateHandle();
-
-        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
-        binding.srfRefreshTab.setOnRefreshListener(() -> {
-            if (handle.contains(SortOrderDialogFragment.ARG_RESULT)){
-                EnumMap<SortOrderDialogFragment.ResultKeys, String> result =
-                        Objects.requireNonNull(handle.get(SortOrderDialogFragment.ARG_RESULT));
-                refreshListAndCheckObserver(result);
-            } else {
-                viewModel.simpleRefresh();
-            }
-        });
-
-        handle.<EnumMap<SortOrderDialogFragment.ResultKeys, String>>getLiveData(SortOrderDialogFragment.ARG_RESULT)
-                .observe(getViewLifecycleOwner(), result -> {
-            if (result != null) {
-                refreshListAndCheckObserver(result);
-            }
-        });
-    }
-
-    private void refreshListAndCheckObserver(@NotNull EnumMap<SortOrderDialogFragment.ResultKeys, String> result) {
+    private void refreshList(@NotNull EnumMap<SortOrderDialogFragment.ResultKeys, String> result) {
         viewModel.refreshWithNewParameters(result.get(SortOrderDialogFragment.ResultKeys.SORT),
                 result.get(SortOrderDialogFragment.ResultKeys.FILTER));
     }

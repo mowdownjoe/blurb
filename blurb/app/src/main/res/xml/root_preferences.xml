@@ -34,6 +34,13 @@
     <PreferenceCategory app:title="@string/pref_cat_analytics">
 
         <SwitchPreferenceCompat
+            app:title="@string/pref_analytics_title"
+            app:key="@string/pref_analytics_key"
+            app:defaultValue="false"
+            app:summaryOff="@string/pref_analytics_sum_off"
+            app:summaryOn="@string/pref_analytics_sum_on"/>
+
+        <SwitchPreferenceCompat
             app:title="@string/pref_crashlytics_title"
             app:key="@string/pref_crashlytics_key"
             app:defaultValue="false"
