@@ -27,15 +27,16 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import timber.log.Timber;
 
+import static java.util.Objects.requireNonNull;
+
 public class RiverOfNewsViewModel extends BaseFeedViewModel {
-    private static int PAGE_SIZE = 13;
+    static int PAGE_SIZE = 13;
     private RiverOfNewsDataSource.Factory dataFactory;
     final LiveData<PagedList<Story>> storyList;
 
@@ -63,17 +64,17 @@ public class RiverOfNewsViewModel extends BaseFeedViewModel {
     }
 
     public void simpleRefresh(){
-        Objects.requireNonNull(dataFactory.getMostRecentDataSource().getValue()).invalidate();
+        requireNonNull(dataFactory.getMostRecentDataSource().getValue()).invalidate();
     }
 
     public void refreshWithNewParameters(String readFilter, String sortOrder){
-        Objects.requireNonNull(dataFactory.getMostRecentDataSource().getValue()).resetWithNewParameters(readFilter, sortOrder);
+        requireNonNull(dataFactory.getMostRecentDataSource().getValue()).resetWithNewParameters(readFilter, sortOrder);
     }
 
     public void markAllAsRead(){
         StringBuilder stringBuilder;
         try {
-            List<Story> stories = Objects.requireNonNull(storyList.getValue());
+            List<Story> stories = requireNonNull(storyList.getValue());
             stringBuilder = new StringBuilder();
             for (Story i: stories) {
                 String encodedHash = URLEncoder.encode(i.getStoryHash(), StandardCharsets.UTF_8.toString());

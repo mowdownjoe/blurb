@@ -50,11 +50,10 @@ public class MultiPaneStoryListAdapter extends RecyclerView.Adapter<MultiPaneSto
         notifyDataSetChanged();
     }
 
-    class MultiPaneStoryViewHolder extends BaseStoryViewHolder implements View.OnClickListener {
+    class MultiPaneStoryViewHolder extends BaseStoryViewHolder  {
 
         public MultiPaneStoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
         }
 
         @Override

@@ -72,11 +72,10 @@ public class SingleFeedAdapter extends PagedListAdapter<Story, SingleFeedAdapter
                 .build();
     }
 
-    class SingleFeedStoryViewHolder extends BaseStoryViewHolder implements View.OnClickListener {
+    class SingleFeedStoryViewHolder extends BaseStoryViewHolder {
 
         public SingleFeedStoryViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
         }
 
         @Override

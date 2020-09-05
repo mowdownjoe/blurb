@@ -26,12 +26,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import timber.log.Timber;
+
+import static java.util.Objects.requireNonNull;
 
 public class SingleFeedViewModel extends BaseFeedViewModel {
 
@@ -74,18 +75,18 @@ public class SingleFeedViewModel extends BaseFeedViewModel {
     }
 
     public void simpleRefresh(){
-        Objects.requireNonNull(factory.getMostRecentDataSource().getValue()).invalidate();
+        requireNonNull(factory.getMostRecentDataSource().getValue()).invalidate();
     }
 
     public void refreshWithNewParameters(String sortOrder, String filter){
-        Objects.requireNonNull(factory.getMostRecentDataSource().getValue())
+        requireNonNull(factory.getMostRecentDataSource().getValue())
                 .resetWithNewParameters(sortOrder, filter);
     }
 
     public void markAllAsRead(){
         StringBuilder stringBuilder;
         try {
-            List<Story> stories = Objects.requireNonNull(storyList.getValue());
+            List<Story> stories = requireNonNull(storyList.getValue());
             stringBuilder = new StringBuilder();
             for (Story i: stories) {
                 String encodedHash = URLEncoder.encode(i.getStoryHash(), StandardCharsets.UTF_8.toString());

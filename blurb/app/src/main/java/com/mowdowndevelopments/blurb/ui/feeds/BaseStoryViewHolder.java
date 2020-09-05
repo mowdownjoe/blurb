@@ -16,13 +16,14 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 
-public class BaseStoryViewHolder extends RecyclerView.ViewHolder {
+public abstract class BaseStoryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     protected StoryListItemBinding binding;
 
-    public BaseStoryViewHolder(@NonNull View itemView) {
+    protected BaseStoryViewHolder(@NonNull View itemView) {
         super(itemView);
         binding = StoryListItemBinding.bind(itemView);
+        itemView.setOnClickListener(this);
     }
 
     public void bind(Story story){

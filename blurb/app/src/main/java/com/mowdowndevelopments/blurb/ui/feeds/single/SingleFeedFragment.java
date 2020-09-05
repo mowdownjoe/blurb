@@ -31,7 +31,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class SingleFeedFragment extends Fragment implements StoryClickListener {
 
@@ -57,7 +58,7 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         binding = SingleFeedFragmentBinding.inflate(inflater, container, false);
         setHasOptionsMenu(true);
 
-        Objects.requireNonNull(((AppCompatActivity) requireActivity()).getSupportActionBar())
+        requireNonNull(((AppCompatActivity) requireActivity()).getSupportActionBar())
                 .setTitle(args.getFeedToShow().getFeedTitle());
         return binding.getRoot();
     }
@@ -67,8 +68,8 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         super.onViewCreated(view, savedInstanceState);
 
         adapter = new SingleFeedAdapter(args.getFeedToShow(), this);
-        binding.rvStoryList.setAdapter(adapter);
-        binding.rvStoryList.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.content.rvStoryList.setAdapter(adapter);
+        binding.content.rvStoryList.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         viewModel = new ViewModelProvider(this, new SingleFeedViewModel
                 .Factory(requireActivity().getApplication(), args.getFeedToShow().getId()))
@@ -81,14 +82,14 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         super.onActivityCreated(savedInstanceState);
 
         NavController controller = NavHostFragment.findNavController(this);
-        SavedStateHandle handle = Objects.requireNonNull(controller.getCurrentBackStackEntry())
+        SavedStateHandle handle = requireNonNull(controller.getCurrentBackStackEntry())
                 .getSavedStateHandle();
 
-        binding.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
-        binding.srfRefreshTab.setOnRefreshListener(() -> {
+        binding.content.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
+        binding.content.srfRefreshTab.setOnRefreshListener(() -> {
             if (handle.contains(SortOrderDialogFragment.ARG_RESULT)){
                 EnumMap<SortOrderDialogFragment.ResultKeys, String> result =
-                        Objects.requireNonNull(handle.get(SortOrderDialogFragment.ARG_RESULT));
+                        requireNonNull(handle.get(SortOrderDialogFragment.ARG_RESULT));
                 refreshList(result);
             } else {
                 viewModel.simpleRefresh();
@@ -114,34 +115,34 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
         viewModel.getLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
             switch (loadingStatus){
                 case LOADING:
-                    binding.rvStoryList.setVisibility(View.INVISIBLE);
-                    binding.tvErrorText.setVisibility(View.INVISIBLE);
-                    binding.pbLoadingSpinner.setVisibility(View.VISIBLE);
+                    binding.content.rvStoryList.setVisibility(View.INVISIBLE);
+                    binding.content.tvErrorText.setVisibility(View.INVISIBLE);
+                    binding.content.pbLoadingSpinner.setVisibility(View.VISIBLE);
                     break;
                 case WAITING:
                 case DONE:
-                    binding.rvStoryList.setVisibility(View.VISIBLE);
-                    binding.tvErrorText.setVisibility(View.INVISIBLE);
-                    binding.pbLoadingSpinner.setVisibility(View.INVISIBLE);
-                    binding.srfRefreshTab.setRefreshing(false);
+                    binding.content.rvStoryList.setVisibility(View.VISIBLE);
+                    binding.content.tvErrorText.setVisibility(View.INVISIBLE);
+                    binding.content.pbLoadingSpinner.setVisibility(View.INVISIBLE);
+                    binding.content.srfRefreshTab.setRefreshing(false);
                     break;
                 case ERROR:
-                    binding.tvErrorText.setVisibility(View.VISIBLE);
-                    binding.pbLoadingSpinner.setVisibility(View.INVISIBLE);
-                    binding.rvStoryList.setVisibility(View.VISIBLE);
-                    binding.srfRefreshTab.setRefreshing(false);
+                    binding.content.tvErrorText.setVisibility(View.VISIBLE);
+                    binding.content.pbLoadingSpinner.setVisibility(View.INVISIBLE);
+                    binding.content.rvStoryList.setVisibility(View.VISIBLE);
+                    binding.content.srfRefreshTab.setRefreshing(false);
                     break;
             }
         });
         viewModel.getPageLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
             switch (loadingStatus){
                 case LOADING:
-                    binding.srfRefreshTab.setRefreshing(true);
+                    binding.content.srfRefreshTab.setRefreshing(true);
                     break;
                 case ERROR:
                 case WAITING:
                 case DONE:
-                    binding.srfRefreshTab.setRefreshing(false);
+                    binding.content.srfRefreshTab.setRefreshing(false);
                     break;
             }
         });
@@ -176,7 +177,7 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
 
     @Override
     public void onStoryClick(int position) {
-        List<Story> storyList = adapter.getCurrentList();
+        List<Story> storyList = requireNonNull(adapter.getCurrentList());
         Story[] stories = new Story[storyList.size()];
         NavHostFragment.findNavController(this).navigate(SingleFeedFragmentDirections
                 .actionSingleFeedStoryFragmentToStoryPagerActivity(storyList.toArray(stories))

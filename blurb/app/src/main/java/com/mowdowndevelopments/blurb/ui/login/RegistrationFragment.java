@@ -25,7 +25,7 @@ import com.mowdowndevelopments.blurb.network.LoadingStatus;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 /**
  */
@@ -79,7 +79,7 @@ public class RegistrationFragment extends Fragment {
                     break;
             }
             if (loadingStatus == LoadingStatus.DONE){
-                String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+                String username = requireNonNull(binding.etUsername.getText()).toString();
                 Toast.makeText(requireContext(), getString(R.string.logged_toast,
                         username), Toast.LENGTH_LONG).show();
                 completeRegistration();
@@ -91,7 +91,7 @@ public class RegistrationFragment extends Fragment {
             }
         });
 
-        SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
+        SavedStateHandle handle = requireNonNull(NavHostFragment.findNavController(this)
                 .getPreviousBackStackEntry()).getSavedStateHandle();
         handle.set(REGISTRATION_SUCCESS, false);
     }
@@ -101,16 +101,16 @@ public class RegistrationFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         binding.btnRegister.setOnClickListener(view -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+                requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
             }
             beginRegistrationFlow();
         });
     }
 
     private void beginRegistrationFlow() {
-        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
-        String emailAddress = Objects.requireNonNull(binding.etEmail.getText()).toString();
-        String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
+        String username = requireNonNull(binding.etUsername.getText()).toString();
+        String emailAddress = requireNonNull(binding.etEmail.getText()).toString();
+        String password = requireNonNull(binding.etPassword.getText()).toString();
         if (username.isEmpty() || emailAddress.isEmpty()){
             Snackbar.make(requireView(), R.string.missing_registration_error, BaseTransientBottomBar.LENGTH_SHORT).show();
             return;
@@ -128,7 +128,7 @@ public class RegistrationFragment extends Fragment {
         prefs.edit().putBoolean(getString(R.string.logged_in_key), true).apply();
 
         NavController controller = NavHostFragment.findNavController(this);
-        Objects.requireNonNull(controller.getPreviousBackStackEntry())
+        requireNonNull(controller.getPreviousBackStackEntry())
                 .getSavedStateHandle().set(REGISTRATION_SUCCESS, true);
         controller.popBackStack();
 

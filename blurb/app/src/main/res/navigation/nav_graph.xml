@@ -96,7 +96,9 @@
     </fragment>
     <fragment
         android:id="@+id/RiverOfNewsFragment"
-        android:label="@string/river_feed">
+        android:name="com.mowdowndevelopments.blurb.ui.feeds.river.RiverOfNewsFragment"
+        android:label="@string/river_feed"
+        tools:layout="@layout/river_of_news_fragment">
         <action
             android:id="@+id/action_RiverOfNewsFragment_to_StoryPagerActivity"
             app:destination="@id/StoryPagerActivity"
@@ -104,12 +106,12 @@
             app:exitAnim="@anim/slide_out_right"
             app:popEnterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_left" />
-        <argument
-            android:name="FeedsInRiver"
-            app:argType="com.mowdowndevelopments.blurb.database.entities.Feed[]" />
         <action
             android:id="@+id/action_RiverOfNewsFragment_to_sort_filter_dialog"
             app:destination="@id/sort_filter_dialog" />
+        <argument
+            android:name="FeedsInRiver"
+            app:argType="com.mowdowndevelopments.blurb.database.entities.Feed[]" />
     </fragment>
     <action
         android:id="@+id/action_global_FavoriteStories"

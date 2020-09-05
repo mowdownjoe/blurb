@@ -19,12 +19,13 @@ import com.mowdowndevelopments.blurb.network.Singletons;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
+
+import static java.util.Objects.requireNonNull;
 
 public class FeedListViewModel extends AndroidViewModel {
 
@@ -110,7 +111,7 @@ public class FeedListViewModel extends AndroidViewModel {
     }
 
     public void postFeedsToDb() {
-        @NotNull GetFeedsResponse response = Objects.requireNonNull(feedsResponseData.getValue());
+        @NotNull GetFeedsResponse response = requireNonNull(feedsResponseData.getValue());
         postFeedsToDb(response);
     }
 

@@ -29,7 +29,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 public class StoryFragment extends Fragment {
 
@@ -64,7 +65,7 @@ public class StoryFragment extends Fragment {
         Story story = requireArguments().getParcelable(ARG_STORY);
 
         viewModel = new ViewModelProvider(requireActivity()).get(StoryViewModel.class);
-        viewModel.setActiveStory(Objects.requireNonNull(story));
+        viewModel.setActiveStory(requireNonNull(story));
 
         binding.storyTopBar.tvStoryAuthor.setText(story.getAuthors());
         binding.storyTopBar.tvStoryTitle.setText(story.getTitle());

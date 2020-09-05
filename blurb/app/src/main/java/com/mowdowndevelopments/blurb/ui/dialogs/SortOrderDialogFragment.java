@@ -15,7 +15,8 @@ import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.FragmentSortOrderDialogBinding;
 
 import java.util.EnumMap;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  *
@@ -43,7 +44,7 @@ public class SortOrderDialogFragment extends DialogFragment {
                     String[] filterKeys = requireContext().getResources().getStringArray(R.array.filter_values);
 
                     NavController controller = NavHostFragment.findNavController(this);
-                    SavedStateHandle handle = Objects.requireNonNull(controller.getPreviousBackStackEntry())
+                    SavedStateHandle handle = requireNonNull(controller.getPreviousBackStackEntry())
                             .getSavedStateHandle();
 
                     EnumMap<ResultKeys, String> result = new EnumMap<>(ResultKeys.class);

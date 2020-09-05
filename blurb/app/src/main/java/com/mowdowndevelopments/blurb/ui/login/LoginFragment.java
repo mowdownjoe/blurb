@@ -24,7 +24,7 @@ import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.FragmentLoginBinding;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 
 public class LoginFragment extends Fragment {
@@ -62,20 +62,20 @@ public class LoginFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         NavController navController = NavHostFragment.findNavController(this);
-        SavedStateHandle handle = Objects.requireNonNull(navController.getPreviousBackStackEntry())
+        SavedStateHandle handle = requireNonNull(navController.getPreviousBackStackEntry())
                 .getSavedStateHandle();
         handle.set(LOGIN_SUCCESS, false);
 
         binding.btnLogin.setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+                requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
             } //else case will use WindowInsetsCompat, which is still in alpha
             beginLoginFlow();
         });
         binding.etPassword.setOnEditorActionListener((textView, i, keyEvent) -> {
             if (keyEvent != null){
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    Objects.requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
+                    requireNonNull(requireView().getWindowInsetsController()).hide(WindowInsets.Type.ime());
                 } //else case will use WindowInsetsCompat, which is still in alpha
                 beginLoginFlow();
                 return true;
@@ -111,7 +111,7 @@ public class LoginFragment extends Fragment {
                     break;
             }
             if (loadingStatus == LoadingStatus.DONE){
-                String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
+                String username = requireNonNull(binding.etUsername.getText()).toString();
                 Toast.makeText(requireContext(), getString(R.string.logged_toast,
                         username), Toast.LENGTH_LONG).show();
                 completeLogin();
@@ -122,7 +122,7 @@ public class LoginFragment extends Fragment {
                 Snackbar.make(requireView(), error, BaseTransientBottomBar.LENGTH_LONG).show();
             }
         });
-        SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
+        SavedStateHandle handle = requireNonNull(NavHostFragment.findNavController(this)
                 .getCurrentBackStackEntry()).getSavedStateHandle();
         handle.<Boolean>getLiveData(RegistrationFragment.REGISTRATION_SUCCESS)
                 .observe(getViewLifecycleOwner(), loggedIn -> {
@@ -131,8 +131,8 @@ public class LoginFragment extends Fragment {
     }
 
     private void beginLoginFlow() {
-        String username = Objects.requireNonNull(binding.etUsername.getText()).toString();
-        String password = Objects.requireNonNull(binding.etPassword.getText()).toString();
+        String username = requireNonNull(binding.etUsername.getText()).toString();
+        String password = requireNonNull(binding.etPassword.getText()).toString();
         if (username.isEmpty()){
             Snackbar.make(requireView(), R.string.no_credentials_error, BaseTransientBottomBar.LENGTH_SHORT).show();
             return;
@@ -150,7 +150,7 @@ public class LoginFragment extends Fragment {
         prefs.edit().putBoolean(getString(R.string.logged_in_key), true).apply();
 
         NavController navController = NavHostFragment.findNavController(this);
-        SavedStateHandle handle = Objects.requireNonNull(navController
+        SavedStateHandle handle = requireNonNull(navController
                 .getPreviousBackStackEntry()).getSavedStateHandle();
         handle.set(LOGIN_SUCCESS, true);
 

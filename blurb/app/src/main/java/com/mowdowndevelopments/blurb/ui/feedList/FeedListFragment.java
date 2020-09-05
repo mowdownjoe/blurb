@@ -35,10 +35,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.Objects;
 import java.util.Set;
 
 import timber.log.Timber;
+
+import static java.util.Objects.requireNonNull;
 
 public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOnClickListener {
 
@@ -112,13 +113,13 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
             viewModel.loadFeeds();
         }
 
-        SavedStateHandle handle = Objects.requireNonNull(NavHostFragment.findNavController(this)
+        SavedStateHandle handle = requireNonNull(NavHostFragment.findNavController(this)
                 .getCurrentBackStackEntry()).getSavedStateHandle();
         handle.<Boolean>getLiveData(LoginFragment.LOGIN_SUCCESS).observe(getViewLifecycleOwner(), loggedIn -> {
             if (loggedIn){
                 viewModel.loadFeeds();
                 WorkManager.getInstance(requireContext())
-                        .enqueue(new OneTimeWorkRequest.Builder(FetchStarredStoriesWorker.class).build());
+                        .enqueue(OneTimeWorkRequest.from(FetchStarredStoriesWorker.class));
             }
         });
         handle.<EnumMap<NewFolderDialogFragment.ResultKeys, String>>getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT)
@@ -155,7 +156,7 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         NavController navController = NavHostFragment.findNavController(this);
-        Set<String> folders = Objects.requireNonNull(viewModel.getFeedsResponseData().getValue())
+        Set<String> folders = requireNonNull(viewModel.getFeedsResponseData().getValue())
                 .getFolders().keySet();
         String[] folderArray = new String[folders.size()];
         switch (item.getItemId()){

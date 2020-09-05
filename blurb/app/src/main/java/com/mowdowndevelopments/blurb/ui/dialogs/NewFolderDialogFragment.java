@@ -18,7 +18,8 @@ import com.mowdowndevelopments.blurb.databinding.FragmentNewFolderDialogBinding;
 
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 
 public class NewFolderDialogFragment extends DialogFragment {
@@ -50,14 +51,14 @@ public class NewFolderDialogFragment extends DialogFragment {
         builder.setView(binding.getRoot())
                 .setNegativeButton(R.string.btn_cancel, (dialog, i) -> dialog.cancel())
                 .setPositiveButton(R.string.dialog_btn_add_folder, (dialog, i) -> {
-                    String newFolderName = Objects.requireNonNull(binding.etNewFolderName.getText()).toString();
+                    String newFolderName = requireNonNull(binding.etNewFolderName.getText()).toString();
                     if (newFolderName.trim().isEmpty()){
                         dialog.dismiss();
                         return;
                     }
 
                     NavController controller = NavHostFragment.findNavController(this);
-                    SavedStateHandle handle = Objects.requireNonNull(controller.getPreviousBackStackEntry())
+                    SavedStateHandle handle = requireNonNull(controller.getPreviousBackStackEntry())
                             .getSavedStateHandle();
 
                     String nestedUnder;

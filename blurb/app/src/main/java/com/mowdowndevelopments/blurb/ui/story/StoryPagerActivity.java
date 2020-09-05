@@ -11,7 +11,7 @@ import com.google.android.material.snackbar.Snackbar;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.StoryPagerActivityBinding;
 
-import java.util.Objects;
+import static java.util.Objects.requireNonNull;
 
 public class StoryPagerActivity extends AppCompatActivity {
 
@@ -27,7 +27,7 @@ public class StoryPagerActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         setSupportActionBar(binding.toolbar);
 
-        args = StoryPagerActivityArgs.fromBundle(Objects.requireNonNull(getIntent().getExtras()));
+        args = StoryPagerActivityArgs.fromBundle(requireNonNull(getIntent().getExtras()));
         viewModel = new ViewModelProvider(this).get(StoryViewModel.class);
 
         setUpViewModelObservers();

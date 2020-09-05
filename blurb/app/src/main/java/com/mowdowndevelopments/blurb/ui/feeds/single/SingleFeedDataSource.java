@@ -18,12 +18,13 @@ import com.mowdowndevelopments.blurb.network.Singletons;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
+
+import static java.util.Objects.requireNonNull;
 
 public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
 
@@ -54,8 +55,8 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
         this.sortOrder = sortOrder;
         this.filter = filter;
         errorMessage = new MutableLiveData<>();
-        pageLoadingStatus = new MutableLiveData<>();
-        initialLoadingStatus = new MutableLiveData<>();
+        pageLoadingStatus = new MutableLiveData<>(LoadingStatus.WAITING);
+        initialLoadingStatus = new MutableLiveData<>(LoadingStatus.WAITING);
     }
 
 
@@ -75,7 +76,7 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
                 Timber.d("Successfully received response. Response Code: %o", response.code());
                 if (response.isSuccessful()) {
                     initialLoadingStatus.postValue(LoadingStatus.DONE);
-                    FeedContentsResponse body = Objects.requireNonNull(response.body());
+                    FeedContentsResponse body = requireNonNull(response.body());
                     callback.onResult(Arrays.asList(body.getStories()), null, 2);
                 } else {
                     initialLoadingStatus.postValue(LoadingStatus.ERROR);
@@ -103,7 +104,7 @@ public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
                 Timber.d("Successfully received response. Response Code: %o", response.code());
                 if (response.isSuccessful()){
                     pageLoadingStatus.postValue(LoadingStatus.DONE);
-                    Story[] stories = Objects.requireNonNull(response.body()).getStories();
+                    Story[] stories = requireNonNull(response.body()).getStories();
                     if (stories.length > 0) {
                         callback.onResult(Arrays.asList(stories), params.key +1);
                     } else {

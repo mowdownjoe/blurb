@@ -25,7 +25,8 @@ import com.mowdowndevelopments.blurb.ui.navHost.MainViewModel;
 
 import java.util.Arrays;
 import java.util.EnumMap;
-import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 /**
  *
@@ -115,7 +116,7 @@ public class NewFeedDialogFragment extends DialogFragment {
                     }
 
                     NavController controller = NavHostFragment.findNavController(this);
-                    SavedStateHandle handle = Objects.requireNonNull(controller.getPreviousBackStackEntry())
+                    SavedStateHandle handle = requireNonNull(controller.getPreviousBackStackEntry())
                             .getSavedStateHandle();
 
                     String folderToUse;

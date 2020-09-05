@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import okhttp3.HttpUrl;
 import okhttp3.Request;
@@ -26,6 +25,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import timber.log.Timber;
+
+import static java.util.Objects.requireNonNull;
 
 public class FetchStarredStoriesWorker extends Worker {
     public FetchStarredStoriesWorker(@NonNull Context c, @NonNull WorkerParameters workerParams) {
@@ -39,7 +40,7 @@ public class FetchStarredStoriesWorker extends Worker {
             @Override
             public void onResponse(@NotNull Call<GetStarredHashesResponse> call, @NotNull Response<GetStarredHashesResponse> response) {
                 if (response.isSuccessful()){
-                    fetchStoriesAndCommitToDb(Objects.requireNonNull(response.body()).getStarredStoryHashes());
+                    fetchStoriesAndCommitToDb(requireNonNull(response.body()).getStarredStoryHashes());
                 } else {
                     String errorMsg = getApplicationContext().getString(R.string.error_star_fetch)
                             + getApplicationContext().getString(R.string.http_error, response.code());
@@ -79,9 +80,9 @@ public class FetchStarredStoriesWorker extends Worker {
                 if (response.isSuccessful()){
                     FeedContentsResponse body = Singletons.getMoshi()
                             .adapter(FeedContentsResponse.class)
-                            .fromJson(Objects.requireNonNull(response.body()).string());
+                            .fromJson(requireNonNull(response.body()).string());
                     BlurbDb.getInstance(getApplicationContext()).blurbDao()
-                            .addStories(Arrays.asList(Objects.requireNonNull(body).getStories()));
+                            .addStories(Arrays.asList(requireNonNull(body).getStories()));
                 } else {
                     String errorMsg = getApplicationContext().getString(R.string.error_star_fetch)
                             + getApplicationContext().getString(R.string.http_error, response.code());
