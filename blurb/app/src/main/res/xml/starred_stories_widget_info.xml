@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialKeyguardLayout="@layout/starred_stories_widget"
+    android:initialLayout="@layout/starred_stories_widget"
+    android:minWidth="@dimen/min_widget_width"
+    android:minHeight="@dimen/min_widget_height"
+    android:previewImage="@drawable/example_appwidget_preview"
+    android:updatePeriodMillis="86400000"
+    android:widgetCategory="home_screen" />

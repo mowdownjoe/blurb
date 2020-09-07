@@ -18,12 +18,6 @@ import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-
 import static java.util.Objects.requireNonNull;
 
 public class RiverOfNewsAdapter extends PagedListAdapter<Story, RiverOfNewsAdapter.RiverViewHolder> {
@@ -57,13 +51,7 @@ public class RiverOfNewsAdapter extends PagedListAdapter<Story, RiverOfNewsAdapt
 
         @Override
         public void bind(@NotNull Story story) {
-            binding.tvHeadline.setText(story.getTitle());
-            binding.tvStoryAuthors.setText(story.getAuthors());
-
-            Instant instant = Instant.ofEpochSecond(story.getTimestamp());
-            LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-            binding.tvStoryTime.setText(dateTime
-                    .format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)));
+            super.bind(story);
 
             AppExecutors.getInstance().diskIO().execute(() -> {
                 String feedTitle = BlurbDb.getInstance(itemView.getContext())

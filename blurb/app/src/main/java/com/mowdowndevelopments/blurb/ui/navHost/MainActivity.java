@@ -18,6 +18,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.NavGraphDirections;
 import com.mowdowndevelopments.blurb.R;
+import com.mowdowndevelopments.blurb.database.BlurbDb;
 import com.mowdowndevelopments.blurb.databinding.ActivityMainBinding;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(MainViewModel.class);
         viewModel.getLogoutStatus().observe(this, loadingStatus -> {
             if (loadingStatus == LoadingStatus.DONE){
+                BlurbDb.getInstance(this).clearAllTables();
                 Navigation.findNavController(this, R.id.nav_host_fragment)
                         .navigate(NavGraphDirections.actionLoginFlow());
             }

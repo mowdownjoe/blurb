@@ -99,4 +99,6 @@
     <string name="pref_analytics_key">analytics</string>
     <string name="pref_analytics_sum_off">Opt in to automatically send anonymized data to the developer to help improve the app.</string>
     <string name="pref_analytics_sum_on">You have opted in to send anonymous usage data to the developer to help improve the app.</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

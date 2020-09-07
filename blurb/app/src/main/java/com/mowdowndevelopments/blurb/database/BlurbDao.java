@@ -1,9 +1,11 @@
 package com.mowdowndevelopments.blurb.database;
 
 import androidx.lifecycle.LiveData;
+import androidx.paging.DataSource;
 import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
+import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
 import com.mowdowndevelopments.blurb.database.entities.Feed;
@@ -15,13 +17,13 @@ import java.util.List;
 @Dao
 public interface BlurbDao {
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void addFeeds(Collection<Feed> feeds);
 
     @Insert
     void addFeed(Feed feed);
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     void addStories(Collection<Story> stories);
 
     @Insert
@@ -31,7 +33,10 @@ public interface BlurbDao {
     void removeStory(Story story);
 
     @Query("SELECT * FROM STORIES")
-    LiveData<List<Story>> getFavoriteStories();
+    DataSource.Factory<Integer, Story> getStarredStoryPagingSourceFactory();
+
+    @Query("SELECT MAX(20) FROM STORIES")
+    List<Story> getStarredStoryListForWidget();
 
     @Query("select * from feeds")
     List<Feed> getFeeds();
