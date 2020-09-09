@@ -84,7 +84,9 @@
     </activity>
     <fragment
         android:id="@+id/FavoriteStoriesFragment"
-        android:label="@string/fav_stories">
+        android:name="com.mowdowndevelopments.blurb.ui.feeds.favorite.FavoriteStoriesFragment"
+        android:label="@string/fav_stories"
+        tools:layout="@layout/favorite_stories_fragment">
         <action
             android:id="@+id/action_FavoriteStoriesFragment_to_StoryPagerActivity"
             app:destination="@id/StoryPagerActivity"

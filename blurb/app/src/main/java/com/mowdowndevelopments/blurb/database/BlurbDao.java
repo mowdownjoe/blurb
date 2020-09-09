@@ -35,6 +35,9 @@ public interface BlurbDao {
     @Query("SELECT * FROM STORIES")
     DataSource.Factory<Integer, Story> getStarredStoryPagingSourceFactory();
 
+    @Query("SELECT * FROM STORIES")
+    LiveData<List<Story>> getStarredStoryList();
+
     @Query("SELECT MAX(20) FROM STORIES")
     List<Story> getStarredStoryListForWidget();
 

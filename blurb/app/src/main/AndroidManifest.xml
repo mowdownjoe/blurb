@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mowdowndevelopments.blurb">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-
     <application
         android:name=".BlurbApp"
         android:allowBackup="false"
@@ -28,10 +26,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"
             android:value="false" />
+
         <receiver android:name=".ui.widget.StarredStoriesWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -43,5 +41,6 @@
         </receiver>
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

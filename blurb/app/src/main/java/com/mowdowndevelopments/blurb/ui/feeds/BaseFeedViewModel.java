@@ -9,7 +9,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 
-public class BaseFeedViewModel extends AndroidViewModel {
+public abstract class BaseFeedViewModel extends AndroidViewModel {
     private MutableLiveData<LoadingStatus> loadingStatus;
     private MutableLiveData<String> errorMessage;
 
