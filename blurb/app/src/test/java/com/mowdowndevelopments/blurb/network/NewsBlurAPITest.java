@@ -58,8 +58,8 @@ public class NewsBlurAPITest {
             String json = Singletons.getMoshi().adapter(GetFeedsResponse.class).toJson(feedsResponse);
             server.enqueue(new MockResponse().setResponseCode(200).setBody(json));
 
-            response = Singletons.getNewsBlurAPI(server.url("/").toString(),
-                    ApplicationProvider.getApplicationContext()).getFeeds().execute();
+            response = Singletons.getNewsBlurAPI(ApplicationProvider.getApplicationContext(),
+                    server.url("/").toString()).getFeeds().execute();
         } catch (IOException e) {
             fail(e.getMessage());
             e.printStackTrace();
@@ -91,8 +91,8 @@ public class NewsBlurAPITest {
         server.enqueue(new MockResponse().setBody(json).setResponseCode(200));
         Response<FeedContentsResponse> serverResponse;
         try {
-            serverResponse = Singletons.getNewsBlurAPI(server.url("/").toString(),
-                    ApplicationProvider.getApplicationContext())
+            serverResponse = Singletons.getNewsBlurAPI(ApplicationProvider.getApplicationContext(),
+                    server.url("/").toString())
                     .getFeedContents(42, "all", "oldest").execute();
         } catch (IOException e) {
             e.printStackTrace();

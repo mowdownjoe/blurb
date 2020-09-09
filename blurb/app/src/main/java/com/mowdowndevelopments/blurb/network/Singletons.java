@@ -40,10 +40,10 @@ public class Singletons {
     }
 
     public static NewsBlurAPI getNewsBlurAPI(Context c){
-        return getNewsBlurAPI(BASE_URL, c);
+        return getNewsBlurAPI(c, BASE_URL);
     }
 
-    public static NewsBlurAPI getNewsBlurAPI(String baseUrl, Context c) {
+    public static NewsBlurAPI getNewsBlurAPI(Context c, String baseUrl) {
         if (retrofit == null){
             retrofit = new Retrofit.Builder()
                     .addConverterFactory(MoshiConverterFactory.create(getMoshi()))
