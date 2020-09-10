@@ -20,8 +20,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.RiverOfNewsFragmentArgs;
-import com.mowdowndevelopments.blurb.RiverOfNewsFragmentDirections;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.databinding.RiverOfNewsFragmentBinding;
 import com.mowdowndevelopments.blurb.ui.dialogs.SortOrderDialogFragment;

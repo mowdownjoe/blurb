@@ -33,6 +33,8 @@
         <receiver android:name=".ui.widget.StarredStoriesWidget">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.mowdowndevelopments.blurb.NEXT_WIDGET_PAGE"/>
+                <action android:name="com.mowdowndevelopments.blurb.PREV_WIDGET_PAGE"/>
             </intent-filter>
 
             <meta-data

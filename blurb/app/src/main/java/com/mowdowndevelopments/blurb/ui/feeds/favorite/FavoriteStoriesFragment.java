@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
-import com.mowdowndevelopments.blurb.FavoriteStoriesFragmentDirections;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.databinding.FavoriteStoriesFragmentBinding;
 import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;

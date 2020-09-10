@@ -25,9 +25,10 @@ import java.util.List;
  */
 public class StarredStoriesWidget extends AppWidgetProvider {
 
-    public static final String NEXT_WIDGET_PAGE = "com.mowdowndevelopments.blurb.NEXT_WIDGET_PAGE";
-    public static final String PREV_WIDGET_PAGE = "com.mowdowndevelopments.blurb.PREV_WIDGET_PAGE";
-    public static final String WIDGET_ID = "widget_id";
+    private static final String NEXT_WIDGET_PAGE = "com.mowdowndevelopments.blurb.NEXT_WIDGET_PAGE";
+    private static final String PREV_WIDGET_PAGE = "com.mowdowndevelopments.blurb.PREV_WIDGET_PAGE";
+    private static final String WIDGET_ID = "com.mowdowndevelopments.blurb.WIDGET_ID";
+    private static final int REQUEST_CODE = 758;
     private static HashMap<Integer, Integer> widgetToActivePage;
     private static List<Story> stories;
 
@@ -68,6 +69,35 @@ public class StarredStoriesWidget extends AppWidgetProvider {
     }
 
     @Override
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+
+        //Get data.
+        int widgetId = intent.getIntExtra(WIDGET_ID, -1);
+        if (widgetId == -1) return;
+        String action = intent.getAction();
+        if (action == null || action.isEmpty()) return;
+        Integer currentPage = widgetToActivePage.get(widgetId);
+        if (currentPage == null) return;
+
+        //Increment or decrement Widget page.
+        if (action.equals(NEXT_WIDGET_PAGE)){
+            ++currentPage;
+            if (currentPage >= stories.size()) currentPage = 0;
+        } else if (action.equals(PREV_WIDGET_PAGE)){
+            --currentPage;
+            if (currentPage < 0) currentPage = stories.size() - 1;
+        } else return;
+        widgetToActivePage.put(widgetId, currentPage);
+
+        //Create RemoteViews and AppWidgetManager.
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.starred_stories_widget);
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+
+        displayNewStory(context, manager, widgetId, views);
+    }
+
+    @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
@@ -95,14 +125,16 @@ public class StarredStoriesWidget extends AppWidgetProvider {
 
     protected static PendingIntent getNextPagePendingIntent(Context context, int widgetId){
         Intent intent = new Intent(NEXT_WIDGET_PAGE)
+                .setClass(context, StarredStoriesWidget.class)
                 .putExtra(WIDGET_ID, widgetId);
-        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     protected static PendingIntent getPreviousPagePendingIntent(Context context, int widgetId){
         Intent intent = new Intent(PREV_WIDGET_PAGE)
+                .setClass(context, StarredStoriesWidget.class)
                 .putExtra(WIDGET_ID, widgetId);
-        return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 }
 

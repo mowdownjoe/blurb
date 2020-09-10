@@ -38,7 +38,7 @@ public interface BlurbDao {
     @Query("SELECT * FROM STORIES")
     LiveData<List<Story>> getStarredStoryList();
 
-    @Query("SELECT MAX(20) FROM STORIES")
+    @Query("SELECT * FROM STORIES ORDER BY story_timestamp LIMIT 20")
     List<Story> getStarredStoryListForWidget();
 
     @Query("select * from feeds")
