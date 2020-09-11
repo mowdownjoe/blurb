@@ -33,7 +33,7 @@ public class StoryPagerActivity extends AppCompatActivity {
         setUpViewModelObservers();
         viewModel.setStories(args.getStories());
 
-        if (binding.guideMidline != null){
+        if (binding.guideMidline != null){ //If in tablet multipane UI
             binding.vp2StoryPager.setUserInputEnabled(false);
             binding.toolbar.setTitle(R.string.dest_stories);
         }

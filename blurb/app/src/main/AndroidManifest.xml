@@ -12,9 +12,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
-        <activity
-            android:name=".ui.story.StoryPagerActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
 
         <activity
             android:name=".ui.navHost.MainActivity"
@@ -25,6 +22,12 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.story.StoryPagerActivity"
+            android:theme="@style/AppTheme.NoActionBar" >
+            <meta-data android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.navHost.MainActivity"/>
         </activity>
         <meta-data
             android:name="firebase_crashlytics_collection_enabled"

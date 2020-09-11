@@ -65,11 +65,13 @@ public class MultiPaneStoryListAdapter extends RecyclerView.Adapter<MultiPaneSto
                             .blurbDao().getFeedTitle(story.getFeedId());
                     String faviconUrl = BlurbDb.getInstance(itemView.getContext())
                             .blurbDao().getFeedFaviconUrl(story.getFeedId());
-                    binding.tvFeedName.setText(feedTitle);
-                    Picasso.get().load(faviconUrl)
-                            .placeholder(R.drawable.ic_globe)
-                            .error(R.drawable.ic_globe)
-                            .into(binding.ivStoryFavicon);
+                    AppExecutors.getInstance().mainThread().execute(() -> {
+                        binding.tvFeedName.setText(feedTitle);
+                        Picasso.get().load(faviconUrl)
+                                .placeholder(R.drawable.ic_globe)
+                                .error(R.drawable.ic_globe)
+                                .into(binding.ivStoryFavicon);
+                    });
                 });
             }
         }

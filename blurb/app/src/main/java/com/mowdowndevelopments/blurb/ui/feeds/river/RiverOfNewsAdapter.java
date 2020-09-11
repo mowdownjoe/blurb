@@ -53,17 +53,21 @@ public class RiverOfNewsAdapter extends PagedListAdapter<Story, RiverOfNewsAdapt
         public void bind(@NotNull Story story) {
             super.bind(story);
 
-            AppExecutors.getInstance().diskIO().execute(() -> {
-                String feedTitle = BlurbDb.getInstance(itemView.getContext())
-                        .blurbDao().getFeedTitle(story.getFeedId());
-                String faviconUrl = BlurbDb.getInstance(itemView.getContext())
-                        .blurbDao().getFeedFaviconUrl(story.getFeedId());
-                binding.tvFeedName.setText(feedTitle);
-                Picasso.get().load(faviconUrl)
-                        .placeholder(R.drawable.ic_globe)
-                        .error(R.drawable.ic_globe)
-                        .into(binding.ivStoryFavicon);
-            });
+            if (story.getFeedId() != -1) {
+                AppExecutors.getInstance().diskIO().execute(() -> {
+                    String feedTitle = BlurbDb.getInstance(itemView.getContext())
+                            .blurbDao().getFeedTitle(story.getFeedId());
+                    String faviconUrl = BlurbDb.getInstance(itemView.getContext())
+                            .blurbDao().getFeedFaviconUrl(story.getFeedId());
+                    AppExecutors.getInstance().mainThread().execute(() -> {
+                        binding.tvFeedName.setText(feedTitle);
+                        Picasso.get().load(faviconUrl)
+                                .placeholder(R.drawable.ic_globe)
+                                .error(R.drawable.ic_globe)
+                                .into(binding.ivStoryFavicon);
+                    });
+                });
+            }
         }
 
         @Override
