@@ -76,6 +76,7 @@ public class RiverOfNewsDataSource extends PageKeyedDataSource<Integer, Story> {
                             .adapter(FeedContentsResponse.class)
                             .fromJson(requireNonNull(response.body()).string());
                     callback.onResult(Arrays.asList(requireNonNull(body).getStories()), null, 2);
+                    response.body().close();
                 } else {
                     initialLoadStatus.postValue(LoadingStatus.ERROR);
                     errorMessage.postValue(context.getString(R.string.http_error, response.code()));
@@ -109,6 +110,7 @@ public class RiverOfNewsDataSource extends PageKeyedDataSource<Integer, Story> {
                     } else {
                         callback.onResult(stories, null);
                     }
+                    response.body().close();
                 } else {
                     pageLoadStatus.postValue(LoadingStatus.ERROR);
                     errorMessage.postValue(context.getString(R.string.http_error, response.code()));

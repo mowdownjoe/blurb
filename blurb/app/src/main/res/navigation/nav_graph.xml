@@ -59,10 +59,10 @@
         <action
             android:id="@+id/action_SingleFeedStoryFragment_to_StoryPagerActivity"
             app:destination="@id/StoryPagerActivity"
-            app:enterAnim="@anim/slide_in_left"
-            app:exitAnim="@anim/slide_out_right"
-            app:popEnterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_left" />
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <argument
             android:name="FeedToShow"
             app:argType="com.mowdowndevelopments.blurb.database.entities.Feed" />
@@ -90,10 +90,10 @@
         <action
             android:id="@+id/action_FavoriteStoriesFragment_to_StoryPagerActivity"
             app:destination="@id/StoryPagerActivity"
-            app:enterAnim="@anim/slide_in_left"
-            app:exitAnim="@anim/slide_out_right"
-            app:popEnterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_left" />
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"/>
 
     </fragment>
     <fragment
@@ -104,10 +104,10 @@
         <action
             android:id="@+id/action_RiverOfNewsFragment_to_StoryPagerActivity"
             app:destination="@id/StoryPagerActivity"
-            app:enterAnim="@anim/slide_in_left"
-            app:exitAnim="@anim/slide_out_right"
-            app:popEnterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_left" />
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right" />
         <action
             android:id="@+id/action_RiverOfNewsFragment_to_sort_filter_dialog"
             app:destination="@id/sort_filter_dialog" />

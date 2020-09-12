@@ -60,19 +60,26 @@ public class MultiPaneStoryListAdapter extends RecyclerView.Adapter<MultiPaneSto
         public void bind(Story story) {
             super.bind(story);
             if (story.getFeedId() != -1) {
-                AppExecutors.getInstance().diskIO().execute(() -> {
+                AppExecutors executors = AppExecutors.getInstance();
+                executors.diskIO().execute(() -> {
                     String feedTitle = BlurbDb.getInstance(itemView.getContext())
                             .blurbDao().getFeedTitle(story.getFeedId());
                     String faviconUrl = BlurbDb.getInstance(itemView.getContext())
                             .blurbDao().getFeedFaviconUrl(story.getFeedId());
-                    AppExecutors.getInstance().mainThread().execute(() -> {
-                        binding.tvFeedName.setText(feedTitle);
-                        Picasso.get().load(faviconUrl)
-                                .placeholder(R.drawable.ic_globe)
-                                .error(R.drawable.ic_globe)
-                                .into(binding.ivStoryFavicon);
-                    });
+                    executors.mainThread().execute(() -> setFeedNameAndIcon(feedTitle, faviconUrl));
                 });
+            }
+        }
+
+        private void setFeedNameAndIcon(String feedTitle, String faviconUrl) {
+            if (feedTitle != null && faviconUrl != null) {
+                binding.tvFeedName.setText(feedTitle);
+                Picasso.get().load(faviconUrl)
+                        .placeholder(R.drawable.ic_globe)
+                        .error(R.drawable.ic_globe)
+                        .into(binding.ivStoryFavicon);
+            } else {
+                binding.ivStoryFavicon.setImageResource(R.drawable.ic_globe);
             }
         }
 

@@ -7,6 +7,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.AppExecutors;
@@ -15,6 +17,7 @@ import com.mowdowndevelopments.blurb.database.BlurbDb;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
 import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 import com.mowdowndevelopments.blurb.network.Singletons;
+import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -116,9 +119,12 @@ public class FeedListViewModel extends AndroidViewModel {
     }
 
     public void postFeedsToDb(GetFeedsResponse feedData){
-        AppExecutors.getInstance().diskIO().execute(() -> {
+        AppExecutors executors = AppExecutors.getInstance();
+        executors.diskIO().execute(() -> {
             try {
                 BlurbDb.getInstance(getApplication()).blurbDao().addFeeds(feedData.getFeeds().values());
+                executors.mainThread().execute(() -> WorkManager.getInstance(getApplication())
+                        .enqueue(OneTimeWorkRequest.from(FetchStarredStoriesWorker.class)));
             } catch (SQLiteConstraintException e) {
                 Timber.w(e);
             }

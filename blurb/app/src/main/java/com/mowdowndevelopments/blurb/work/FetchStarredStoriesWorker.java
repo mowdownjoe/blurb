@@ -83,6 +83,7 @@ public class FetchStarredStoriesWorker extends Worker {
                             .fromJson(requireNonNull(response.body()).string());
                     BlurbDb.getInstance(getApplicationContext()).blurbDao()
                             .addStories(Arrays.asList(requireNonNull(body).getStories()));
+                    response.body().close();
                 } else {
                     String errorMsg = getApplicationContext().getString(R.string.error_star_fetch)
                             + getApplicationContext().getString(R.string.http_error, response.code());

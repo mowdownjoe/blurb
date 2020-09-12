@@ -11,6 +11,8 @@ import com.mowdowndevelopments.blurb.AppExecutors;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.BlurbDb;
 import com.mowdowndevelopments.blurb.database.entities.Story;
+import com.mowdowndevelopments.blurb.ui.story.StoryPagerActivity;
+import com.mowdowndevelopments.blurb.ui.story.StoryPagerActivityArgs;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -30,7 +32,7 @@ public class StarredStoriesWidget extends AppWidgetProvider {
     private static final String WIDGET_ID = "com.mowdowndevelopments.blurb.WIDGET_ID";
     private static final int REQUEST_CODE = 758;
     private static HashMap<Integer, Integer> widgetToActivePage;
-    private static List<Story> stories;
+    private static List<Story> storyList;
 
     static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
@@ -47,7 +49,7 @@ public class StarredStoriesWidget extends AppWidgetProvider {
                                         int appWidgetId,
                                         RemoteViews views) {
         AppExecutors.getInstance().diskIO().execute(() -> {
-            Story activeStory = stories.get(widgetToActivePage.get(appWidgetId));
+            Story activeStory = storyList.get(widgetToActivePage.get(appWidgetId));
             String relatedFeedTitle = BlurbDb.getInstance(context).blurbDao().getFeedTitle(activeStory.getFeedId());
 
             views.setTextViewText(R.id.tv_headline, activeStory.getTitle());
@@ -56,6 +58,9 @@ public class StarredStoriesWidget extends AppWidgetProvider {
 
             views.setOnClickPendingIntent(R.id.btn_next_story, getNextPagePendingIntent(context, appWidgetId));
             views.setOnClickPendingIntent(R.id.btn_prev_story, getPreviousPagePendingIntent(context, appWidgetId));
+            views.setOnClickPendingIntent(R.id.fl_story_info_holder, getLaunchStoryPendingIntent(context, appWidgetId));
+            views.setOnClickPendingIntent(R.id.tv_headline, getLaunchStoryPendingIntent(context, appWidgetId));
+            views.setOnClickPendingIntent(R.id.tv_feed_name, getLaunchStoryPendingIntent(context, appWidgetId));
 
             Instant instant = Instant.ofEpochSecond(activeStory.getTimestamp());
             LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
@@ -83,10 +88,10 @@ public class StarredStoriesWidget extends AppWidgetProvider {
         //Increment or decrement Widget page.
         if (action.equals(NEXT_WIDGET_PAGE)){
             ++currentPage;
-            if (currentPage >= stories.size()) currentPage = 0;
+            if (currentPage >= storyList.size()) currentPage = 0;
         } else if (action.equals(PREV_WIDGET_PAGE)){
             --currentPage;
-            if (currentPage < 0) currentPage = stories.size() - 1;
+            if (currentPage < 0) currentPage = storyList.size() - 1;
         } else return;
         widgetToActivePage.put(widgetId, currentPage);
 
@@ -113,13 +118,13 @@ public class StarredStoriesWidget extends AppWidgetProvider {
         // Enter relevant functionality for when the first widget is created
         widgetToActivePage = new HashMap<>();
         AppExecutors.getInstance().diskIO().execute(() ->
-                stories = BlurbDb.getInstance(context).blurbDao().getStarredStoryListForWidget());
+                storyList = BlurbDb.getInstance(context).blurbDao().getStarredStoryListForWidget());
     }
 
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
-        stories.clear();
+        storyList.clear();
         widgetToActivePage.clear();
     }
 
@@ -135,6 +140,17 @@ public class StarredStoriesWidget extends AppWidgetProvider {
                 .setClass(context, StarredStoriesWidget.class)
                 .putExtra(WIDGET_ID, widgetId);
         return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    protected static PendingIntent getLaunchStoryPendingIntent(Context context, int widgetId){
+        Story[] stories = new Story[storyList.size()];
+        StoryPagerActivityArgs.Builder builder = new StoryPagerActivityArgs.Builder(storyList.toArray(stories))
+                .setInitialStory(widgetToActivePage.get(widgetId));
+
+        Intent intent = new Intent(context, StoryPagerActivity.class)
+                .putExtras(builder.build().toBundle())
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        return PendingIntent.getActivity(context, REQUEST_CODE, intent, PendingIntent.FLAG_ONE_SHOT);
     }
 }
 

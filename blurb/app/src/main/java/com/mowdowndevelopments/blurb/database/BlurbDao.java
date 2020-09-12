@@ -32,13 +32,13 @@ public interface BlurbDao {
     @Delete
     void removeStory(Story story);
 
-    @Query("SELECT * FROM STORIES")
+    @Query("SELECT * FROM STORIES ORDER BY story_timestamp DESC")
     DataSource.Factory<Integer, Story> getStarredStoryPagingSourceFactory();
 
-    @Query("SELECT * FROM STORIES")
+    @Query("SELECT * FROM STORIES ORDER BY story_timestamp DESC")
     LiveData<List<Story>> getStarredStoryList();
 
-    @Query("SELECT * FROM STORIES ORDER BY story_timestamp LIMIT 20")
+    @Query("SELECT * FROM STORIES ORDER BY story_timestamp DESC LIMIT 20")
     List<Story> getStarredStoryListForWidget();
 
     @Query("select * from feeds")

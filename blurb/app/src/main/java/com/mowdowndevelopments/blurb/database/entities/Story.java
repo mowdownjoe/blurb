@@ -7,7 +7,6 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
-import androidx.room.ForeignKey;
 import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
@@ -18,11 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 @Keep
-@Entity(tableName = Story.TABLE_NAME,
-        foreignKeys = @ForeignKey(entity = Feed.class,
-                onDelete = ForeignKey.SET_NULL,
-                childColumns = Story.ID,
-                parentColumns = Feed.ID))
+@Entity(tableName = Story.TABLE_NAME)
 public class Story implements Parcelable {
 
     static final String TABLE_NAME = "stories";
@@ -37,7 +32,7 @@ public class Story implements Parcelable {
     @PrimaryKey
     @NonNull
     @Json(name = HASH)
-    @ColumnInfo(name = HASH)
+    @ColumnInfo(name = HASH, index = true)
     private String storyHash;
     @Json(name = TITLE)
     @ColumnInfo(name = TITLE)
@@ -55,7 +50,7 @@ public class Story implements Parcelable {
     @ColumnInfo(name = PERMALINK)
     private String permalink;
     @Json(name = ID)
-    @ColumnInfo(name = ID, index = true)
+    @ColumnInfo(name = ID)
     private int feedId;
     @Ignore
     @Json(name = "read_status")

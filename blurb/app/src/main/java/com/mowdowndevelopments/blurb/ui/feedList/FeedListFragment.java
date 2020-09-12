@@ -17,8 +17,6 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -29,7 +27,6 @@ import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFeedDialogFragment;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFolderDialogFragment;
 import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
-import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -118,8 +115,6 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         handle.<Boolean>getLiveData(LoginFragment.LOGIN_SUCCESS).observe(getViewLifecycleOwner(), loggedIn -> {
             if (loggedIn){
                 viewModel.loadFeeds();
-                WorkManager.getInstance(requireContext())
-                        .enqueue(OneTimeWorkRequest.from(FetchStarredStoriesWorker.class));
             }
         });
         handle.<EnumMap<NewFolderDialogFragment.ResultKeys, String>>getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT)
