@@ -72,8 +72,12 @@ public class MultiPaneStoryListAdapter extends RecyclerView.Adapter<MultiPaneSto
         }
 
         private void setFeedNameAndIcon(String feedTitle, String faviconUrl) {
-            if (feedTitle != null && faviconUrl != null) {
+            if (feedTitle != null && !feedTitle.isEmpty()){
                 binding.tvFeedName.setText(feedTitle);
+            } else {
+                binding.tvFeedName.setText(R.string.unknown);
+            }
+            if (faviconUrl != null && !faviconUrl.isEmpty()) {
                 Picasso.get().load(faviconUrl)
                         .placeholder(R.drawable.ic_globe)
                         .error(R.drawable.ic_globe)

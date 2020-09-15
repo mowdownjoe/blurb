@@ -22,13 +22,15 @@ import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.List;
 
+import timber.log.Timber;
+
 /**
  * Implementation of App Widget functionality.
  */
 public class StarredStoriesWidget extends AppWidgetProvider {
 
+    private static final String PREVIOUS_WIDGET_PAGE = "com.mowdowndevelopments.blurb.PREV_WIDGET_PAGE";
     private static final String NEXT_WIDGET_PAGE = "com.mowdowndevelopments.blurb.NEXT_WIDGET_PAGE";
-    private static final String PREV_WIDGET_PAGE = "com.mowdowndevelopments.blurb.PREV_WIDGET_PAGE";
     private static final String WIDGET_ID = "com.mowdowndevelopments.blurb.WIDGET_ID";
     private static final int REQUEST_CODE = 758;
     private static HashMap<Integer, Integer> widgetToActivePage;
@@ -52,12 +54,16 @@ public class StarredStoriesWidget extends AppWidgetProvider {
             Story activeStory = storyList.get(widgetToActivePage.get(appWidgetId));
             String relatedFeedTitle = BlurbDb.getInstance(context).blurbDao().getFeedTitle(activeStory.getFeedId());
 
+            if (relatedFeedTitle != null && !relatedFeedTitle.isEmpty()) {
+                views.setTextViewText(R.id.tv_feed_name, relatedFeedTitle);
+            } else {
+                views.setTextViewText(R.id.tv_feed_name, context.getString(R.string.unknown));
+            }
             views.setTextViewText(R.id.tv_headline, activeStory.getTitle());
             views.setTextViewText(R.id.tv_story_authors, activeStory.getAuthors());
-            views.setTextViewText(R.id.tv_feed_name, relatedFeedTitle);
 
-            views.setOnClickPendingIntent(R.id.btn_next_story, getNextPagePendingIntent(context, appWidgetId));
             views.setOnClickPendingIntent(R.id.btn_prev_story, getPreviousPagePendingIntent(context, appWidgetId));
+            views.setOnClickPendingIntent(R.id.btn_next_story, getNextPagePendingIntent(context, appWidgetId));
             views.setOnClickPendingIntent(R.id.fl_story_info_holder, getLaunchStoryPendingIntent(context, appWidgetId));
             views.setOnClickPendingIntent(R.id.tv_headline, getLaunchStoryPendingIntent(context, appWidgetId));
             views.setOnClickPendingIntent(R.id.tv_feed_name, getLaunchStoryPendingIntent(context, appWidgetId));
@@ -86,14 +92,15 @@ public class StarredStoriesWidget extends AppWidgetProvider {
         if (currentPage == null) return;
 
         //Increment or decrement Widget page.
-        if (action.equals(NEXT_WIDGET_PAGE)){
+        if (action.equals(PREVIOUS_WIDGET_PAGE)){
             ++currentPage;
             if (currentPage >= storyList.size()) currentPage = 0;
-        } else if (action.equals(PREV_WIDGET_PAGE)){
+        } else if (action.equals(NEXT_WIDGET_PAGE)){
             --currentPage;
             if (currentPage < 0) currentPage = storyList.size() - 1;
         } else return;
         widgetToActivePage.put(widgetId, currentPage);
+        Timber.d("Current widget page for widget %o is %o", widgetId, currentPage);
 
         //Create RemoteViews and AppWidgetManager.
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.starred_stories_widget);
@@ -104,6 +111,9 @@ public class StarredStoriesWidget extends AppWidgetProvider {
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        if (widgetToActivePage == null){
+            onEnabled(context);
+        }
         // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
             if (!widgetToActivePage.containsKey(appWidgetId)){
@@ -124,25 +134,23 @@ public class StarredStoriesWidget extends AppWidgetProvider {
     @Override
     public void onDisabled(Context context) {
         // Enter relevant functionality for when the last widget is disabled
-        storyList.clear();
-        widgetToActivePage.clear();
     }
 
-    protected static PendingIntent getNextPagePendingIntent(Context context, int widgetId){
+    private static PendingIntent getPreviousPagePendingIntent(Context context, int widgetId){
+        Intent intent = new Intent(PREVIOUS_WIDGET_PAGE)
+                .setClass(context, StarredStoriesWidget.class)
+                .putExtra(WIDGET_ID, widgetId);
+        return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private static PendingIntent getNextPagePendingIntent(Context context, int widgetId){
         Intent intent = new Intent(NEXT_WIDGET_PAGE)
                 .setClass(context, StarredStoriesWidget.class)
                 .putExtra(WIDGET_ID, widgetId);
         return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    protected static PendingIntent getPreviousPagePendingIntent(Context context, int widgetId){
-        Intent intent = new Intent(PREV_WIDGET_PAGE)
-                .setClass(context, StarredStoriesWidget.class)
-                .putExtra(WIDGET_ID, widgetId);
-        return PendingIntent.getBroadcast(context, REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    protected static PendingIntent getLaunchStoryPendingIntent(Context context, int widgetId){
+    private static PendingIntent getLaunchStoryPendingIntent(Context context, int widgetId){
         Story[] stories = new Story[storyList.size()];
         StoryPagerActivityArgs.Builder builder = new StoryPagerActivityArgs.Builder(storyList.toArray(stories))
                 .setInitialStory(widgetToActivePage.get(widgetId));

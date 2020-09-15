@@ -28,6 +28,8 @@ import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;
 import java.util.EnumMap;
 import java.util.List;
 
+import timber.log.Timber;
+
 import static java.util.Objects.requireNonNull;
 
 public class RiverOfNewsFragment extends Fragment implements StoryClickListener {
@@ -127,8 +129,10 @@ public class RiverOfNewsFragment extends Fragment implements StoryClickListener 
         handle.<EnumMap<SortOrderDialogFragment.ResultKeys, String>>getLiveData(SortOrderDialogFragment.ARG_RESULT)
                 .observe(getViewLifecycleOwner(), result -> {
                     if (result != null) {
-                        viewModel.refreshWithNewParameters(result.get(SortOrderDialogFragment.ResultKeys.SORT),
-                                result.get(SortOrderDialogFragment.ResultKeys.FILTER));
+                        String readFilter = result.get(SortOrderDialogFragment.ResultKeys.SORT);
+                        String sortOrder = result.get(SortOrderDialogFragment.ResultKeys.FILTER);
+                        Timber.d("New parameters received: %s, %s", readFilter, sortOrder);
+                        viewModel.refreshWithNewParameters(readFilter, sortOrder);
                     }
                 });
     }

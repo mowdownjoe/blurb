@@ -100,17 +100,17 @@ public class StoryViewModel extends AndroidViewModel {
     public void markQueueAsRead(){
         if (readStories.isEmpty()) return;
         try { //OkHttp is required due to an unknown amount of Hashes to mark. Boilerplate as follows:
-            String encodedHash = URLEncoder.encode(readStories.get(0).getStoryHash(), StandardCharsets.UTF_8.toString());
-            StringBuilder stringBuilder = new StringBuilder("story_hash=").append(encodedHash);
-            for (int i = 1; i < readStories.size(); i++) { //Starts at 1, since 0 was grabbed outside loop
-                encodedHash = URLEncoder.encode(readStories.get(i).getStoryHash(), StandardCharsets.UTF_8.toString());
-                stringBuilder.append("&story_hash=").append(encodedHash);
+            StringBuilder builder = new StringBuilder();
+            for (Story i: readStories) {
+                String encodedHash = URLEncoder.encode(i.getStoryHash(), StandardCharsets.UTF_8.toString());
+                builder.append("story_hash=").append(encodedHash).append('&');
             }
+            builder.deleteCharAt(builder.length()-1);
 
             MediaType type = MediaType.parse("application/x-www-form-urlencoded");
             Request request = new Request.Builder()
                     .url(Singletons.BASE_URL+"reader/mark_story_hashes_as_read")
-                    .post(RequestBody.create(type, stringBuilder.toString()))
+                    .post(RequestBody.create(type, builder.toString()))
                     .addHeader("content-type", "application/x-www-form-urlencoded")
                     .build();
 

@@ -32,6 +32,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.EnumMap;
 import java.util.List;
 
+import timber.log.Timber;
+
 import static java.util.Objects.requireNonNull;
 
 public class SingleFeedFragment extends Fragment implements StoryClickListener {
@@ -149,8 +151,10 @@ public class SingleFeedFragment extends Fragment implements StoryClickListener {
     }
 
     private void refreshList(@NotNull EnumMap<SortOrderDialogFragment.ResultKeys, String> result) {
-        viewModel.refreshWithNewParameters(result.get(SortOrderDialogFragment.ResultKeys.SORT),
-                result.get(SortOrderDialogFragment.ResultKeys.FILTER));
+        String sortOrder = result.get(SortOrderDialogFragment.ResultKeys.SORT);
+        String filter = result.get(SortOrderDialogFragment.ResultKeys.FILTER);
+        Timber.d("New parameters received: %s, %s", sortOrder, filter);
+        viewModel.refreshWithNewParameters(sortOrder, filter);
     }
 
     @Override

@@ -28,7 +28,7 @@ import timber.log.Timber;
 
 import static java.util.Objects.requireNonNull;
 
-public class FetchStarredStoriesWorker extends Worker {
+public class FetchStarredStoriesWorker extends Worker { //TODO: Refactor to Kotlin and CoroutineWorker
     public FetchStarredStoriesWorker(@NonNull Context c, @NonNull WorkerParameters workerParams) {
         super(c, workerParams);
     }
@@ -65,8 +65,12 @@ public class FetchStarredStoriesWorker extends Worker {
                 .scheme("https")
                 .host("newsblur.com")
                 .addPathSegments("reader/starred_stories");
+
+        int count = 0;
         for (String storyHash : hashes) {
             builder.addQueryParameter("h", storyHash);
+            ++count;
+            if (count >= 100) break; //Only accepts max 100 hashes.
         }
 
         Request request = new Request.Builder()
