@@ -51,7 +51,10 @@ public class StarredStoriesWidget extends AppWidgetProvider {
                                         int appWidgetId,
                                         RemoteViews views) {
         AppExecutors.getInstance().diskIO().execute(() -> {
-            Story activeStory = storyList.get(widgetToActivePage.get(appWidgetId));
+            Integer currentPage = widgetToActivePage.get(appWidgetId);
+            Timber.d("Current widget page for widget %o is %o", appWidgetId, currentPage);
+
+            Story activeStory = storyList.get(currentPage);
             String relatedFeedTitle = BlurbDb.getInstance(context).blurbDao().getFeedTitle(activeStory.getFeedId());
 
             if (relatedFeedTitle != null && !relatedFeedTitle.isEmpty()) {
@@ -100,7 +103,6 @@ public class StarredStoriesWidget extends AppWidgetProvider {
             if (currentPage < 0) currentPage = storyList.size() - 1;
         } else return;
         widgetToActivePage.put(widgetId, currentPage);
-        Timber.d("Current widget page for widget %o is %o", widgetId, currentPage);
 
         //Create RemoteViews and AppWidgetManager.
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.starred_stories_widget);

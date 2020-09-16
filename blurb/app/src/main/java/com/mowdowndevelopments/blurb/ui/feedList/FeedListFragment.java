@@ -1,6 +1,7 @@
 package com.mowdowndevelopments.blurb.ui.feedList;
 
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -17,6 +18,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.work.Constraints;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -27,12 +32,14 @@ import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFeedDialogFragment;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFolderDialogFragment;
 import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
+import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import timber.log.Timber;
 
@@ -115,6 +122,21 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
         handle.<Boolean>getLiveData(LoginFragment.LOGIN_SUCCESS).observe(getViewLifecycleOwner(), loggedIn -> {
             if (loggedIn){
                 viewModel.loadFeeds();
+
+                Constraints.Builder constraintBuilder = new Constraints.Builder()
+                        .setRequiresCharging(true)
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .setRequiresStorageNotLow(true);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    constraintBuilder.setRequiresDeviceIdle(true);
+                }
+                PeriodicWorkRequest request = new PeriodicWorkRequest.Builder(FetchStarredStoriesWorker.class, 24, TimeUnit.HOURS)
+                        .setConstraints(constraintBuilder.build())
+                        .addTag(FetchStarredStoriesWorker.WORK_TAG)
+                        .build();
+
+                WorkManager.getInstance(requireContext()).enqueue(request);
+
             }
         });
         handle.<EnumMap<NewFolderDialogFragment.ResultKeys, String>>getLiveData(NewFolderDialogFragment.ARG_DIALOG_RESULT)

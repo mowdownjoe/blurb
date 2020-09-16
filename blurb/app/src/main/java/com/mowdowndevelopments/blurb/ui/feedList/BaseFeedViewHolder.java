@@ -11,21 +11,22 @@ import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.databinding.FeedListItemBinding;
 import com.squareup.picasso.Picasso;
 
-class BaseFeedViewHolder extends RecyclerView.ViewHolder {
+abstract class BaseFeedViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
     protected FeedListItemBinding binding;
 
     public BaseFeedViewHolder(@NonNull View itemView) {
         super(itemView);
         binding = FeedListItemBinding.bind(itemView);
+        itemView.setOnClickListener(this);
     }
 
     @SuppressLint("SetTextI18n")
     public void bind(Feed feed){
-        if (!itemView.getContext()
+        boolean shouldShowEmptyFeeds = itemView.getContext()
                 .getSharedPreferences(itemView.getContext().getString(R.string.shared_pref_file), 0)
-                .getBoolean(itemView.getContext().getString(R.string.pref_empty_feeds), true)
-                && feed.getUnreadCount() + feed.getPreferredUnreadCount() <= 0){
+                .getBoolean(itemView.getContext().getString(R.string.pref_empty_feeds), true);
+        if (!shouldShowEmptyFeeds && feed.getUnreadCount() + feed.getPreferredUnreadCount() <= 0){
             itemView.setVisibility(View.GONE);
             return;
         } else {

@@ -11,6 +11,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import androidx.work.WorkManager;
 
 import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
@@ -22,6 +23,7 @@ import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.BlurbDb;
 import com.mowdowndevelopments.blurb.databinding.ActivityMainBinding;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
+import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         viewModel.getLogoutStatus().observe(this, loadingStatus -> {
             if (loadingStatus == LoadingStatus.DONE){
                 AppExecutors.getInstance().diskIO().execute(() -> BlurbDb.getInstance(this).clearAllTables());
+                WorkManager.getInstance(this).cancelAllWorkByTag(FetchStarredStoriesWorker.WORK_TAG);
                 Navigation.findNavController(this, R.id.nav_host_fragment)
                         .navigate(NavGraphDirections.actionLoginFlow());
             }

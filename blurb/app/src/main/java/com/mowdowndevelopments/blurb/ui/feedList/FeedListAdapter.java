@@ -111,11 +111,10 @@ public class FeedListAdapter extends RecyclerView.Adapter {
         Timber.d("New data received for adapter. Refreshing.");
     }
 
-    private class OrphanFeedViewHolder extends BaseFeedViewHolder implements View.OnClickListener {
+    private class OrphanFeedViewHolder extends BaseFeedViewHolder {
 
         public OrphanFeedViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
         }
 
         @Override

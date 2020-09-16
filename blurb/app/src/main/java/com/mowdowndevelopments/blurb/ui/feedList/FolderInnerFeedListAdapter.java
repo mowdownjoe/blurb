@@ -51,11 +51,10 @@ public class FolderInnerFeedListAdapter extends RecyclerView.Adapter<FolderInner
         return 0;
     }
 
-    protected class InnerFeedViewHolder extends BaseFeedViewHolder implements View.OnClickListener {
+    protected class InnerFeedViewHolder extends BaseFeedViewHolder {
 
         public InnerFeedViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
         }
 
         @Override

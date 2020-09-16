@@ -122,9 +122,12 @@ public class FeedListViewModel extends AndroidViewModel {
         AppExecutors executors = AppExecutors.getInstance();
         executors.diskIO().execute(() -> {
             try {
+                OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(FetchStarredStoriesWorker.class)
+                        .addTag(FetchStarredStoriesWorker.WORK_TAG)
+                        .build();
                 BlurbDb.getInstance(getApplication()).blurbDao().addFeeds(feedData.getFeeds().values());
                 executors.mainThread().execute(() -> WorkManager.getInstance(getApplication())
-                        .enqueue(OneTimeWorkRequest.from(FetchStarredStoriesWorker.class)));
+                        .enqueue(request));
             } catch (SQLiteConstraintException e) {
                 Timber.w(e);
             }

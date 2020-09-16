@@ -29,6 +29,9 @@ import timber.log.Timber;
 import static java.util.Objects.requireNonNull;
 
 public class FetchStarredStoriesWorker extends Worker { //TODO: Refactor to Kotlin and CoroutineWorker
+
+    public static String WORK_TAG = "com.mowdowndevelopments.blurb.FETCH_STORIES";
+
     public FetchStarredStoriesWorker(@NonNull Context c, @NonNull WorkerParameters workerParams) {
         super(c, workerParams);
     }

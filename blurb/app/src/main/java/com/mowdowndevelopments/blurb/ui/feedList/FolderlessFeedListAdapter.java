@@ -53,11 +53,10 @@ public class FolderlessFeedListAdapter extends RecyclerView.Adapter<FolderlessFe
         Timber.d("New data received for adapter. Refreshing.");
     }
 
-    class FeedViewHolder extends BaseFeedViewHolder implements View.OnClickListener {
+    class FeedViewHolder extends BaseFeedViewHolder {
 
         public FeedViewHolder(@NonNull View itemView) {
             super(itemView);
-            itemView.setOnClickListener(this);
         }
 
         @Override
