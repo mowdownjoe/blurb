@@ -106,8 +106,6 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -128,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                 navController.navigate(NavGraphDirections.actionGlobalPreferences());
                 return true;
             case R.id.action_donate:
-                //TODO Implement In-app billing
+                navController.navigate(NavGraphDirections.actionGlobalInAppPurchaseDialogFragment());
                 return true;
             case R.id.action_about:
                 navController.navigate(NavGraphDirections.actionGlobalAboutDialog());

@@ -20,7 +20,6 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface NewsBlurAPI {
-    //TODO Fill out with calls
 
     @POST("/api/login")
     @FormUrlEncoded

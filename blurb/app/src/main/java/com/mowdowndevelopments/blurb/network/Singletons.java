@@ -2,6 +2,8 @@ package com.mowdowndevelopments.blurb.network;
 
 import android.content.Context;
 
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
@@ -23,13 +25,15 @@ public class Singletons {
     private static Retrofit retrofit = null;
     private static OkHttpClient okHttpClient = null;
     private static Moshi moshi = null;
+    private static BillingClient billingClient = null;
 
     private Singletons(){}
 
     public static OkHttpClient getOkHttpClient(Context c){
         if (okHttpClient == null){
             Dispatcher dispatcher = new Dispatcher((ExecutorService) AppExecutors.getInstance().networkIO());
-            PersistentCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(c));
+            PersistentCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(),
+                    new SharedPrefsCookiePersistor(c.getApplicationContext()));
             okHttpClient = new  OkHttpClient.Builder()
                     .cookieJar(cookieJar)
                     .cache(new Cache(c.getCacheDir(), CACHE_SIZE))
@@ -60,5 +64,18 @@ public class Singletons {
                     .build();
         }
         return moshi;
+    }
+
+    public static BillingClient getBillingClient(Context c) {
+        if (billingClient == null){
+            PurchasesUpdatedListener listener = (billingResult, list) -> {
+                //TODO Fill out listener
+            };
+            billingClient = BillingClient.newBuilder(c.getApplicationContext())
+                    .setListener(listener)
+                    .enablePendingPurchases()
+                    .build();
+        }
+        return billingClient;
     }
 }

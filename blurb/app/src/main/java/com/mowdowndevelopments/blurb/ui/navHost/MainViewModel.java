@@ -25,25 +25,53 @@ import timber.log.Timber;
 
 public class MainViewModel extends AndroidViewModel {
 
+    private static final int MAX_RETRY_ATTEMPTS = 10;
 
     private MutableLiveData<List<AutoCompleteResponse>> autoCompleteDialogData;
     private MutableLiveData<LoadingStatus> logoutStatus;
+    private MutableLiveData<LoadingStatus> inAppDialogStatus;
     private MutableLiveData<String> errorMessage;
     private boolean loadingForDialog = false;
+    private int purchaseRetryAttempts = 0;
 
     public MainViewModel(@NonNull Application application) {
         super(application);
         errorMessage = new MutableLiveData<>();
         logoutStatus = new MutableLiveData<>(LoadingStatus.WAITING);
+        inAppDialogStatus = new MutableLiveData<>(LoadingStatus.WAITING);
         autoCompleteDialogData = new MutableLiveData<>();
+    }
+
+    public void resetRetryAttempts(){
+        purchaseRetryAttempts = 0;
+    }
+
+    public void incrementRetryAttempts(){
+        ++purchaseRetryAttempts;
+    }
+
+    public boolean canKeepRetryingPurchase(){
+        return purchaseRetryAttempts < MAX_RETRY_ATTEMPTS;
     }
 
     public LiveData<String> getErrorMessage() {
         return errorMessage;
     }
 
+    public void postNewErrorMessage(String message){
+        errorMessage.postValue(message);
+    }
+
     public LiveData<LoadingStatus> getLogoutStatus() {
         return logoutStatus;
+    }
+
+    public LiveData<LoadingStatus> getInAppDialogStatus() {
+        return inAppDialogStatus;
+    }
+
+    public void postInAppDialogStatus(LoadingStatus status){
+        inAppDialogStatus.postValue(status);
     }
 
     public LiveData<List<AutoCompleteResponse>> getAutoCompleteDialogData() {

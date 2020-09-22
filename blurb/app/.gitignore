@@ -2,3 +2,4 @@
 /signingConfig.gradle
 /blurbkey.jks
 /newblurbkey.jks
+/src/main/res/values/strings-sensitive.xml
