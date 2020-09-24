@@ -95,6 +95,7 @@ public class StoryFragment extends Fragment {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        Story activeStory = viewModel.getActiveStory();
         switch (item.getItemId()){
             case R.id.mi_view_in_browser:
                 int toolbarColor;
@@ -108,24 +109,24 @@ public class StoryFragment extends Fragment {
                         .setStartAnimations(requireContext(), R.anim.slide_in_top, R.anim.fast_fade_out)
                         .setExitAnimations(requireContext(), R.anim.slide_out_top, R.anim.fast_fade_in)
                         .build();
-                intent.launchUrl(requireContext(), Uri.parse(viewModel.getActiveStory().getPermalink()));
+                intent.launchUrl(requireContext(), Uri.parse(activeStory.getPermalink()));
                 return true;
             case R.id.mi_mark_as_unread:
-                viewModel.removeFromMarkAsReadQueue(viewModel.getActiveStory());
+                viewModel.removeFromMarkAsReadQueue(activeStory);
                 item.setVisible(false);
                 return true;
             case R.id.mi_share:
                 Intent shareIntent = new Intent(Intent.ACTION_SEND)
                         .setType("text/plain")
-                        .putExtra(Intent.EXTRA_TITLE, viewModel.getActiveStory().getTitle())
-                        .putExtra(Intent.EXTRA_TEXT, viewModel.getActiveStory().getPermalink());
+                        .putExtra(Intent.EXTRA_TITLE, activeStory.getTitle())
+                        .putExtra(Intent.EXTRA_TEXT, activeStory.getPermalink());
                 startActivity(Intent.createChooser(shareIntent, null));
                 return true;
             case R.id.mi_star:
-                viewModel.markStoryAsStarred(viewModel.getActiveStory());
+                viewModel.markStoryAsStarred(activeStory);
                 return true;
             case R.id.mi_unstar:
-                viewModel.removeStoryFromStarred(viewModel.getActiveStory());
+                viewModel.removeStoryFromStarred(activeStory);
                 return true;
         }
         return super.onOptionsItemSelected(item);

@@ -29,8 +29,8 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.databinding.FragmentFeedListBinding;
-import com.mowdowndevelopments.blurb.ui.dialogs.NewFeedDialogFragment;
 import com.mowdowndevelopments.blurb.ui.dialogs.NewFolderDialogFragment;
+import com.mowdowndevelopments.blurb.ui.dialogs.newFeed.NewFeedDialogFragment;
 import com.mowdowndevelopments.blurb.ui.login.LoginFragment;
 import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker;
 

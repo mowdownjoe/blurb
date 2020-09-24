@@ -10,6 +10,8 @@ import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersisto
 import com.mowdowndevelopments.blurb.AppExecutors;
 import com.squareup.moshi.Moshi;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.concurrent.ExecutorService;
 
 import okhttp3.Cache;
@@ -29,6 +31,7 @@ public class Singletons {
 
     private Singletons(){}
 
+    @NotNull
     public static OkHttpClient getOkHttpClient(Context c){
         if (okHttpClient == null){
             Dispatcher dispatcher = new Dispatcher((ExecutorService) AppExecutors.getInstance().networkIO());
@@ -43,10 +46,12 @@ public class Singletons {
         return okHttpClient;
     }
 
+    @NotNull
     public static NewsBlurAPI getNewsBlurAPI(Context c){
         return getNewsBlurAPI(c, BASE_URL);
     }
 
+    @NotNull
     public static NewsBlurAPI getNewsBlurAPI(Context c, String baseUrl) {
         if (retrofit == null){
             retrofit = new Retrofit.Builder()
@@ -58,6 +63,7 @@ public class Singletons {
         return retrofit.create(NewsBlurAPI.class);
     }
 
+    @NotNull
     public static Moshi getMoshi() {
         if (moshi == null){
             moshi = new Moshi.Builder()
@@ -66,6 +72,7 @@ public class Singletons {
         return moshi;
     }
 
+    @NotNull
     public static BillingClient getBillingClient(Context c) {
         if (billingClient == null){
             PurchasesUpdatedListener listener = (billingResult, list) -> {

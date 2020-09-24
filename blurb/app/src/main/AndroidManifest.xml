@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.mowdowndevelopments.blurb">
 
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:name=".BlurbApp"
         android:allowBackup="false"
@@ -46,6 +47,5 @@
         </receiver>
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

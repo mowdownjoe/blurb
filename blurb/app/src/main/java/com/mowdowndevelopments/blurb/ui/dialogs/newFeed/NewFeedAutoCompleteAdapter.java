@@ -1,4 +1,4 @@
-package com.mowdowndevelopments.blurb.ui.dialogs;
+package com.mowdowndevelopments.blurb.ui.dialogs.newFeed;
 
 import android.content.Context;
 import android.view.LayoutInflater;

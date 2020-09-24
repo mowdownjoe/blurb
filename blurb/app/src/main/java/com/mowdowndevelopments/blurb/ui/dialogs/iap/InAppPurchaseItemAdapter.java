@@ -1,4 +1,4 @@
-package com.mowdowndevelopments.blurb.ui.dialogs;
+package com.mowdowndevelopments.blurb.ui.dialogs.iap;
 
 import android.view.LayoutInflater;
 import android.view.View;

@@ -1,4 +1,4 @@
-package com.mowdowndevelopments.blurb.ui.dialogs;
+package com.mowdowndevelopments.blurb.ui.dialogs.iap;
 
 import android.app.Dialog;
 import android.os.Bundle;
@@ -29,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
+import static com.android.billingclient.api.BillingClient.BillingResponseCode;
+import static com.android.billingclient.api.BillingClient.SkuType;
 import static java.util.Objects.requireNonNull;
 
 
@@ -110,7 +112,7 @@ public class InAppPurchaseDialogFragment extends DialogFragment implements InApp
         billingClient.startConnection(new BillingClientStateListener() {
             @Override
             public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                if (billingResult.getResponseCode() == BillingResponseCode.OK) {
                     viewModel.postInAppDialogStatus(LoadingStatus.DONE);
                     getProducts();
                 }
@@ -135,12 +137,12 @@ public class InAppPurchaseDialogFragment extends DialogFragment implements InApp
         skuList.add("blurb_donation_lunch_level");
         skuList.add("blurb_donation_pizza_level");
         SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder()
-                .setType(BillingClient.SkuType.INAPP)
+                .setType(SkuType.INAPP)
                 .setSkusList(skuList);
         BillingClient billingClient = Singletons.getBillingClient(requireActivity());
         billingClient.querySkuDetailsAsync(params.build(), (billingResult, detailsList) -> {
-            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK){
-                adapter.setData(detailsList, billingClient.queryPurchases(BillingClient.SkuType.INAPP).getPurchasesList());
+            if (billingResult.getResponseCode() == BillingResponseCode.OK){
+                adapter.setData(detailsList, billingClient.queryPurchases(SkuType.INAPP).getPurchasesList());
             }
         });
     }
@@ -154,7 +156,7 @@ public class InAppPurchaseDialogFragment extends DialogFragment implements InApp
                 .launchBillingFlow(requireActivity(), params)
                 .getResponseCode();
         viewModel.resetRetryAttempts();
-        if (responseCode == BillingClient.BillingResponseCode.OK){
+        if (responseCode == BillingResponseCode.OK){
             dismiss();
         } else {
             requireNonNull(getDialog()).cancel();
