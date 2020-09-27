@@ -65,14 +65,10 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SCREEN_VIEW, bundle);
             }
             if (menu != null) {
-                if (destination.getId() == R.id.login_fragment ||
-                        destination.getId() == R.id.account_creation_fragment) {
-                    menu.findItem(R.id.action_show_favorites).setVisible(false);
-                    menu.findItem(R.id.action_logout).setVisible(false);
-                } else {
-                    menu.findItem(R.id.action_show_favorites).setVisible(true);
-                    menu.findItem(R.id.action_logout).setVisible(true);
-                }
+                boolean isInLoginFlow = destination.getId() == R.id.login_fragment ||
+                        destination.getId() == R.id.account_creation_fragment;
+                menu.findItem(R.id.action_show_favorites).setVisible(!isInLoginFlow);
+                menu.findItem(R.id.action_logout).setVisible(!isInLoginFlow);
             }
         });
 

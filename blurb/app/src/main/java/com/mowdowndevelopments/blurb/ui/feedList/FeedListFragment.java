@@ -123,6 +123,7 @@ public class FeedListFragment extends Fragment implements FeedListAdapter.ItemOn
             if (loggedIn){
                 viewModel.loadFeeds();
 
+                //Once the user logs in initially, a repeating work request is made to the WorkManager to fetch Starred stories every 24 hours with the following constraints.
                 Constraints.Builder constraintBuilder = new Constraints.Builder()
                         .setRequiresCharging(true)
                         .setRequiredNetworkType(NetworkType.CONNECTED)
