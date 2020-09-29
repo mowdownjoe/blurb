@@ -108,4 +108,7 @@
     <string name="desc_checkbox">Checkbox</string>
     <string name="iap_error">Purchase could not be completed.</string>
     <string name="donation_text">You can support the developer by making any donation from the list. This app will always be ad-free. (NewsBlur wouldn\'t have it any other way.)</string>
+    <string name="desc_collapse">Collapse folder</string>
+    <string name="desc_expand">Expand folder</string>
+    <string name="desc_favicon">FavIcon</string>
 </resources>

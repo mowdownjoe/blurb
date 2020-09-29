@@ -139,10 +139,14 @@ public class FeedListAdapter extends RecyclerView.Adapter {
                 if (areFeedsHidden){
                     binding.rvFolderFeeds.setVisibility(View.VISIBLE);
                     binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_less);
+                    binding.folderHeader.ibExpandContractFolder
+                            .setContentDescription(itemView.getContext().getString(R.string.desc_collapse));
                     areFeedsHidden = false;
                 } else {
                     binding.rvFolderFeeds.setVisibility(View.GONE);
                     binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_more);
+                    binding.folderHeader.ibExpandContractFolder
+                            .setContentDescription(itemView.getContext().getString(R.string.desc_expand));
                     areFeedsHidden = true;
                 }
             });
@@ -158,6 +162,9 @@ public class FeedListAdapter extends RecyclerView.Adapter {
         public void bind(Folder folder){
             areFeedsHidden = false;
             binding.rvFolderFeeds.setVisibility(View.VISIBLE);
+            binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_less);
+            binding.folderHeader.ibExpandContractFolder
+                    .setContentDescription(itemView.getContext().getString(R.string.desc_collapse));
             binding.folderHeader.tvFolderName.setText(folder.getName());
             adapter.setInnerFeeds(folder.getFeeds());
         }

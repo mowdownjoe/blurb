@@ -13,7 +13,8 @@
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:srcCompat="@drawable/ic_twotone_web_asset" />
+        tools:srcCompat="@drawable/ic_twotone_web_asset"
+        android:contentDescription="@string/desc_favicon" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_feed_name"
