@@ -1,88 +1,81 @@
-package com.mowdowndevelopments.blurb.network;
+package com.mowdowndevelopments.blurb.network
 
-import android.content.Context;
+import android.content.Context
+import com.android.billingclient.api.BillingClient
+import com.android.billingclient.api.BillingResult
+import com.android.billingclient.api.Purchase
+import com.android.billingclient.api.PurchasesUpdatedListener
+import com.franmontiel.persistentcookiejar.PersistentCookieJar
+import com.franmontiel.persistentcookiejar.cache.SetCookieCache
+import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
+import com.mowdowndevelopments.blurb.AppExecutors
+import com.squareup.moshi.Moshi
+import okhttp3.Cache
+import okhttp3.Dispatcher
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.ExecutorService
 
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.PurchasesUpdatedListener;
-import com.franmontiel.persistentcookiejar.PersistentCookieJar;
-import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
-import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
-import com.mowdowndevelopments.blurb.AppExecutors;
-import com.squareup.moshi.Moshi;
+object Singletons {
+    private const val CACHE_SIZE = 536870912
+    const val BASE_URL = "https://newsblur.com/"
+    private lateinit var retrofit: Retrofit
+    private lateinit var okHttpClient: OkHttpClient
+    private lateinit var billingClient: BillingClient
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.ExecutorService;
-
-import okhttp3.Cache;
-import okhttp3.Dispatcher;
-import okhttp3.OkHttpClient;
-import retrofit2.Retrofit;
-import retrofit2.converter.moshi.MoshiConverterFactory;
-
-public class Singletons {
-
-    private static final int CACHE_SIZE = 536870912;
-    public static final String BASE_URL = "https://newsblur.com/";
-    private static Retrofit retrofit = null;
-    private static OkHttpClient okHttpClient = null;
-    private static Moshi moshi = null;
-    private static BillingClient billingClient = null;
-
-    private Singletons(){}
-
-    @NotNull
-    public static OkHttpClient getOkHttpClient(Context c){
-        if (okHttpClient == null){
-            Dispatcher dispatcher = new Dispatcher((ExecutorService) AppExecutors.getInstance().networkIO());
-            PersistentCookieJar cookieJar = new PersistentCookieJar(new SetCookieCache(),
-                    new SharedPrefsCookiePersistor(c.getApplicationContext()));
-            okHttpClient = new  OkHttpClient.Builder()
-                    .cookieJar(cookieJar)
-                    .cache(new Cache(c.getCacheDir(), CACHE_SIZE))
-                    .dispatcher(dispatcher)
-                    .build();
+    @JvmStatic
+    var moshi: Moshi? = null
+        get() {
+            if (field == null) {
+                field = Moshi.Builder()
+                        .build()
+            }
+            return field
         }
-        return okHttpClient;
+        private set
+
+    @JvmStatic
+    fun getOkHttpClient(c: Context): OkHttpClient {
+        if (!::okHttpClient.isInitialized) {
+            val dispatcher = Dispatcher((AppExecutors.getInstance().networkIO() as ExecutorService))
+            val cookieJar = PersistentCookieJar(SetCookieCache(),
+                    SharedPrefsCookiePersistor(c.applicationContext))
+            okHttpClient = OkHttpClient.Builder()
+                    .cookieJar(cookieJar)
+                    .cache(Cache(c.cacheDir, CACHE_SIZE.toLong()))
+                    .dispatcher(dispatcher)
+                    .build()
+        }
+        return okHttpClient
     }
 
-    @NotNull
-    public static NewsBlurAPI getNewsBlurAPI(Context c){
-        return getNewsBlurAPI(c, BASE_URL);
-    }
+    @JvmStatic //Required until Kotlin Refactor is complete
+    fun getNewsBlurAPI(c: Context) = getNewsBlurAPI(c, BASE_URL)
 
-    @NotNull
-    public static NewsBlurAPI getNewsBlurAPI(Context c, String baseUrl) {
-        if (retrofit == null){
-            retrofit = new Retrofit.Builder()
-                    .addConverterFactory(MoshiConverterFactory.create(getMoshi()))
+    @JvmStatic
+    fun getNewsBlurAPI(c: Context, baseUrl: String = BASE_URL): NewsBlurAPI {
+        if (!::retrofit.isInitialized) {
+            retrofit = Retrofit.Builder()
+                    .addConverterFactory(MoshiConverterFactory.create(moshi!!))
                     .baseUrl(baseUrl)
                     .client(getOkHttpClient(c))
-                    .build();
+                    .build()
         }
-        return retrofit.create(NewsBlurAPI.class);
+        return retrofit.create(NewsBlurAPI::class.java)
     }
 
-    @NotNull
-    public static Moshi getMoshi() {
-        if (moshi == null){
-            moshi = new Moshi.Builder()
-                    .build();
-        }
-        return moshi;
-    }
-
-    @NotNull
-    public static BillingClient getBillingClient(Context c) {
-        if (billingClient == null){
-            PurchasesUpdatedListener listener = (billingResult, list) -> {
-                //TODO Fill out listener
-            };
-            billingClient = BillingClient.newBuilder(c.getApplicationContext())
+    @JvmStatic
+    fun getBillingClient(c: Context): BillingClient {
+        if (!::billingClient.isInitialized) {
+            val listener = PurchasesUpdatedListener { billingResult: BillingResult?, list: List<Purchase?>? ->
+                //TODO Fill out Listener
+            }
+            billingClient = BillingClient.newBuilder(c.applicationContext)
                     .setListener(listener)
                     .enablePendingPurchases()
-                    .build();
+                    .build()
         }
-        return billingClient;
+        return billingClient
     }
 }

@@ -1,52 +1,34 @@
-package com.mowdowndevelopments.blurb.network.ResponseModels;
+package com.mowdowndevelopments.blurb.network.responseModels
 
-import com.mowdowndevelopments.blurb.database.entities.Feed;
-import com.squareup.moshi.Json;
+import com.mowdowndevelopments.blurb.database.entities.Feed
+import com.squareup.moshi.Json
+import java.util.*
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-public class GetFeedsResponse {
-    /*
+data class GetFeedsResponse(/*
     * Maps name of folder to feed IDs.
     * */
-    @Json(name = "flat_folders")
-    private Map<String, Integer[]> folders;
-    /*
-    * Maps feed ID parsed to String to its appropriate feed.
-    * */
-    private Map<String, Feed> feeds; //Key will be Feed ID parsed to String
+        @field:Json(name = "flat_folders") val folders: Map<String, Array<Int>>, /*
+      * Maps feed ID parsed to String to its appropriate feed.
+      * */
+        val feeds //Key will be Feed ID parsed to String
+        : Map<String, Feed>) {
 
-    public GetFeedsResponse(Map<String, Integer[]> folders, Map<String, Feed> feeds) {
-        this.folders = folders;
-        this.feeds = feeds;
-    }
-
-    public Map<String, Integer[]> getFolders() {
-        return folders;
-    }
-
-    public Map<String, Feed> getFeeds() {
-        return feeds;
-    }
-
-    public ArrayList<Integer> getFeedIds(){
-        ArrayList<Integer> ids = new ArrayList<>();
-        for (String idString : feeds.keySet()) {
-            ids.add(Integer.parseInt(idString));
-        }
-        return ids;
-    }
-
-    public HashMap<Integer, String> getInvertedFolderMap(){
-        HashMap<Integer, String> invertedFolders = new HashMap<>();
-        for (String key : folders.keySet()) {
-            for (Integer newKey : Objects.requireNonNull(folders.get(key))) {
-                invertedFolders.put(newKey, key);
+    val feedIds: ArrayList<Int>
+        get() {
+            val ids = ArrayList<Int>()
+            for (idString in feeds.keys) {
+                ids.add(idString.toInt())
             }
+            return ids
         }
-        return invertedFolders;
-    }
+    val invertedFolderMap: HashMap<Int, String>
+        get() {
+            val invertedFolders = HashMap<Int, String>()
+            for (key in folders.keys) {
+                for (newKey in requireNotNull(folders[key])) {
+                    invertedFolders[newKey] = key
+                }
+            }
+            return invertedFolders
+        }
 }

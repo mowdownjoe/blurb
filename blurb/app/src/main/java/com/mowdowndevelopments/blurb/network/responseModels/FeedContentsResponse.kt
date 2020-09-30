@@ -1,15 +1,5 @@
-package com.mowdowndevelopments.blurb.network.ResponseModels;
+package com.mowdowndevelopments.blurb.network.responseModels
 
-import com.mowdowndevelopments.blurb.database.entities.Story;
+import com.mowdowndevelopments.blurb.database.entities.Story
 
-public class FeedContentsResponse {
-    private Story[] stories;
-
-    public FeedContentsResponse(Story[] stories) {
-        this.stories = stories;
-    }
-
-    public Story[] getStories() {
-        return stories;
-    }
-}
+class FeedContentsResponse(val stories: Array<Story>)

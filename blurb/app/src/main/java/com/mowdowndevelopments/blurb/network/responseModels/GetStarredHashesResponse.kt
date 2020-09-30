@@ -1,19 +1,5 @@
-package com.mowdowndevelopments.blurb.network.ResponseModels;
+package com.mowdowndevelopments.blurb.network.responseModels
 
-import com.squareup.moshi.Json;
+import com.squareup.moshi.Json
 
-import java.util.List;
-
-public class GetStarredHashesResponse {
-
-    @Json(name = "starred_story_hashes")
-    private List<String> starredStoryHashes;
-
-    public GetStarredHashesResponse(List<String> starredStoryHashes) {
-        this.starredStoryHashes = starredStoryHashes;
-    }
-
-    public List<String> getStarredStoryHashes() {
-        return starredStoryHashes;
-    }
-}
+data class GetStarredHashesResponse(@field:Json(name = "starred_story_hashes") val starredStoryHashes: List<String>)

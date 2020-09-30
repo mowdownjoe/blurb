@@ -11,8 +11,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
-import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
 import com.mowdowndevelopments.blurb.network.Singletons;
+import com.mowdowndevelopments.blurb.network.responseModels.AutoCompleteResponse;
 
 import org.jetbrains.annotations.NotNull;
 

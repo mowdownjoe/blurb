@@ -1,5 +1,5 @@
-package com.mowdowndevelopments.blurb.network;
+package com.mowdowndevelopments.blurb.network
 
-public enum LoadingStatus {
+enum class LoadingStatus {
     WAITING, LOADING, DONE, ERROR
 }

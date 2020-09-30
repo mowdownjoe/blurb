@@ -20,7 +20,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.DialogFragmentNewFeedBinding;
-import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
+import com.mowdowndevelopments.blurb.network.responseModels.AutoCompleteResponse;
 import com.mowdowndevelopments.blurb.ui.navHost.MainViewModel;
 
 import java.util.Arrays;

@@ -1,99 +1,84 @@
-package com.mowdowndevelopments.blurb.network;
+package com.mowdowndevelopments.blurb.network
 
-import androidx.annotation.NonNull;
+import com.mowdowndevelopments.blurb.network.responseModels.*
+import retrofit2.Call
+import retrofit2.Response
+import retrofit2.http.*
 
-import com.mowdowndevelopments.blurb.network.ResponseModels.AuthResponse;
-import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
-import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
-import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
-import com.mowdowndevelopments.blurb.network.ResponseModels.GetStarredHashesResponse;
-
-import java.util.List;
-import java.util.Map;
-
-import retrofit2.Call;
-import retrofit2.http.Field;
-import retrofit2.http.FormUrlEncoded;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.Path;
-import retrofit2.http.Query;
-
-public interface NewsBlurAPI {
+interface NewsBlurAPI {
+    @POST("/api/login")
+    @FormUrlEncoded
+    fun login(@Field("username") username: String, @Field("password") password: String): Call<AuthResponse>
 
     @POST("/api/login")
     @FormUrlEncoded
-    Call<AuthResponse> login(@Field("username") @NonNull String username, @Field("password") @NonNull String password);
-
-    @POST("/api/login")
-    @FormUrlEncoded
-    Call<AuthResponse> login(@Field("username") @NonNull String username);
+    fun login(@Field("username") username: String): Call<AuthResponse>
 
     @POST("/api/logout")
-    Call<Void> logout();
+    fun logout(): Call<Void>
 
     @POST("/api/signup")
     @FormUrlEncoded
-    Call<AuthResponse> signup(@Field("username") @NonNull String username,
-                              @Field("password") @NonNull String password,
-                              @Field("email") @NonNull String emailAddress);
+    fun signup(@Field("username") username: String,
+               @Field("password") password: String,
+               @Field("email") emailAddress: String): Call<AuthResponse>
 
     @POST("/api/signup")
     @FormUrlEncoded
-    Call<AuthResponse> signup(@Field("username") String username, @Field("email") String emailAddress);
+    fun signup(@Field("username") username: String, @Field("email") emailAddress: String?): Call<AuthResponse>
 
     @GET("/reader/feeds?flat=true")
-    Call<GetFeedsResponse> getFeeds();
+    fun getFeeds(): Call<GetFeedsResponse>
 
     @GET("/reader/feeds?flat=true&update_counts=true")
-    Call<GetFeedsResponse> getFeedsAndRefreshCounts();
+    fun getFeedsAndRefreshCounts(): Call<GetFeedsResponse>
+
+    @GET("/reader/feed/{id}?include_story_content=true") //Required until Kotlin refactor complete
+    fun getFeedContents(@Path("id") feedId: Int,
+                        @Query("read_filter") filter: String,
+                        @Query("order") sortOrder: String): Call<FeedContentsResponse>
 
     @GET("/reader/feed/{id}?include_story_content=true")
-    Call<FeedContentsResponse> getFeedContents(@Path("id") int feedId,
-                                               @Query("read_filter") @NonNull String filter,
-                                               @Query("order") @NonNull String sortOrder);
-
-    @GET("/reader/feed/{id}?include_story_content=true")
-    Call<FeedContentsResponse> getFeedContents(@Path("id") int feedId,
-                                               @Query("read_filter") @NonNull String filter,
-                                               @Query("order") @NonNull String sortOrder,
-                                               @Query("page") int pageNumber);
+    fun getFeedContents(@Path("id") feedId: Int,
+                        @Query("read_filter") filter: String,
+                        @Query("order") sortOrder: String,
+                        @Query("page") pageNumber: Int = 0): Call<FeedContentsResponse>
 
     @GET("/reader/river_stories?{concatenatedFeeds}")
-    Call<FeedContentsResponse> getRiverOfNews(@Path("concatenatedFeeds") @NonNull String concatenatedFeedQueries);
+    fun getRiverOfNews(@Path("concatenatedFeeds") concatenatedFeedQueries: String): Call<FeedContentsResponse>
 
     @POST("/reader/add_url")
     @FormUrlEncoded
-    Call<Map<String, Object>> addNewFeed(@Field("url") @NonNull String url);
+    fun addNewFeed(@Field("url") url: String): Call<Map<String, Any>>
 
     @POST("/reader/add_url")
     @FormUrlEncoded
-    Call<Map<String, Object>> addNewFeed(@Field("url") @NonNull String url, @Field("folder") @NonNull String folderName);
+    fun addNewFeed(@Field("url") url: String, @Field("folder") folderName: String): Call<Map<String, Any>>
 
     @POST("/reader/add_folder")
     @FormUrlEncoded
-    Call<Map<String, Object>> createNewFolder(@Field("folder") @NonNull String folderName);
+    fun createNewFolder(@Field("folder") folderName: String): Call<Map<String, Any>>
 
     @POST("/reader/add_folder")
     @FormUrlEncoded
-    Call<Map<String, Object>> createNewFolder(@Field("folder") @NonNull String folderName,
-                                              @Field("parent_folder") @NonNull String parentFolderName);
+    fun createNewFolder(@Field("folder") folderName: String,
+                        @Field("parent_folder") parentFolderName: String): Call<Map<String, Any>>
 
     @POST("/reader/mark_story_hash_as_unread")
     @FormUrlEncoded
-    Call<Map<String, Object>> markStoryAsUnread(@Field("story_hash") @NonNull String storyHash);
+    fun markStoryAsUnread(@Field("story_hash") storyHash: String): Call<Map<String, Any>>
 
     @POST("/reader/mark_story_hash_as_starred")
     @FormUrlEncoded
-    Call<Map<String, Object>> markStoryAsStarred(@Field("story_hash") @NonNull String storyHash);
+    fun markStoryAsStarred(@Field("story_hash") storyHash: String): Call<Map<String, Any>>
 
     @POST("/reader/mark_story_hash_as_unstarred")
     @FormUrlEncoded
-    Call<Map<String, Object>> removeStarredStory(@Field("story_hash") @NonNull String storyHash);
+    fun removeStarredStory(@Field("story_hash") storyHash: String): Call<Map<String, Any>>
 
     @GET("/rss_feeds/feed_autocomplete")
-    Call<List<AutoCompleteResponse>> getAutoCompleteResults(@Query("term") @NonNull String searchTerm);
+    fun getAutoCompleteResults(@Query("term") searchTerm: String): Call<List<AutoCompleteResponse>>
 
     @GET("/reader/starred_story_hashes")
-    Call<GetStarredHashesResponse> getStarredStoryHashes();
+    suspend fun getStarredStoryHashes(): Response<GetStarredHashesResponse>
 }

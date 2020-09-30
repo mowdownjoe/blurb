@@ -1,110 +1,85 @@
-package com.mowdowndevelopments.blurb.work;
+package com.mowdowndevelopments.blurb.work
 
-import android.content.Context;
-import android.widget.Toast;
+import android.content.Context
+import android.widget.Toast
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.BlurbDb
+import com.mowdowndevelopments.blurb.network.Singletons
+import com.mowdowndevelopments.blurb.network.responseModels.FeedContentsResponse
+import okhttp3.HttpUrl
+import okhttp3.Request
+import ru.gildor.coroutines.okhttp.await
+import timber.log.Timber
 
-import androidx.annotation.NonNull;
-import androidx.work.Worker;
-import androidx.work.WorkerParameters;
-
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.BlurbDb;
-import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
-import com.mowdowndevelopments.blurb.network.ResponseModels.GetStarredHashesResponse;
-import com.mowdowndevelopments.blurb.network.Singletons;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import okhttp3.HttpUrl;
-import okhttp3.Request;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import timber.log.Timber;
-
-import static java.util.Objects.requireNonNull;
-
-public class FetchStarredStoriesWorker extends Worker { //TODO: Refactor to Kotlin and CoroutineWorker
-
-    public static String WORK_TAG = "com.mowdowndevelopments.blurb.FETCH_STORIES";
-
-    public FetchStarredStoriesWorker(@NonNull Context c, @NonNull WorkerParameters workerParams) {
-        super(c, workerParams);
+class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : CoroutineWorker(c, workerParams) {
+    companion object {
+        const val WORK_TAG = "com.mowdowndevelopments.blurb.FETCH_STORIES"
     }
 
-    @NonNull
-    @Override
-    public Result doWork() {
-        Singletons.getNewsBlurAPI(getApplicationContext()).getStarredStoryHashes().enqueue(new Callback<GetStarredHashesResponse>() {
-            @Override
-            public void onResponse(@NotNull Call<GetStarredHashesResponse> call, @NotNull Response<GetStarredHashesResponse> response) {
-                if (response.isSuccessful()){
-                    fetchStoriesAndCommitToDb(requireNonNull(response.body()).getStarredStoryHashes());
-                } else {
-                    String errorMsg = getApplicationContext().getString(R.string.error_star_fetch)
-                            + getApplicationContext().getString(R.string.http_error, response.code());
-                    Timber.e(errorMsg);
-                    Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
+    override suspend fun doWork(): Result {
+        return try {
+            val hashResponse = Singletons.getNewsBlurAPI(applicationContext).getStarredStoryHashes()
+            if (hashResponse.isSuccessful){
+                val body = hashResponse.body()
+                requireNotNull(body) {
+                    //If does not meet requirements:
+                    return Result.failure()
                 }
+                fetchStoriesAndCommitToDb(body.starredStoryHashes)
+            } else {
+                Result.failure()
             }
-
-            @Override
-            public void onFailure(@NotNull Call<GetStarredHashesResponse> call, @NotNull Throwable t) {
-                String errorMsg = getApplicationContext().getString(R.string.error_star_fetch);
-                Timber.e(t,"%s%s", errorMsg, t.getMessage());
-                Toast.makeText(getApplicationContext(), errorMsg + t.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-        return Result.success();
+        } catch (e: Exception){
+            val errorMsg = applicationContext.getString(R.string.error_star_fetch)
+            Timber.e(e, "%s%s", errorMsg, e.message)
+            Toast.makeText(applicationContext, errorMsg + e.localizedMessage, Toast.LENGTH_LONG).show()
+            Result.failure()
+        }
     }
 
-    private void fetchStoriesAndCommitToDb(@NonNull List<String> hashes){
-        if (hashes.isEmpty()) return;
-        HttpUrl.Builder builder = new HttpUrl.Builder()
+    private suspend fun fetchStoriesAndCommitToDb(hashes: List<String>): Result {
+        require(hashes.isNotEmpty()) {
+            //If does not meet requirements:
+            return Result.success()
+        }
+        val builder = HttpUrl.Builder()
                 .scheme("https")
                 .host("newsblur.com")
-                .addPathSegments("reader/starred_stories");
-
-        int count = 0;
-        for (String storyHash : hashes) {
-            builder.addQueryParameter("h", storyHash);
-            ++count;
-            if (count >= 100) break; //Only accepts max 100 hashes.
+                .addPathSegments("reader/starred_stories")
+        var count = 0
+        for (storyHash in hashes) {
+            builder.addQueryParameter("h", storyHash)
+            ++count
+            if (count >= 100) break //Only accepts max 100 hashes.
         }
-
-        Request request = new Request.Builder()
+        val request = Request.Builder()
                 .url(builder.build())
                 .get()
-                .build();
-
-        Singletons.getOkHttpClient(getApplicationContext()).newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) throws IOException {
-                if (response.isSuccessful()){
-                    FeedContentsResponse body = Singletons.getMoshi()
-                            .adapter(FeedContentsResponse.class)
-                            .fromJson(requireNonNull(response.body()).string());
-                    BlurbDb.getInstance(getApplicationContext()).blurbDao()
-                            .addStories(Arrays.asList(requireNonNull(body).getStories()));
-                    response.body().close();
-                } else {
-                    String errorMsg = getApplicationContext().getString(R.string.error_star_fetch)
-                            + getApplicationContext().getString(R.string.http_error, response.code());
-                    Timber.e(errorMsg);
-                    Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
-                }
+                .build()
+        try {
+            val response = Singletons.getOkHttpClient(applicationContext).newCall(request).await()
+            return if (response.isSuccessful){
+                val body = Singletons.moshi
+                        ?.adapter(FeedContentsResponse::class.java)
+                        ?.fromJson(requireNotNull(response.body).string())
+                BlurbDb.getInstance(applicationContext).blurbDao()
+                        .addStories(listOf(*requireNotNull(body).stories))
+                response.body?.close()
+                Result.success()
+            } else {
+                val errorMsg = (applicationContext.getString(R.string.error_star_fetch)
+                        + applicationContext.getString(R.string.http_error, response.code))
+                Timber.e(errorMsg)
+                Toast.makeText(applicationContext, errorMsg, Toast.LENGTH_LONG).show()
+                Result.failure()
             }
-
-            @Override
-            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
-                String errorMsg = getApplicationContext().getString(R.string.error_star_fetch);
-                Timber.e(e,"%s%s", errorMsg, e.getMessage());
-                Toast.makeText(getApplicationContext(), errorMsg + e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        } catch (e: Exception) {
+            val errorMsg = applicationContext.getString(R.string.error_star_fetch)
+            Timber.e(e, "%s%s", errorMsg, e.message)
+            Toast.makeText(applicationContext, errorMsg + e.localizedMessage, Toast.LENGTH_LONG).show()
+            return Result.failure()
+        }
     }
 }

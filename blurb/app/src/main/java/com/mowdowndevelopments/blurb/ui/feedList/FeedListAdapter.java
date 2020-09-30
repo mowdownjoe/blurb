@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.databinding.FolderListItemBinding;
-import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
+import com.mowdowndevelopments.blurb.network.responseModels.GetFeedsResponse;
 
 import java.util.ArrayList;
 import java.util.Map;

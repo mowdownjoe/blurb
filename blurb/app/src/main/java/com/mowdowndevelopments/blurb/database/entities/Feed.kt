@@ -1,151 +1,124 @@
-package com.mowdowndevelopments.blurb.database.entities;
+package com.mowdowndevelopments.blurb.database.entities
 
-import android.os.Parcel;
-import android.os.Parcelable;
-
-import androidx.annotation.Keep;
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
-
-import com.mowdowndevelopments.blurb.ui.feedList.FeedListItem;
-import com.squareup.moshi.Json;
-
-import java.util.Objects;
+import android.os.Parcel
+import android.os.Parcelable
+import androidx.annotation.Keep
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.Ignore
+import androidx.room.PrimaryKey
+import com.mowdowndevelopments.blurb.ui.feedList.FeedListItem
+import com.squareup.moshi.Json
+import java.util.*
 
 @Keep
 @Entity(tableName = Feed.TABLE_NAME)
-public class Feed implements Parcelable, FeedListItem {
-
-    static final String ID = "id";
-    private static final String TITLE = "feed_title";
-    private static final String ADDRESS = "feed_address";
-    private static final String LINK = "feed_link";
-    private static final String FAVICON = "favicon_url";
-    static final String TABLE_NAME = "feeds";
-
+class Feed : Parcelable, FeedListItem {
     @PrimaryKey(autoGenerate = false)
     @ColumnInfo(index = true, name = ID)
-    private int id;
+    var id: Int
+        private set
+
     @Json(name = TITLE)
     @ColumnInfo(name = TITLE)
-    private String feedTitle;
+    var feedTitle: String?
+        private set
+
     @Json(name = ADDRESS)
     @ColumnInfo(name = ADDRESS)
-    private String feedAddress;
+    var feedAddress: String?
+        private set
+
     @Json(name = LINK)
     @ColumnInfo(name = LINK)
-    private String feedLink;
+    var feedLink: String?
+        private set
+
     @Json(name = FAVICON)
     @ColumnInfo(name = FAVICON)
-    private String favIconUrl;
+    var favIconUrl: String?
+        private set
+
     @Ignore
     @Json(name = "nt")
-    private int unreadCount;
+    var unreadCount: Int
+        private set
+
     @Ignore
     @Json(name = "ps")
-    private int preferredUnreadCount;
+    var preferredUnreadCount: Int
+        private set
 
-    public Feed(int id, String feedTitle, String feedAddress, String feedLink, String favIconUrl) {
-        this.id = id;
-        this.feedTitle = feedTitle;
-        this.feedAddress = feedAddress;
-        this.feedLink = feedLink;
-        this.favIconUrl = favIconUrl;
-        unreadCount = -1;
-        preferredUnreadCount = -1;
+    constructor(id: Int, feedTitle: String?, feedAddress: String?, feedLink: String?, favIconUrl: String?) {
+        this.id = id
+        this.feedTitle = feedTitle
+        this.feedAddress = feedAddress
+        this.feedLink = feedLink
+        this.favIconUrl = favIconUrl
+        unreadCount = -1
+        preferredUnreadCount = -1
     }
 
     @Ignore
-    public Feed(int id, String feedTitle, String feedAddress, String feedLink, String favIconUrl, int unreadCount, int preferredUnreadCount) {
-        this.id = id;
-        this.feedTitle = feedTitle;
-        this.feedAddress = feedAddress;
-        this.feedLink = feedLink;
-        this.favIconUrl = favIconUrl;
-        this.unreadCount = unreadCount;
-        this.preferredUnreadCount = preferredUnreadCount;
+    constructor(id: Int, feedTitle: String?, feedAddress: String?, feedLink: String?, favIconUrl: String?, unreadCount: Int, preferredUnreadCount: Int) {
+        this.id = id
+        this.feedTitle = feedTitle
+        this.feedAddress = feedAddress
+        this.feedLink = feedLink
+        this.favIconUrl = favIconUrl
+        this.unreadCount = unreadCount
+        this.preferredUnreadCount = preferredUnreadCount
     }
 
-    private Feed(Parcel in){
-        id = in.readInt();
-        feedTitle = in.readString();
-        feedAddress = in.readString();
-        feedLink = in.readString();
-        favIconUrl = in.readString();
-        unreadCount = -1;
-        preferredUnreadCount = -1;
+    private constructor(`in`: Parcel) {
+        id = `in`.readInt()
+        feedTitle = `in`.readString()
+        feedAddress = `in`.readString()
+        feedLink = `in`.readString()
+        favIconUrl = `in`.readString()
+        unreadCount = -1
+        preferredUnreadCount = -1
     }
 
-    public static final Parcelable.Creator<Feed> CREATOR = new Parcelable.Creator<Feed>() {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || javaClass != other.javaClass) return false
+        val feed = other as Feed
+        return id == feed.id && feedTitle == feed.feedTitle && feedLink == feed.feedLink && favIconUrl == feed.favIconUrl
+    }
 
-        @Override
-        public Feed createFromParcel(Parcel parcel) {
-            return new Feed(parcel);
+    override fun hashCode(): Int {
+        return Objects.hash(id, feedTitle, feedLink, favIconUrl)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(feedTitle)
+        parcel.writeString(feedAddress)
+        parcel.writeString(feedLink)
+        parcel.writeString(favIconUrl)
+    }
+
+    companion object {
+        const val ID = "id"
+        private const val TITLE = "feed_title"
+        private const val ADDRESS = "feed_address"
+        private const val LINK = "feed_link"
+        private const val FAVICON = "favicon_url"
+        const val TABLE_NAME = "feeds"
+        @JvmField
+        val CREATOR: Parcelable.Creator<Feed?> = object : Parcelable.Creator<Feed?> {
+            override fun createFromParcel(parcel: Parcel): Feed? {
+                return Feed(parcel)
+            }
+
+            override fun newArray(size: Int): Array<Feed?> {
+                return arrayOfNulls(size)
+            }
         }
-
-        @Override
-        public Feed[] newArray(int size) {
-            return new Feed[size];
-        }
-    };
-
-    public int getId() {
-        return id;
-    }
-
-    public String getFeedTitle() {
-        return feedTitle;
-    }
-
-    public String getFeedAddress() {
-        return feedAddress;
-    }
-
-    public String getFeedLink() {
-        return feedLink;
-    }
-
-    public String getFavIconUrl() {
-        return favIconUrl;
-    }
-
-    public int getUnreadCount() {
-        return unreadCount;
-    }
-
-    public int getPreferredUnreadCount() {
-        return preferredUnreadCount;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Feed feed = (Feed) o;
-        return id == feed.id &&
-                feedTitle.equals(feed.feedTitle) &&
-                feedLink.equals(feed.feedLink) &&
-                favIconUrl.equals(feed.favIconUrl);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, feedTitle, feedLink, favIconUrl);
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel parcel, int flags) {
-        parcel.writeInt(id);
-        parcel.writeString(feedTitle);
-        parcel.writeString(feedAddress);
-        parcel.writeString(feedLink);
-        parcel.writeString(favIconUrl);
     }
 }

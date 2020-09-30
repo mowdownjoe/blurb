@@ -15,8 +15,8 @@ import com.mowdowndevelopments.blurb.AppExecutors;
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.BlurbDb;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
-import com.mowdowndevelopments.blurb.network.ResponseModels.GetFeedsResponse;
 import com.mowdowndevelopments.blurb.network.Singletons;
+import com.mowdowndevelopments.blurb.network.responseModels.GetFeedsResponse;
 import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker;
 
 import org.jetbrains.annotations.NotNull;

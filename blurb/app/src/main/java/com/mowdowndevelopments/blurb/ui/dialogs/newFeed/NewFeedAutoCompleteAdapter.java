@@ -8,7 +8,7 @@ import android.widget.ArrayAdapter;
 
 import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.databinding.AutocompleteItemBinding;
-import com.mowdowndevelopments.blurb.network.ResponseModels.AutoCompleteResponse;
+import com.mowdowndevelopments.blurb.network.responseModels.AutoCompleteResponse;
 
 import org.jetbrains.annotations.NotNull;
 

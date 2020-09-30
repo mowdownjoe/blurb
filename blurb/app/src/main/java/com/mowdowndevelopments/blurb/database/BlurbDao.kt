@@ -1,55 +1,46 @@
-package com.mowdowndevelopments.blurb.database;
+package com.mowdowndevelopments.blurb.database
 
-import androidx.lifecycle.LiveData;
-import androidx.paging.DataSource;
-import androidx.room.Dao;
-import androidx.room.Delete;
-import androidx.room.Insert;
-import androidx.room.OnConflictStrategy;
-import androidx.room.Query;
-
-import com.mowdowndevelopments.blurb.database.entities.Feed;
-import com.mowdowndevelopments.blurb.database.entities.Story;
-
-import java.util.Collection;
-import java.util.List;
+import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
+import androidx.room.*
+import com.mowdowndevelopments.blurb.database.entities.Feed
+import com.mowdowndevelopments.blurb.database.entities.Story
 
 @Dao
-public interface BlurbDao {
-
+interface BlurbDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void addFeeds(Collection<Feed> feeds);
+    fun addFeeds(feeds: Collection<Feed>)
 
     @Insert
-    void addFeed(Feed feed);
+    fun addFeed(feed: Feed)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    void addStories(Collection<Story> stories);
+    suspend fun addStories(stories: Collection<Story>)
 
     @Insert
-    void addStory(Story story);
+    fun addStory(story: Story)
 
     @Delete
-    void removeStory(Story story);
+    fun removeStory(story: Story)
 
     @Query("SELECT * FROM STORIES ORDER BY story_timestamp DESC")
-    DataSource.Factory<Integer, Story> getStarredStoryPagingSourceFactory();
+    fun getStarredStoryPagingSourceFactory(): DataSource.Factory<Int, Story>
 
     @Query("SELECT * FROM STORIES ORDER BY story_timestamp DESC")
-    LiveData<List<Story>> getStarredStoryList();
+    fun getStarredStoryList(): LiveData<List<Story>>
 
     @Query("SELECT * FROM STORIES ORDER BY story_timestamp DESC LIMIT 20")
-    List<Story> getStarredStoryListForWidget();
+    fun getStarredStoryListForWidget(): List<Story>
 
     @Query("select * from feeds")
-    List<Feed> getFeeds();
+    fun getFeeds(): List<Feed>
 
     @Query("select feed_title from feeds where id = :id")
-    String getFeedTitle(int id);
+    fun getFeedTitle(id: Int): String
 
     @Query("select favicon_url from feeds where id = :id")
-    String getFeedFaviconUrl(int id);
+    fun getFeedFaviconUrl(id: Int): String
 
     @Query("select exists(select 1 from stories where story_hash = :storyHash)")
-    LiveData<Boolean> doesStoryExist(String storyHash);
+    fun doesStoryExist(storyHash: String?): LiveData<Boolean>
 }

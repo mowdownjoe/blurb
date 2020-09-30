@@ -13,8 +13,8 @@ import com.mowdowndevelopments.blurb.R;
 import com.mowdowndevelopments.blurb.database.entities.Feed;
 import com.mowdowndevelopments.blurb.database.entities.Story;
 import com.mowdowndevelopments.blurb.network.LoadingStatus;
-import com.mowdowndevelopments.blurb.network.ResponseModels.FeedContentsResponse;
 import com.mowdowndevelopments.blurb.network.Singletons;
+import com.mowdowndevelopments.blurb.network.responseModels.FeedContentsResponse;
 
 import org.jetbrains.annotations.NotNull;
 
