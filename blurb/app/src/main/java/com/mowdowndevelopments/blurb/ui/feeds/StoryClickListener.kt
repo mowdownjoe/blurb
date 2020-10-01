@@ -1,5 +1,5 @@
-package com.mowdowndevelopments.blurb.ui.feeds;
+package com.mowdowndevelopments.blurb.ui.feeds
 
-public interface StoryClickListener {
-    public void onStoryClick(int position);
+interface StoryClickListener {
+    fun onStoryClick(position: Int)
 }

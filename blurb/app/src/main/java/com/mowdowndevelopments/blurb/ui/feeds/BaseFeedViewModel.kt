@@ -1,37 +1,25 @@
-package com.mowdowndevelopments.blurb.ui.feeds;
+package com.mowdowndevelopments.blurb.ui.feeds
 
-import android.app.Application;
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import com.mowdowndevelopments.blurb.network.LoadingStatus
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
+abstract class BaseFeedViewModel(application: Application) : AndroidViewModel(application) {
+    private val _loadingStatus: MutableLiveData<LoadingStatus> = MutableLiveData(LoadingStatus.WAITING)
+    open val loadingStatus: LiveData<LoadingStatus>
+        get() = _loadingStatus
+    private val _errorMessage: MutableLiveData<String> = MutableLiveData()
+    open val errorMessage: LiveData<String>
+        get() = _errorMessage
 
-import com.mowdowndevelopments.blurb.network.LoadingStatus;
-
-public abstract class BaseFeedViewModel extends AndroidViewModel {
-    private MutableLiveData<LoadingStatus> loadingStatus;
-    private MutableLiveData<String> errorMessage;
-
-    public BaseFeedViewModel(@NonNull Application application) {
-        super(application);
-        loadingStatus = new MutableLiveData<>(LoadingStatus.WAITING);
-        errorMessage = new MutableLiveData<>();
+    fun setErrorMessage(message: String) {
+        _errorMessage.postValue(message)
     }
 
-    public LiveData<LoadingStatus> getLoadingStatus() {
-        return loadingStatus;
+    fun setLoadingStatus(status: LoadingStatus) {
+        _loadingStatus.postValue(status)
     }
 
-    public LiveData<String> getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String message) {
-        errorMessage.postValue(message);
-    }
-
-    public void setLoadingStatus(LoadingStatus status){
-        loadingStatus.postValue(status);
-    }
 }

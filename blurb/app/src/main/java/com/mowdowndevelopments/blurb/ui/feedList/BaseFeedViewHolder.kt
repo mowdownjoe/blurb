@@ -1,54 +1,45 @@
-package com.mowdowndevelopments.blurb.ui.feedList;
+package com.mowdowndevelopments.blurb.ui.feedList
 
-import android.annotation.SuppressLint;
-import android.view.View;
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.entities.Feed
+import com.mowdowndevelopments.blurb.databinding.FeedListItemBinding
+import com.squareup.picasso.Picasso
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+abstract class BaseFeedViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    protected var binding: FeedListItemBinding = FeedListItemBinding.bind(itemView)
 
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Feed;
-import com.mowdowndevelopments.blurb.databinding.FeedListItemBinding;
-import com.squareup.picasso.Picasso;
-
-abstract class BaseFeedViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-    protected FeedListItemBinding binding;
-
-    public BaseFeedViewHolder(@NonNull View itemView) {
-        super(itemView);
-        binding = FeedListItemBinding.bind(itemView);
-        itemView.setOnClickListener(this);
+    init {
+        itemView.setOnClickListener(this)
     }
 
-    @SuppressLint("SetTextI18n")
-    public void bind(Feed feed){
-        boolean shouldShowEmptyFeeds = itemView.getContext()
-                .getSharedPreferences(itemView.getContext().getString(R.string.shared_pref_file), 0)
-                .getBoolean(itemView.getContext().getString(R.string.pref_empty_feeds), true);
-        if (!shouldShowEmptyFeeds && feed.getUnreadCount() + feed.getPreferredUnreadCount() <= 0){
-            itemView.setVisibility(View.GONE);
-            return;
+    fun bind(feed: Feed) {
+        val shouldShowEmptyFeeds = itemView.context
+                .getSharedPreferences(itemView.context.getString(R.string.shared_pref_file), 0)
+                .getBoolean(itemView.context.getString(R.string.pref_key_empty), true)
+        if (!shouldShowEmptyFeeds && feed.unreadCount + feed.preferredUnreadCount <= 0) {
+            itemView.visibility = View.GONE
+            return
         } else {
-            itemView.setVisibility(View.VISIBLE);
+            itemView.visibility = View.VISIBLE
         }
-        binding.tvFeedTitle.setText(feed.getFeedTitle());
-        if (feed.getUnreadCount() > 0){
-            binding.tvUnreadCount.setVisibility(View.VISIBLE);
-            binding.tvUnreadCount.setText(Integer.toString(feed.getUnreadCount()));
+        binding.tvFeedTitle.text = feed.feedTitle
+        if (feed.unreadCount > 0) {
+            binding.tvUnreadCount.visibility = View.VISIBLE
+            binding.tvUnreadCount.text = feed.unreadCount.toString()
         } else {
-            binding.tvUnreadCount.setVisibility(View.INVISIBLE);
+            binding.tvUnreadCount.visibility = View.INVISIBLE
         }
-        if (feed.getPreferredUnreadCount() > 0){
-            binding.tvPreferredUnreadCount.setVisibility(View.VISIBLE);
-            binding.tvPreferredUnreadCount.setText(Integer.toString(feed.getPreferredUnreadCount()));
+        if (feed.preferredUnreadCount > 0) {
+            binding.tvPreferredUnreadCount.visibility = View.VISIBLE
+            binding.tvPreferredUnreadCount.text = feed.preferredUnreadCount.toString()
         } else {
-            binding.tvPreferredUnreadCount.setVisibility(View.INVISIBLE);
+            binding.tvPreferredUnreadCount.visibility = View.INVISIBLE
         }
-        Picasso.get().load(feed.getFavIconUrl())
+        Picasso.get().load(feed.favIconUrl)
                 .error(R.drawable.ic_globe)
                 .placeholder(R.drawable.ic_globe)
-                .into(binding.ivFavIcon);
-
+                .into(binding.ivFavIcon)
     }
 }

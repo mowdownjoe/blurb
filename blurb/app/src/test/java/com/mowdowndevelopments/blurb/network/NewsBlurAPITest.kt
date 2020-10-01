@@ -53,7 +53,7 @@ class NewsBlurAPITest {
             //WHEN
             val response: Response<GetFeedsResponse>
             response = try {
-                val json = moshi?.adapter(GetFeedsResponse::class.java)?.toJson(feedsResponse)
+                val json = moshi.adapter(GetFeedsResponse::class.java).toJson(feedsResponse)
                 server.enqueue(MockResponse().setResponseCode(200).setBody(requireNotNull(json)))
                 getNewsBlurAPI(ApplicationProvider.getApplicationContext(),
                         server.url("/").toString()).getFeeds().execute()
@@ -66,11 +66,11 @@ class NewsBlurAPITest {
             //THEN
             if (response.isSuccessful) {
                 assertThat(response.body()).isNotNull()
-                assertThat(response.body()!!.feeds).isNotNull()
-                assertThat(response.body()!!.feeds).containsAtLeastEntriesIn(testFeeds)
-                assertThat(response.body()!!.folders).isNotNull()
-                assertThat(response.body()!!.folders).containsKey(folderKey)
-                assertThat(response.body()!!.folders[folderKey]).asList().containsAtLeast(1, 2, 3)
+                assertThat(response.body()?.feeds).isNotNull()
+                assertThat(response.body()?.feeds).containsAtLeastEntriesIn(testFeeds)
+                assertThat(response.body()?.folders).isNotNull()
+                assertThat(response.body()?.folders).containsKey(folderKey)
+                assertThat(response.body()?.folders?.get(folderKey)).asList().containsAtLeast(1, 2, 3)
             } else {
                 fail("Server did not return successful response")
             }
@@ -84,7 +84,7 @@ class NewsBlurAPITest {
         val response = FeedContentsResponse(arrayOf(testStory1, testStory2))
 
         //WHEN
-        val json = moshi!!.adapter(FeedContentsResponse::class.java).toJson(response)
+        val json = moshi.adapter(FeedContentsResponse::class.java).toJson(response)
         server.enqueue(MockResponse().setBody(json).setResponseCode(200))
         val serverResponse: Response<FeedContentsResponse>
         serverResponse = try {
@@ -100,7 +100,7 @@ class NewsBlurAPITest {
         //THEN
         if (serverResponse.isSuccessful) {
             assertThat(serverResponse.body()).isNotNull()
-            assertThat(serverResponse.body()!!.stories).asList().containsExactly(testStory1, testStory2)
+            assertThat(serverResponse.body()?.stories).asList().containsExactly(testStory1, testStory2)
         } else {
             fail("Server did not return successful response")
         }

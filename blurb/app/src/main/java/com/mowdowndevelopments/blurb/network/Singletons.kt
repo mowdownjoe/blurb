@@ -25,15 +25,7 @@ object Singletons {
     private lateinit var billingClient: BillingClient
 
     @JvmStatic
-    var moshi: Moshi? = null
-        get() {
-            if (field == null) {
-                field = Moshi.Builder()
-                        .build()
-            }
-            return field
-        }
-        private set
+    val moshi: Moshi by lazy { Moshi.Builder().build() }
 
     @JvmStatic
     fun getOkHttpClient(c: Context): OkHttpClient {
@@ -57,7 +49,7 @@ object Singletons {
     fun getNewsBlurAPI(c: Context, baseUrl: String = BASE_URL): NewsBlurAPI {
         if (!::retrofit.isInitialized) {
             retrofit = Retrofit.Builder()
-                    .addConverterFactory(MoshiConverterFactory.create(moshi!!))
+                    .addConverterFactory(MoshiConverterFactory.create(moshi))
                     .baseUrl(baseUrl)
                     .client(getOkHttpClient(c))
                     .build()

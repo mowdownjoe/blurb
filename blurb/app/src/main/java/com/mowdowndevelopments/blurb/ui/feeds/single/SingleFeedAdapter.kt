@@ -1,98 +1,79 @@
-package com.mowdowndevelopments.blurb.ui.feeds.single;
+package com.mowdowndevelopments.blurb.ui.feeds.single
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.AsyncDifferConfig
+import androidx.recyclerview.widget.DiffUtil
+import com.mowdowndevelopments.blurb.AppExecutors
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.entities.Feed
+import com.mowdowndevelopments.blurb.database.entities.Story
+import com.mowdowndevelopments.blurb.ui.feeds.BaseStoryViewHolder
+import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener
+import com.mowdowndevelopments.blurb.ui.feeds.single.SingleFeedAdapter.SingleFeedStoryViewHolder
+import com.squareup.picasso.Picasso
+import timber.log.Timber
 
-import androidx.annotation.NonNull;
-import androidx.paging.PagedListAdapter;
-import androidx.recyclerview.widget.AsyncDifferConfig;
-import androidx.recyclerview.widget.DiffUtil;
+class SingleFeedAdapter : PagedListAdapter<Story, SingleFeedStoryViewHolder> {
+    private var feed: Feed
+    private var listener: StoryClickListener
 
-import com.mowdowndevelopments.blurb.AppExecutors;
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Feed;
-import com.mowdowndevelopments.blurb.database.entities.Story;
-import com.mowdowndevelopments.blurb.ui.feeds.BaseStoryViewHolder;
-import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;
-import com.squareup.picasso.Picasso;
+    companion object {
+        @JvmField
+        val DIFF_CALLBACK: DiffUtil.ItemCallback<Story> = object : DiffUtil.ItemCallback<Story>() {
+            override fun areItemsTheSame(oldItem: Story, newItem: Story): Boolean {
+                return oldItem.storyHash == newItem.storyHash
+            }
 
-import timber.log.Timber;
-
-public class SingleFeedAdapter extends PagedListAdapter<Story, SingleFeedAdapter.SingleFeedStoryViewHolder> {
-
-    private Feed feed;
-    private StoryClickListener listener;
-
-    public static final DiffUtil.ItemCallback<Story> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<Story>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull Story oldItem, @NonNull Story newItem) {
-                    return oldItem.getStoryHash().equals(newItem.getStoryHash());
-                }
-
-                @Override
-                public boolean areContentsTheSame(@NonNull Story oldItem, @NonNull Story newItem) {
-                    return oldItem.equals(newItem);
-                }
-            };
-
-    public SingleFeedAdapter(@NonNull Feed feed, @NonNull StoryClickListener listener) {
-        super(DIFF_CALLBACK);
-        this.feed = feed;
-        this.listener = listener;
+            override fun areContentsTheSame(oldItem: Story, newItem: Story): Boolean {
+                return oldItem == newItem
+            }
+        }
+        val asyncDifferConfig: AsyncDifferConfig<Story>
+            get() = AsyncDifferConfig.Builder(DIFF_CALLBACK)
+                    .setBackgroundThreadExecutor(AppExecutors.getInstance().networkIO())
+                    .build()
     }
 
-    public SingleFeedAdapter(@NonNull AsyncDifferConfig<Story> config,
-                             @NonNull Feed feed,
-                             @NonNull StoryClickListener listener) {
-        super(config);
-        this.feed = feed;
-        this.listener = listener;
+    constructor(feed: Feed, listener: StoryClickListener) : super(DIFF_CALLBACK) {
+        this.feed = feed
+        this.listener = listener
     }
 
-    @NonNull
-    @Override
-    public SingleFeedStoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.story_list_item, parent, false);
-        return new SingleFeedStoryViewHolder(view);
+    constructor(config: AsyncDifferConfig<Story?>,
+                feed: Feed,
+                listener: StoryClickListener) : super(config) {
+        this.feed = feed
+        this.listener = listener
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull SingleFeedStoryViewHolder holder, int position) {
-        if (getCurrentList() != null) {
-            holder.bind(getItem(position));
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SingleFeedStoryViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val view = inflater.inflate(R.layout.story_list_item, parent, false)
+        return SingleFeedStoryViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: SingleFeedStoryViewHolder, position: Int) {
+        if (currentList != null) {
+            getItem(position)?.let { holder.bind(it) }
         }
     }
 
-    public static AsyncDifferConfig<Story> getAsyncDifferConfig(){
-        return new AsyncDifferConfig.Builder<>(DIFF_CALLBACK)
-                .setBackgroundThreadExecutor(AppExecutors.getInstance().networkIO())
-                .build();
-    }
-
-    class SingleFeedStoryViewHolder extends BaseStoryViewHolder {
-
-        public SingleFeedStoryViewHolder(@NonNull View itemView) {
-            super(itemView);
-        }
-
-        @Override
-        public void bind(Story story) {
-            Timber.v("Binding new viewholder.");
-            super.bind(story);
-            binding.tvFeedName.setText(feed.getFeedTitle());
-            Picasso.get().load(feed.getFavIconUrl())
+    inner class SingleFeedStoryViewHolder(itemView: View) : BaseStoryViewHolder(itemView) {
+        override fun bind(story: Story) {
+            Timber.v("Binding new viewholder.")
+            super.bind(story)
+            binding.tvFeedName.text = feed.feedTitle
+            Picasso.get().load(feed.favIconUrl)
                     .placeholder(R.drawable.ic_globe)
                     .error(R.drawable.ic_globe)
-                    .into(binding.ivStoryFavicon);
+                    .into(binding.ivStoryFavicon)
         }
 
-        @Override
-        public void onClick(View view) {
-            listener.onStoryClick(getAdapterPosition());
+        override fun onClick(view: View) {
+            listener.onStoryClick(adapterPosition)
         }
     }
-
 }

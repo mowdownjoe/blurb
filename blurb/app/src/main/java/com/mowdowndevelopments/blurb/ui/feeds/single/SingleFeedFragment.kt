@@ -1,190 +1,145 @@
-package com.mowdowndevelopments.blurb.ui.feeds.single;
+package com.mowdowndevelopments.blurb.ui.feeds.single
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.os.Bundle
+import android.view.*
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
+import androidx.paging.PagedList
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.entities.Story
+import com.mowdowndevelopments.blurb.databinding.SingleFeedFragmentBinding
+import com.mowdowndevelopments.blurb.network.LoadingStatus
+import com.mowdowndevelopments.blurb.ui.dialogs.SortOrderDialogFragment
+import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener
+import com.squareup.picasso.Picasso
+import timber.log.Timber
+import java.util.*
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.lifecycle.SavedStateHandle;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+class SingleFeedFragment : Fragment(), StoryClickListener {
+    lateinit var binding: SingleFeedFragmentBinding
+    private lateinit var viewModel: SingleFeedViewModel
+    private lateinit var args: SingleFeedFragmentArgs
+    private lateinit var adapter: SingleFeedAdapter
 
-import com.google.android.material.snackbar.BaseTransientBottomBar;
-import com.google.android.material.snackbar.Snackbar;
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Story;
-import com.mowdowndevelopments.blurb.databinding.SingleFeedFragmentBinding;
-import com.mowdowndevelopments.blurb.ui.dialogs.SortOrderDialogFragment;
-import com.mowdowndevelopments.blurb.ui.feeds.StoryClickListener;
-import com.squareup.picasso.Picasso;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.EnumMap;
-import java.util.List;
-
-import timber.log.Timber;
-
-import static java.util.Objects.requireNonNull;
-
-public class SingleFeedFragment extends Fragment implements StoryClickListener {
-
-    SingleFeedFragmentBinding binding;
-    private SingleFeedViewModel viewModel;
-    private SingleFeedFragmentArgs args;
-    private SingleFeedAdapter adapter;
-
-    public static SingleFeedFragment newInstance() {
-        return new SingleFeedFragment();
+    companion object {
+        fun newInstance(): SingleFeedFragment = SingleFeedFragment()
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        args = SingleFeedFragmentArgs.fromBundle(requireArguments());
-        Picasso.get().load(args.getFeedToShow().getFavIconUrl()).fetch(); //Warm up Picasso's cache.
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        args = SingleFeedFragmentArgs.fromBundle(requireArguments())
+        Picasso.get().load(args.feedToShow.favIconUrl).fetch() //Warm up Picasso's cache.
     }
 
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        binding = SingleFeedFragmentBinding.inflate(inflater, container, false);
-        setHasOptionsMenu(true);
-
-        requireNonNull(((AppCompatActivity) requireActivity()).getSupportActionBar())
-                .setTitle(args.getFeedToShow().getFeedTitle());
-        return binding.getRoot();
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        binding = SingleFeedFragmentBinding.inflate(inflater, container, false)
+        setHasOptionsMenu(true)
+        requireNotNull((requireActivity() as AppCompatActivity).supportActionBar).title = args.feedToShow.feedTitle
+        return binding.root
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        adapter = new SingleFeedAdapter(args.getFeedToShow(), this);
-        binding.content.rvStoryList.setAdapter(adapter);
-        binding.content.rvStoryList.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        viewModel = new ViewModelProvider(this, new SingleFeedViewModel
-                .Factory(requireActivity().getApplication(), args.getFeedToShow().getId()))
-                .get(SingleFeedViewModel.class);
-        setupObservers();
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        adapter = SingleFeedAdapter(args.feedToShow, this)
+        binding.content.rvStoryList.adapter = adapter
+        binding.content.rvStoryList.layoutManager = LinearLayoutManager(requireContext())
+        viewModel = ViewModelProvider(this, SingleFeedViewModel.Factory(requireActivity().application, args.feedToShow.id))
+                .get(SingleFeedViewModel::class.java)
+        setupObservers()
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        NavController controller = NavHostFragment.findNavController(this);
-        SavedStateHandle handle = requireNonNull(controller.getCurrentBackStackEntry())
-                .getSavedStateHandle();
-
-        binding.content.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor);
-        binding.content.srfRefreshTab.setOnRefreshListener(() -> {
-            if (handle.contains(SortOrderDialogFragment.ARG_RESULT)){
-                EnumMap<SortOrderDialogFragment.ResultKeys, String> result =
-                        requireNonNull(handle.get(SortOrderDialogFragment.ARG_RESULT));
-                refreshList(result);
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        val controller = NavHostFragment.findNavController(this)
+        val handle = requireNotNull(controller.currentBackStackEntry).savedStateHandle
+        binding.content.srfRefreshTab.setProgressBackgroundColorSchemeResource(R.color.secondaryColor)
+        binding.content.srfRefreshTab.setOnRefreshListener {
+            if (handle.contains(SortOrderDialogFragment.ARG_RESULT)) {
+                val result = requireNotNull(handle.get<EnumMap<SortOrderDialogFragment.ResultKeys, String>>(SortOrderDialogFragment.ARG_RESULT))
+                refreshList(result)
             } else {
-                viewModel.simpleRefresh();
+                viewModel.simpleRefresh()
             }
-        });
-
-        handle.<EnumMap<SortOrderDialogFragment.ResultKeys, String>>getLiveData(SortOrderDialogFragment.ARG_RESULT)
-                .observe(getViewLifecycleOwner(), result -> {
-            if (result != null) {
-                refreshList(result);
-            }
-        });
-    }
-
-    private void setupObservers() {
-        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), message -> {
-            if (message != null && !message.isEmpty()){
-                Snackbar.make(binding.getRoot(), message, BaseTransientBottomBar.LENGTH_LONG).show();
-            }
-        });
-
-        viewModel.getStoryList().observe(getViewLifecycleOwner(), stories -> adapter.submitList(stories));
-        viewModel.getLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
-            switch (loadingStatus){
-                case LOADING:
-                    binding.content.rvStoryList.setVisibility(View.INVISIBLE);
-                    binding.content.tvErrorText.setVisibility(View.INVISIBLE);
-                    binding.content.pbLoadingSpinner.setVisibility(View.VISIBLE);
-                    break;
-                case WAITING:
-                case DONE:
-                    binding.content.rvStoryList.setVisibility(View.VISIBLE);
-                    binding.content.tvErrorText.setVisibility(View.INVISIBLE);
-                    binding.content.pbLoadingSpinner.setVisibility(View.INVISIBLE);
-                    binding.content.srfRefreshTab.setRefreshing(false);
-                    break;
-                case ERROR:
-                    binding.content.tvErrorText.setVisibility(View.VISIBLE);
-                    binding.content.pbLoadingSpinner.setVisibility(View.INVISIBLE);
-                    binding.content.rvStoryList.setVisibility(View.VISIBLE);
-                    binding.content.srfRefreshTab.setRefreshing(false);
-                    break;
-            }
-        });
-        viewModel.getPageLoadingStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
-            switch (loadingStatus){
-                case LOADING:
-                    binding.content.srfRefreshTab.setRefreshing(true);
-                    break;
-                case ERROR:
-                case WAITING:
-                case DONE:
-                    binding.content.srfRefreshTab.setRefreshing(false);
-                    break;
-            }
-        });
-    }
-
-    private void refreshList(@NotNull EnumMap<SortOrderDialogFragment.ResultKeys, String> result) {
-        String sortOrder = result.get(SortOrderDialogFragment.ResultKeys.SORT);
-        String filter = result.get(SortOrderDialogFragment.ResultKeys.FILTER);
-        Timber.d("New parameters received: %s, %s", sortOrder, filter);
-        viewModel.refreshWithNewParameters(sortOrder, filter);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
-        super.onCreateOptionsMenu(menu, inflater);
-        inflater.inflate(R.menu.feed_menu, menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        NavController controller = NavHostFragment.findNavController(this);
-        switch (item.getItemId()){
-            case R.id.mi_mark_all_read:
-                viewModel.markAllAsRead();
-                controller.popBackStack();
-                return true;
-            case R.id.mi_sort_filter:
-                controller.navigate(SingleFeedFragmentDirections
-                        .actionSingleFeedStoryFragmentToSortFilterDialog());
-                return true;
         }
-        return super.onOptionsItemSelected(item);
+        handle.getLiveData<EnumMap<SortOrderDialogFragment.ResultKeys, String>>(SortOrderDialogFragment.ARG_RESULT)
+                .observe(viewLifecycleOwner, { result: EnumMap<SortOrderDialogFragment.ResultKeys, String>? -> result?.let { refreshList(it) } })
     }
 
-    @Override
-    public void onStoryClick(int position) {
-        List<Story> storyList = requireNonNull(adapter.getCurrentList());
-        Story[] stories = new Story[storyList.size()];
-        NavHostFragment.findNavController(this).navigate(SingleFeedFragmentDirections
-                .actionSingleFeedStoryFragmentToStoryPagerActivity(storyList.toArray(stories))
-                .setInitialStory(position));
+    private fun setupObservers() {
+        viewModel.errorMessage.observe(viewLifecycleOwner, { message: String? ->
+            if (message != null && message.isNotEmpty()) {
+                Snackbar.make(binding.root, message, BaseTransientBottomBar.LENGTH_LONG).show()
+            }
+        })
+        viewModel.storyList.observe(viewLifecycleOwner,  { stories: PagedList<Story>? -> adapter.submitList(stories) })
+        viewModel.loadingStatus.observe(viewLifecycleOwner, { loadingStatus: LoadingStatus? ->
+            when (loadingStatus) {
+                LoadingStatus.LOADING -> {
+                    binding.content.rvStoryList.visibility = View.INVISIBLE
+                    binding.content.tvErrorText.visibility = View.INVISIBLE
+                    binding.content.pbLoadingSpinner.visibility = View.VISIBLE
+                }
+                LoadingStatus.WAITING, LoadingStatus.DONE -> {
+                    binding.content.rvStoryList.visibility = View.VISIBLE
+                    binding.content.tvErrorText.visibility = View.INVISIBLE
+                    binding.content.pbLoadingSpinner.visibility = View.INVISIBLE
+                    binding.content.srfRefreshTab.isRefreshing = false
+                }
+                LoadingStatus.ERROR -> {
+                    binding.content.tvErrorText.visibility = View.VISIBLE
+                    binding.content.pbLoadingSpinner.visibility = View.INVISIBLE
+                    binding.content.rvStoryList.visibility = View.VISIBLE
+                    binding.content.srfRefreshTab.isRefreshing = false
+                }
+            }
+        })
+        viewModel.pageLoadingStatus.observe(viewLifecycleOwner, { loadingStatus: LoadingStatus? ->
+            when (loadingStatus) {
+                LoadingStatus.LOADING -> binding.content.srfRefreshTab.isRefreshing = true
+                LoadingStatus.ERROR, LoadingStatus.WAITING, LoadingStatus.DONE -> binding.content.srfRefreshTab.isRefreshing = false
+            }
+        })
+    }
+
+    private fun refreshList(result: EnumMap<SortOrderDialogFragment.ResultKeys, String>) {
+        val sortOrder = result[SortOrderDialogFragment.ResultKeys.SORT]
+        val filter = result[SortOrderDialogFragment.ResultKeys.FILTER]
+        Timber.d("New parameters received: %s, %s", sortOrder, filter)
+        viewModel.refreshWithNewParameters(sortOrder!!, filter!!)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.feed_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.mi_mark_all_read -> {
+                viewModel.markAllAsRead()
+                findNavController().popBackStack()
+                return true
+            }
+            R.id.mi_sort_filter -> {
+                findNavController().navigate(SingleFeedFragmentDirections
+                        .actionSingleFeedStoryFragmentToSortFilterDialog())
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    override fun onStoryClick(position: Int) {
+        val storyList: List<Story> = requireNotNull(adapter.currentList)
+        findNavController().navigate(SingleFeedFragmentDirections
+                .actionSingleFeedStoryFragmentToStoryPagerActivity(storyList.toTypedArray())
+                .setInitialStory(position))
     }
 }

@@ -1,150 +1,116 @@
-package com.mowdowndevelopments.blurb.ui.feeds.single;
+package com.mowdowndevelopments.blurb.ui.feeds.single
 
-import android.app.Application;
-import android.content.SharedPreferences;
-import android.widget.Toast;
+import android.app.Application
+import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Transformations
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
+import androidx.lifecycle.viewModelScope
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.entities.Story
+import com.mowdowndevelopments.blurb.network.LoadingStatus
+import com.mowdowndevelopments.blurb.network.Singletons
+import com.mowdowndevelopments.blurb.network.Singletons.getOkHttpClient
+import com.mowdowndevelopments.blurb.ui.feeds.BaseFeedViewModel
+import kotlinx.coroutines.launch
+import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import ru.gildor.coroutines.okhttp.await
+import timber.log.Timber
+import java.io.UnsupportedEncodingException
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.Transformations;
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.paging.LivePagedListBuilder;
-import androidx.paging.PagedList;
+class SingleFeedViewModel(app: Application, feedId: Int) : BaseFeedViewModel(app) {
+    val pageLoadingStatus: LiveData<LoadingStatus>
+    val storyList: LiveData<PagedList<Story>>
+    private val factory: SingleFeedDataSource.Factory
+    override val loadingStatus: LiveData<LoadingStatus>
+        get() = Transformations
+                .switchMap(factory.mostRecentDataSource, SingleFeedDataSource::initialLoadingStatus)
+    override val errorMessage: LiveData<String>
+        get() = Transformations
+                .switchMap(factory.mostRecentDataSource, SingleFeedDataSource::errorMessage)
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Story;
-import com.mowdowndevelopments.blurb.network.LoadingStatus;
-import com.mowdowndevelopments.blurb.network.Singletons;
-import com.mowdowndevelopments.blurb.ui.feeds.BaseFeedViewModel;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
-import okhttp3.MediaType;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import timber.log.Timber;
-
-import static java.util.Objects.requireNonNull;
-
-public class SingleFeedViewModel extends BaseFeedViewModel {
-
-    private static final int PAGE_SIZE = 6;
-
-    private LiveData<LoadingStatus> pageLoadingStatus;
-    private LiveData<PagedList<Story>> storyList;
-    private SingleFeedDataSource.Factory factory;
-
-    public LiveData<PagedList<Story>> getStoryList() {
-        return storyList;
-    }
-
-    public LiveData<LoadingStatus> getPageLoadingStatus() {
-        return pageLoadingStatus;
-    }
-
-    public SingleFeedViewModel(@NonNull Application app, int feedId) {
-        super(app);
-        Timber.d("Initializing ViewModel");
-        SharedPreferences prefs = app.getSharedPreferences(app.getString(R.string.shared_pref_file), 0);
-        String sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest");
-        String filter = prefs.getString(app.getString(R.string.pref_sort_key), "unread");
-        factory = new SingleFeedDataSource.Factory(getApplication(), feedId, sortOrder, filter);
-        storyList = new LivePagedListBuilder<>(factory, PAGE_SIZE).build();
+    init {
+        Timber.d("Initializing ViewModel")
+        val prefs = app.getSharedPreferences(app.getString(R.string.shared_pref_file), 0)
+        val sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest")
+        val filter = prefs.getString(app.getString(R.string.pref_sort_key), "unread")
+        factory = SingleFeedDataSource.Factory(getApplication(), feedId, sortOrder!!, filter!!)
+        storyList = LivePagedListBuilder(factory, PAGE_SIZE).build()
         pageLoadingStatus = Transformations
-                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getPageLoadingStatus);
+                .switchMap(factory.mostRecentDataSource, SingleFeedDataSource::pageLoadingStatus)
     }
 
-    @Override
-    public LiveData<LoadingStatus> getLoadingStatus() {
-        return Transformations
-                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getInitialLoadingStatus);
+    fun simpleRefresh() {
+        requireNotNull(factory.mostRecentDataSource.value).invalidate()
     }
 
-    @Override
-    public LiveData<String> getErrorMessage() {
-        return Transformations
-                .switchMap(factory.getMostRecentDataSource(), SingleFeedDataSource::getErrorMessage);
+    fun refreshWithNewParameters(sortOrder: String, filter: String) {
+        requireNotNull(factory.mostRecentDataSource.value)
+                .resetWithNewParameters(sortOrder, filter)
     }
 
-    public void simpleRefresh(){
-        requireNonNull(factory.getMostRecentDataSource().getValue()).invalidate();
-    }
-
-    public void refreshWithNewParameters(String sortOrder, String filter){
-        requireNonNull(factory.getMostRecentDataSource().getValue())
-                .resetWithNewParameters(sortOrder, filter);
-    }
-
-    public void markAllAsRead(){
-        StringBuilder stringBuilder;
+    fun markAllAsRead() {
+        val stringBuilder: StringBuilder = StringBuilder()
         try {
-            List<Story> stories = requireNonNull(storyList.getValue());
-            stringBuilder = new StringBuilder();
-            for (Story i: stories) {
-                String encodedHash = URLEncoder.encode(i.getStoryHash(), StandardCharsets.UTF_8.toString());
-                stringBuilder.append("story_hash=").append(encodedHash).append('&');
+            val stories: List<Story> = requireNotNull(storyList.value)
+            for (i in stories) {
+                val encodedHash = URLEncoder.encode(i.storyHash, StandardCharsets.UTF_8.toString())
+                stringBuilder.append("story_hash=").append(encodedHash).append('&')
             }
-            stringBuilder.deleteCharAt(stringBuilder.length()-1);
-        } catch (UnsupportedEncodingException e) {
-            Timber.e(e);
-            String errorMsg = getApplication().getString(R.string.err_fail_mark_all)+e.getLocalizedMessage();
-            Toast.makeText(getApplication(), errorMsg, Toast.LENGTH_LONG).show();
-            FirebaseCrashlytics.getInstance().recordException(e);
-            return;
+            stringBuilder.deleteCharAt(stringBuilder.length - 1)
+        } catch (e: UnsupportedEncodingException) {
+            Timber.e(e)
+            val errorMsg = getApplication<Application>().getString(R.string.err_fail_mark_all) + e.localizedMessage
+            Toast.makeText(getApplication(), errorMsg, Toast.LENGTH_LONG).show()
+            FirebaseCrashlytics.getInstance().recordException(e)
+            return
         }
-
-        MediaType type = MediaType.parse("application/x-www-form-urlencoded");
-        Request request = new Request.Builder()
-                .url(Singletons.BASE_URL+"reader/mark_story_hashes_as_read")
-                .post(RequestBody.create(type, stringBuilder.toString()))
+        val type: MediaType = "application/x-www-form-urlencoded".toMediaType()
+        val request = Request.Builder()
+                .url(Singletons.BASE_URL + "reader/mark_story_hashes_as_read")
+                .post(stringBuilder.toString().toRequestBody(type))
                 .addHeader("content-type", "application/x-www-form-urlencoded")
-                .build();
+                .build()
 
-        Singletons.getOkHttpClient(getApplication()).newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onResponse(@NotNull okhttp3.Call call, @NotNull okhttp3.Response response) {
-                if (response.isSuccessful()){
-                    Timber.d("Marked feed as read.");
+        viewModelScope.launch {
+            try {
+                val response = getOkHttpClient(getApplication()).newCall(request).await()
+                if (response.isSuccessful){
+                    Timber.d("Marked feed as read.")
                 } else {
-                    Toast.makeText(getApplication(), getApplication()
-                            .getString(R.string.http_error, response.code()), Toast.LENGTH_SHORT).show();
-                    Timber.w("Could not mark as read. HTTP Error %o", response.code());
+                    Toast.makeText(getApplication(), getApplication<Application>()
+                            .getString(R.string.http_error, response.code), Toast.LENGTH_SHORT).show()
+                    Timber.w("Could not mark as read. HTTP Error %o", response.code)
                 }
+            } catch (e: Exception) {
+                Timber.e(e)
+                FirebaseCrashlytics.getInstance().recordException(e)
+                Toast.makeText(getApplication(), e.localizedMessage, Toast.LENGTH_SHORT).show()
             }
-
-            @Override
-            public void onFailure(@NotNull okhttp3.Call call, @NotNull IOException e) {
-                Timber.e(e);
-                FirebaseCrashlytics.getInstance().recordException(e);
-                Toast.makeText(getApplication(), e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
+        }
     }
 
-    static class Factory extends ViewModelProvider.AndroidViewModelFactory{
-
-        private int feedId;
-        private Application app;
-        public Factory(@NonNull Application application, int feedId) {
-            super(application);
-            app = application;
-            this.feedId = feedId;
-            Timber.d("Creating Factory for ViewModel");
+    internal class Factory(private val app: Application, private val feedId: Int) : AndroidViewModelFactory(app) {
+        @Suppress("UNCHECKED_CAST")
+        override fun <T : ViewModel?> create(modelClass: Class<T>): T {
+            return SingleFeedViewModel(app, feedId) as T
         }
 
-        @SuppressWarnings("unchecked")
-        @NonNull
-        @Override
-        public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
-            return (T) new SingleFeedViewModel(app, feedId);
+        init {
+            Timber.d("Creating Factory for ViewModel")
         }
+    }
+
+    companion object {
+        private const val PAGE_SIZE = 6
     }
 }

@@ -1,162 +1,110 @@
-package com.mowdowndevelopments.blurb.ui.feeds.single;
+package com.mowdowndevelopments.blurb.ui.feeds.single
 
-import android.content.Context;
+import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.paging.DataSource
+import androidx.paging.PageKeyedDataSource
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.entities.Story
+import com.mowdowndevelopments.blurb.network.LoadingStatus
+import com.mowdowndevelopments.blurb.network.Singletons.getNewsBlurAPI
+import com.mowdowndevelopments.blurb.network.responseModels.FeedContentsResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import timber.log.Timber
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.paging.DataSource;
-import androidx.paging.PageKeyedDataSource;
+class SingleFeedDataSource(private val context: Context,
+                           private val feedId: Int,
+                           private var sortOrder: String,
+                           private var filter: String) : PageKeyedDataSource<Int, Story>() {
+    private val _pageLoadingStatus: MutableLiveData<LoadingStatus> = MutableLiveData(LoadingStatus.WAITING)
+    val pageLoadingStatus: LiveData<LoadingStatus>
+        get() = _pageLoadingStatus
+    private val _initialLoadingStatus: MutableLiveData<LoadingStatus> = MutableLiveData(LoadingStatus.WAITING)
+    val initialLoadingStatus: LiveData<LoadingStatus>
+        get() = _initialLoadingStatus
+    private val _errorMessage: MutableLiveData<String> = MutableLiveData()
+    val errorMessage: LiveData<String>
+        get() = _errorMessage
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Story;
-import com.mowdowndevelopments.blurb.network.LoadingStatus;
-import com.mowdowndevelopments.blurb.network.Singletons;
-import com.mowdowndevelopments.blurb.network.responseModels.FeedContentsResponse;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import timber.log.Timber;
-
-import static java.util.Objects.requireNonNull;
-
-public class SingleFeedDataSource extends PageKeyedDataSource<Integer, Story> {
-
-    private Context context;
-    private int feedId;
-    private String sortOrder;
-    private String filter;
-    private MutableLiveData<LoadingStatus> pageLoadingStatus;
-    private MutableLiveData<LoadingStatus> initialLoadingStatus;
-    private MutableLiveData<String> errorMessage;
-
-    public LiveData<LoadingStatus> getPageLoadingStatus() {
-        return pageLoadingStatus;
+    fun resetWithNewParameters(newSortOrder: String, newFilter: String) {
+        sortOrder = newSortOrder
+        filter = newFilter
+        invalidate()
     }
 
-    public LiveData<String> getErrorMessage() {
-        return errorMessage;
-    }
-
-    public LiveData<LoadingStatus> getInitialLoadingStatus(){
-        return initialLoadingStatus;
-    }
-
-    public SingleFeedDataSource(Context context, int id, String sortOrder, String filter) {
-        super();
-        this.context = context;
-        feedId = id;
-        this.sortOrder = sortOrder;
-        this.filter = filter;
-        errorMessage = new MutableLiveData<>();
-        pageLoadingStatus = new MutableLiveData<>(LoadingStatus.WAITING);
-        initialLoadingStatus = new MutableLiveData<>(LoadingStatus.WAITING);
-    }
-
-
-    public void resetWithNewParameters(@NonNull String newSortOrder, @NonNull String newFilter){
-        sortOrder = newSortOrder;
-        filter = newFilter;
-        invalidate();
-    }
-
-    @Override
-    public void loadInitial(@NonNull LoadInitialParams<Integer> params, @NonNull LoadInitialCallback<Integer, Story> callback) {
-        initialLoadingStatus.postValue(LoadingStatus.LOADING);
-        Singletons.getNewsBlurAPI(context).getFeedContents(feedId, filter, sortOrder)
-                .enqueue(new Callback<FeedContentsResponse>() {
-            @Override
-            public void onResponse(@NotNull Call<FeedContentsResponse> call, @NotNull Response<FeedContentsResponse> response) {
-                Timber.d("Successfully received response. Response Code: %o", response.code());
-                if (response.isSuccessful()) {
-                    initialLoadingStatus.postValue(LoadingStatus.DONE);
-                    FeedContentsResponse body = requireNonNull(response.body());
-                    callback.onResult(Arrays.asList(body.getStories()), null, 2);
-                } else {
-                    initialLoadingStatus.postValue(LoadingStatus.ERROR);
-                    errorMessage.postValue(context.getString(R.string.http_error, response.code()));
-                }
-            }
-
-            @Override
-            public void onFailure(@NotNull Call<FeedContentsResponse> call, @NotNull Throwable t) {
-                initialLoadingStatus.postValue(LoadingStatus.ERROR);
-                errorMessage.postValue(t.getLocalizedMessage());
-                FirebaseCrashlytics.getInstance().recordException(t);
-                Timber.e(t);
-            }
-        });
-    }
-
-    @Override
-    public void loadAfter(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, Story> callback) {
-        pageLoadingStatus.postValue(LoadingStatus.LOADING);
-        Singletons.getNewsBlurAPI(context).getFeedContents(feedId, filter, sortOrder, params.key)
-                .enqueue(new Callback<FeedContentsResponse>() {
-            @Override
-            public void onResponse(@NotNull Call<FeedContentsResponse> call, @NotNull Response<FeedContentsResponse> response) {
-                Timber.d("Successfully received response. Response Code: %o", response.code());
-                if (response.isSuccessful()){
-                    pageLoadingStatus.postValue(LoadingStatus.DONE);
-                    Story[] stories = requireNonNull(response.body()).getStories();
-                    if (stories.length > 0) {
-                        callback.onResult(Arrays.asList(stories), params.key +1);
-                    } else {
-                        callback.onResult(Arrays.asList(stories), null);
+    override fun loadInitial(params: LoadInitialParams<Int>, callback: LoadInitialCallback<Int, Story?>) {
+        _initialLoadingStatus.postValue(LoadingStatus.LOADING)
+        getNewsBlurAPI(context).getFeedContents(feedId, filter, sortOrder)
+                .enqueue(object : Callback<FeedContentsResponse?> {
+                    override fun onResponse(call: Call<FeedContentsResponse?>, response: Response<FeedContentsResponse?>) {
+                        Timber.d("Successfully received response. Response Code: %o", response.code())
+                        if (response.isSuccessful) {
+                            _initialLoadingStatus.postValue(LoadingStatus.DONE)
+                            val body = requireNotNull(response.body())
+                            callback.onResult(listOf(*body.stories), null, 2)
+                        } else {
+                            _initialLoadingStatus.postValue(LoadingStatus.ERROR)
+                            _errorMessage.postValue(context.getString(R.string.http_error, response.code()))
+                        }
                     }
-                } else {
-                    pageLoadingStatus.postValue(LoadingStatus.ERROR);
-                    errorMessage.postValue(context.getString(R.string.http_error, response.code()));
-                }
-            }
 
-            @Override
-            public void onFailure(@NotNull Call<FeedContentsResponse> call, @NotNull Throwable t) {
-                pageLoadingStatus.postValue(LoadingStatus.ERROR);
-                errorMessage.postValue(t.getLocalizedMessage());
-                FirebaseCrashlytics.getInstance().recordException(t);
-                Timber.e(t);
-            }
-        });
+                    override fun onFailure(call: Call<FeedContentsResponse?>, t: Throwable) {
+                        _initialLoadingStatus.postValue(LoadingStatus.ERROR)
+                        _errorMessage.postValue(t.localizedMessage)
+                        FirebaseCrashlytics.getInstance().recordException(t)
+                        Timber.e(t)
+                    }
+                })
     }
 
-    @Override
-    public void loadBefore(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, Story> callback) {
+    override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, Story?>) {
+        _pageLoadingStatus.postValue(LoadingStatus.LOADING)
+        getNewsBlurAPI(context).getFeedContents(feedId, filter, sortOrder, params.key)
+                .enqueue(object : Callback<FeedContentsResponse?> {
+                    override fun onResponse(call: Call<FeedContentsResponse?>, response: Response<FeedContentsResponse?>) {
+                        Timber.d("Successfully received response. Response Code: %o", response.code())
+                        if (response.isSuccessful) {
+                            _pageLoadingStatus.postValue(LoadingStatus.DONE)
+                            val stories = requireNotNull(response.body()).stories
+                            if (stories.isNotEmpty()) {
+                                callback.onResult(listOf(*stories), params.key + 1)
+                            } else {
+                                callback.onResult(listOf(*stories), null)
+                            }
+                        } else {
+                            _pageLoadingStatus.postValue(LoadingStatus.ERROR)
+                            _errorMessage.postValue(context.getString(R.string.http_error, response.code()))
+                        }
+                    }
+
+                    override fun onFailure(call: Call<FeedContentsResponse?>, t: Throwable) {
+                        _pageLoadingStatus.postValue(LoadingStatus.ERROR)
+                        _errorMessage.postValue(t.localizedMessage)
+                        FirebaseCrashlytics.getInstance().recordException(t)
+                        Timber.e(t)
+                    }
+                })
+    }
+
+    override fun loadBefore(params: LoadParams<Int>, callback: LoadCallback<Int, Story>) {
         //Will only append to initial load, not prepend
     }
 
-    static class Factory extends DataSource.Factory<Integer, Story> {
+    internal class Factory(private val context: Context, private val feedId: Int, private val sortOrder: String, private val filter: String) : DataSource.Factory<Int, Story>() {
+        private val _mostRecentDataSource: MutableLiveData<SingleFeedDataSource> = MutableLiveData()
+        val mostRecentDataSource: LiveData<SingleFeedDataSource>
+            get() = _mostRecentDataSource
 
-        private Context context;
-        private int feedId;
-        private String sortOrder;
-        private String filter;
-        private MutableLiveData<SingleFeedDataSource> mostRecentDataSource;
-
-        public Factory(Context context, int feedId, String sortOrder, String filter) {
-            this.context = context;
-            this.feedId = feedId;
-            this.sortOrder = sortOrder;
-            this.filter = filter;
-            mostRecentDataSource = new MutableLiveData<>();
+        override fun create(): SingleFeedDataSource {
+            val dataSource = SingleFeedDataSource(context, feedId, sortOrder, filter)
+            _mostRecentDataSource.postValue(dataSource)
+            return dataSource
         }
 
-        public LiveData<SingleFeedDataSource> getMostRecentDataSource() {
-            return mostRecentDataSource;
-        }
-
-        @NonNull
-        @Override
-        public SingleFeedDataSource create() {
-            SingleFeedDataSource dataSource = new SingleFeedDataSource(context, feedId, sortOrder, filter);
-            mostRecentDataSource.postValue(dataSource);
-            return dataSource;
-        }
     }
+
 }

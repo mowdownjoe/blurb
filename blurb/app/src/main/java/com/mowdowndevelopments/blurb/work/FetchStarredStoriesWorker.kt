@@ -62,8 +62,8 @@ class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : Co
             val response = Singletons.getOkHttpClient(applicationContext).newCall(request).await()
             return if (response.isSuccessful){
                 val body = Singletons.moshi
-                        ?.adapter(FeedContentsResponse::class.java)
-                        ?.fromJson(requireNotNull(response.body).string())
+                        .adapter(FeedContentsResponse::class.java)
+                        .fromJson(requireNotNull(response.body).string())
                 BlurbDb.getInstance(applicationContext).blurbDao()
                         .addStories(listOf(*requireNotNull(body).stories))
                 response.body?.close()

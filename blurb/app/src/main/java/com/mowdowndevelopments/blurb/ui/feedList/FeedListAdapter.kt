@@ -1,185 +1,150 @@
-package com.mowdowndevelopments.blurb.ui.feedList;
+package com.mowdowndevelopments.blurb.ui.feedList
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.entities.Feed
+import com.mowdowndevelopments.blurb.databinding.FolderListItemBinding
+import com.mowdowndevelopments.blurb.network.responseModels.GetFeedsResponse
+import com.mowdowndevelopments.blurb.ui.feedList.FolderInnerFeedListAdapter.FeedOnClickListener
+import timber.log.Timber
+import java.util.*
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+class FeedListAdapter(private val listener: ItemOnClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private lateinit var feedListItems: ArrayList<FeedListItem>
 
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Feed;
-import com.mowdowndevelopments.blurb.databinding.FolderListItemBinding;
-import com.mowdowndevelopments.blurb.network.responseModels.GetFeedsResponse;
-
-import java.util.ArrayList;
-import java.util.Map;
-
-import timber.log.Timber;
-
-@SuppressWarnings("rawtypes")
-public class FeedListAdapter extends RecyclerView.Adapter {
-
-    private static final int HOLDER_TYPE_FOLDER = 771;
-    private static final int HOLDER_TYPE_ORPHAN_FEED = 367;
-
-    private ArrayList<FeedListItem> feedListItems;
-    private ItemOnClickListener listener;
-
-    interface ItemOnClickListener{
-        void onFeedItemClick(Feed f);
-        void onFolderItemClick(Folder f);
+    interface ItemOnClickListener {
+        fun onFeedItemClick(f: Feed?)
+        fun onFolderItemClick(f: Folder?)
     }
 
-    public FeedListAdapter(ItemOnClickListener listener) {
-        this.listener = listener;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        FeedListItem item = feedListItems.get(position);
-        if (item instanceof Feed){
-            return HOLDER_TYPE_ORPHAN_FEED;
-        } else if (item instanceof Folder){
-            return HOLDER_TYPE_FOLDER;
+    override fun getItemViewType(position: Int): Int {
+        val item = feedListItems[position]
+        if (item is Feed) {
+            return HOLDER_TYPE_ORPHAN_FEED
+        } else if (item is Folder) {
+            return HOLDER_TYPE_FOLDER
         }
-        return super.getItemViewType(position);
+        return super.getItemViewType(position)
     }
 
-    @NonNull
-    @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view;
-        if (viewType == HOLDER_TYPE_ORPHAN_FEED){
-            view = inflater.inflate(R.layout.feed_list_item, parent, false);
-            return new OrphanFeedViewHolder(view);
-        } else if (viewType == HOLDER_TYPE_FOLDER){
-            view = inflater.inflate(R.layout.folder_list_item, parent, false);
-            return new FolderViewHolder(view);
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val view: View
+        if (viewType == HOLDER_TYPE_ORPHAN_FEED) {
+            view = inflater.inflate(R.layout.feed_list_item, parent, false)
+            return OrphanFeedViewHolder(view)
+        } else if (viewType == HOLDER_TYPE_FOLDER) {
+            view = inflater.inflate(R.layout.folder_list_item, parent, false)
+            return FolderViewHolder(view)
         }
-        throw new UnsupportedOperationException("Tried to create an unsupported ViewHolder type.");
+        throw UnsupportedOperationException("Tried to create an unsupported ViewHolder type.")
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof FolderViewHolder){
-            ((FolderViewHolder) holder).bind((Folder) feedListItems.get(position));
-        } else if (holder instanceof OrphanFeedViewHolder){
-            ((OrphanFeedViewHolder) holder).bind((Feed) feedListItems.get(position));
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is FolderViewHolder) {
+            holder.bind(feedListItems[position] as Folder?)
+        } else if (holder is OrphanFeedViewHolder) {
+            holder.bind((feedListItems[position] as Feed?)!!)
         }
     }
 
-    @Override
-    public int getItemCount() {
-        if (feedListItems != null) {
-            return feedListItems.size();
-        }
-        return 0;
-    }
+    override fun getItemCount(): Int = if (!::feedListItems.isInitialized) {
+        feedListItems.size
+    } else 0
 
-    public int getFeedCount(){
-        if (feedListItems == null) return 0;
-        int count = 0;
-        for (FeedListItem item : feedListItems) {
-            if (item instanceof Folder){
-                count += ((Folder) item).getFeeds().size();
-            } else {
-                ++count;
-            }
-        }
-        return count;
-    }
-
-    public void setData(GetFeedsResponse response){
-        feedListItems = new ArrayList<>();
-        Map<String, Feed> feedMap = response.getFeeds();
-        response.getFolders().forEach((folderName, feedIDs) -> {
-            ArrayList<Feed> feeds = new ArrayList<>();
-            for (int i : feedIDs) {
-                Feed feed = feedMap.get(Integer.toString(i));
-                feeds.add(feed);
-            }
-            if (!folderName.trim().isEmpty()){
-                feedListItems.add(new Folder(folderName, feeds));
-            } else { //Empty folder name means not sorted into folder
-                feedListItems.addAll(0, feeds);
-            }
-        });
-        notifyDataSetChanged();
-        Timber.d("New data received for adapter. Refreshing.");
-    }
-
-    private class OrphanFeedViewHolder extends BaseFeedViewHolder {
-
-        public OrphanFeedViewHolder(@NonNull View itemView) {
-            super(itemView);
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (feedListItems != null){
-                listener.onFeedItemClick((Feed) feedListItems.get(getAdapterPosition()));
-            }
-        }
-    }
-
-    private class FolderViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener, FolderInnerFeedListAdapter.FeedOnClickListener {
-
-        private FolderListItemBinding binding;
-        private boolean areFeedsHidden;
-        private FolderInnerFeedListAdapter adapter;
-
-        public FolderViewHolder(@NonNull View itemView) {
-            super(itemView);
-            binding = FolderListItemBinding.bind(itemView);
-            binding.folderHeader.ibExpandContractFolder.setOnClickListener(view -> {
-                if (areFeedsHidden){
-                    binding.rvFolderFeeds.setVisibility(View.VISIBLE);
-                    binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_less);
-                    binding.folderHeader.ibExpandContractFolder
-                            .setContentDescription(itemView.getContext().getString(R.string.desc_collapse));
-                    areFeedsHidden = false;
+    val feedCount: Int
+        get() {
+            if (!::feedListItems.isInitialized) return 0
+            var count = 0
+            for (item in feedListItems) {
+                if (item is Folder) {
+                    count += item.feeds.size
                 } else {
-                    binding.rvFolderFeeds.setVisibility(View.GONE);
-                    binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_more);
-                    binding.folderHeader.ibExpandContractFolder
-                            .setContentDescription(itemView.getContext().getString(R.string.desc_expand));
-                    areFeedsHidden = true;
+                    ++count
                 }
-            });
-            binding.folderHeader.ivFolderIcon.setOnClickListener(this);
-            binding.folderHeader.tvFolderName.setOnClickListener(this);
-
-            adapter = new FolderInnerFeedListAdapter(this);
-            binding.rvFolderFeeds.setHasFixedSize(true);
-            binding.rvFolderFeeds.setAdapter(adapter);
-            binding.rvFolderFeeds.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
+            }
+            return count
         }
 
-        public void bind(Folder folder){
-            areFeedsHidden = false;
-            binding.rvFolderFeeds.setVisibility(View.VISIBLE);
-            binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_less);
-            binding.folderHeader.ibExpandContractFolder
-                    .setContentDescription(itemView.getContext().getString(R.string.desc_collapse));
-            binding.folderHeader.tvFolderName.setText(folder.getName());
-            adapter.setInnerFeeds(folder.getFeeds());
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (feedListItems != null){
-                listener.onFolderItemClick((Folder) feedListItems.get(getAdapterPosition()));
+    fun setData(response: GetFeedsResponse) {
+        feedListItems = ArrayList()
+        val feedMap = response.feeds
+        response.folders.forEach { (folderName: String, feedIDs: Array<Int>) ->
+            val feeds = ArrayList<Feed>()
+            for (i in feedIDs) {
+                val feed = feedMap[i.toString()]
+                feeds.add(requireNotNull(feed))
+            }
+            if (folderName.trim { it <= ' ' }.isNotEmpty()) {
+                feedListItems.add(Folder(folderName, feeds))
+            } else { //Empty folder name means not sorted into folder
+                feedListItems.addAll(0, feeds)
             }
         }
+        notifyDataSetChanged()
+        Timber.d("New data received for adapter. Refreshing.")
+    }
 
-        @Override
-        public void onInnerItemClick(Feed feed) {
-            listener.onFeedItemClick(feed);
+    private inner class OrphanFeedViewHolder(itemView: View) : BaseFeedViewHolder(itemView) {
+        override fun onClick(view: View) {
+            if (!::feedListItems.isInitialized) {
+                listener.onFeedItemClick(feedListItems[adapterPosition] as Feed?)
+            }
         }
     }
 
+    private inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener, FeedOnClickListener {
+        private val binding: FolderListItemBinding = FolderListItemBinding.bind(itemView)
+        private var areFeedsHidden = false
+        private val adapter: FolderInnerFeedListAdapter
+        fun bind(folder: Folder?) {
+            areFeedsHidden = false
+            binding.rvFolderFeeds.visibility = View.VISIBLE
+            binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_less)
+            binding.folderHeader.ibExpandContractFolder.contentDescription = itemView.context.getString(R.string.desc_collapse)
+            binding.folderHeader.tvFolderName.text = folder!!.name
+            adapter.setInnerFeeds(folder.feeds)
+        }
+
+        override fun onClick(view: View) {
+            if (!::feedListItems.isInitialized) {
+                listener.onFolderItemClick(feedListItems[adapterPosition] as Folder?)
+            }
+        }
+
+        override fun onInnerItemClick(feed: Feed) {
+            listener.onFeedItemClick(feed)
+        }
+
+        init {
+            binding.folderHeader.ibExpandContractFolder.setOnClickListener {
+                if (areFeedsHidden) {
+                    binding.rvFolderFeeds.visibility = View.VISIBLE
+                    binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_less)
+                    binding.folderHeader.ibExpandContractFolder.contentDescription = itemView.context.getString(R.string.desc_collapse)
+                    areFeedsHidden = false
+                } else {
+                    binding.rvFolderFeeds.visibility = View.GONE
+                    binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_more)
+                    binding.folderHeader.ibExpandContractFolder.contentDescription = itemView.context.getString(R.string.desc_expand)
+                    areFeedsHidden = true
+                }
+            }
+            binding.folderHeader.ivFolderIcon.setOnClickListener(this)
+            binding.folderHeader.tvFolderName.setOnClickListener(this)
+            adapter = FolderInnerFeedListAdapter(this)
+            binding.rvFolderFeeds.setHasFixedSize(true)
+            binding.rvFolderFeeds.adapter = adapter
+            binding.rvFolderFeeds.layoutManager = LinearLayoutManager(itemView.context)
+        }
+    }
+
+    companion object {
+        private const val HOLDER_TYPE_FOLDER = 771
+        private const val HOLDER_TYPE_ORPHAN_FEED = 367
+    }
 }

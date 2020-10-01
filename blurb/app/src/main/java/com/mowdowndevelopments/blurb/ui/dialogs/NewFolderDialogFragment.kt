@@ -1,81 +1,67 @@
-package com.mowdowndevelopments.blurb.ui.dialogs;
+package com.mowdowndevelopments.blurb.ui.dialogs
 
-import android.app.Dialog;
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ArrayAdapter;
+import android.app.Dialog
+import android.content.DialogInterface
+import android.os.Bundle
+import android.view.View
+import android.widget.ArrayAdapter
+import androidx.fragment.app.DialogFragment
+import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.databinding.FragmentNewFolderDialogBinding
+import java.util.*
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.SavedStateHandle;
-import androidx.navigation.NavController;
-import androidx.navigation.fragment.NavHostFragment;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.databinding.FragmentNewFolderDialogBinding;
-
-import java.util.Arrays;
-import java.util.EnumMap;
-
-import static java.util.Objects.requireNonNull;
-
-
-public class NewFolderDialogFragment extends DialogFragment {
-
-    public static final String ARG_DIALOG_RESULT = "com.mowdowndevelopments.blurb.RESULT";
-    public enum ResultKeys {
+class NewFolderDialogFragment : DialogFragment() {
+    enum class ResultKeys {
         NEW_FOLDER, NESTED_UNDER
     }
 
-    FragmentNewFolderDialogBinding binding;
-    private ArrayAdapter<String> adapter = null;
+    lateinit var binding: FragmentNewFolderDialogBinding
+    private lateinit var adapter: ArrayAdapter<String>
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val builder = MaterialAlertDialogBuilder(requireActivity())
+        binding = FragmentNewFolderDialogBinding.inflate(requireActivity().layoutInflater)
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
-        binding = FragmentNewFolderDialogBinding.inflate(requireActivity().getLayoutInflater());
+        val folders = NewFolderDialogFragmentArgs.fromBundle(requireArguments()).folderNames
 
-        String[] folders = NewFolderDialogFragmentArgs.fromBundle(requireArguments()).getFolderNames();
         if (folders != null) {
-            adapter = new ArrayAdapter<>(requireContext(),
-                    android.R.layout.simple_spinner_dropdown_item, Arrays.asList(folders));
-            binding.spinFolderList.setAdapter(adapter);
+            adapter = ArrayAdapter(requireContext(),
+                    android.R.layout.simple_spinner_dropdown_item, listOf(*folders))
+            binding.spinFolderList.adapter = adapter
         } else {
-            binding.spinFolderList.setVisibility(View.GONE);
-            binding.tvSpinnerLabel.setVisibility(View.GONE);
+            binding.spinFolderList.visibility = View.GONE
+            binding.tvSpinnerLabel.visibility = View.GONE
         }
-
-        builder.setView(binding.getRoot())
-                .setNegativeButton(R.string.btn_cancel, (dialog, i) -> dialog.cancel())
-                .setPositiveButton(R.string.dialog_btn_add_folder, (dialog, i) -> {
-                    String newFolderName = requireNonNull(binding.etNewFolderName.getText()).toString();
-                    if (newFolderName.trim().isEmpty()){
-                        dialog.dismiss();
-                        return;
+        builder.setView(binding.root)
+                .setNegativeButton(R.string.btn_cancel) { dialog: DialogInterface, _: Int -> dialog.cancel() }
+                .setPositiveButton(R.string.dialog_btn_add_folder) { dialog: DialogInterface, _: Int ->
+                    val newFolderName = Objects.requireNonNull(binding.etNewFolderName.text).toString()
+                    if (newFolderName.trim { it <= ' ' }.isEmpty()) {
+                        dialog.dismiss()
+                        return@setPositiveButton
                     }
-
-                    NavController controller = NavHostFragment.findNavController(this);
-                    SavedStateHandle handle = requireNonNull(controller.getPreviousBackStackEntry())
-                            .getSavedStateHandle();
-
-                    String nestedUnder;
-                    if (adapter != null){
-                        nestedUnder = adapter.getItem(binding.spinFolderList.getSelectedItemPosition())
-                                .trim();
+                    val controller = NavHostFragment.findNavController(this)
+                    val handle = requireNotNull(controller.previousBackStackEntry)
+                            .savedStateHandle
+                    val nestedUnder: String? = if (!::adapter.isInitialized) {
+                        adapter.getItem(binding.spinFolderList.selectedItemPosition)
+                                ?.trim { it <= ' ' }
                     } else {
-                        nestedUnder = "";
+                        null
                     }
-                    EnumMap<ResultKeys, String> results = new EnumMap<>(ResultKeys.class);
-                    results.put(ResultKeys.NEW_FOLDER, newFolderName);
-                    if (!nestedUnder.isEmpty()) {
-                        results.put(ResultKeys.NESTED_UNDER, nestedUnder);
+                    val results = EnumMap<ResultKeys, String>(ResultKeys::class.java)
+                    results[ResultKeys.NEW_FOLDER] = newFolderName
+                    if (nestedUnder != null && nestedUnder.isNotEmpty()) {
+                        results[ResultKeys.NESTED_UNDER] = nestedUnder
                     }
-                    handle.set(ARG_DIALOG_RESULT, results);
-                    dialog.dismiss();
-                });
-        return builder.create();
+                    handle.set(ARG_DIALOG_RESULT, results)
+                    dialog.dismiss()
+                }
+        return builder.create()
+    }
+
+    companion object {
+        const val ARG_DIALOG_RESULT = "com.mowdowndevelopments.blurb.RESULT"
     }
 }

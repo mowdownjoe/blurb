@@ -1,66 +1,42 @@
-package com.mowdowndevelopments.blurb.ui.feedList;
+package com.mowdowndevelopments.blurb.ui.feedList
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.database.entities.Feed
+import com.mowdowndevelopments.blurb.ui.feedList.FolderInnerFeedListAdapter.InnerFeedViewHolder
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.database.entities.Feed;
-
-import java.util.List;
-
-public class FolderInnerFeedListAdapter extends RecyclerView.Adapter<FolderInnerFeedListAdapter.InnerFeedViewHolder> {
-
+class FolderInnerFeedListAdapter(private val listener: FeedOnClickListener) : RecyclerView.Adapter<InnerFeedViewHolder>() {
     interface FeedOnClickListener {
-        void onInnerItemClick(Feed feed);
+        fun onInnerItemClick(feed: Feed)
     }
 
-    private FeedOnClickListener listener;
-    private List<Feed> feeds;
-
-    public FolderInnerFeedListAdapter(FeedOnClickListener listener) {
-        this.listener = listener;
+    private lateinit var feeds: List<Feed>
+    fun setInnerFeeds(feeds: List<Feed>) {
+        this.feeds = feeds
+        notifyDataSetChanged()
     }
 
-    public void setInnerFeeds(List<Feed> feeds){
-        this.feeds = feeds;
-        notifyDataSetChanged();
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): InnerFeedViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val view = inflater.inflate(R.layout.feed_list_item, parent, false)
+        return InnerFeedViewHolder(view)
     }
 
-    @NonNull
-    @Override
-    public InnerFeedViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.feed_list_item, parent, false);
-        return new InnerFeedViewHolder(view);
+    override fun onBindViewHolder(holder: InnerFeedViewHolder, position: Int) {
+        holder.bind(feeds[position])
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull InnerFeedViewHolder holder, int position) {
-        holder.bind(feeds.get(position));
-    }
+    override fun getItemCount(): Int = if (!::feeds.isInitialized) {
+        feeds.size
+    } else 0
 
-    @Override
-    public int getItemCount() {
-        if (feeds != null) {
-            return feeds.size();
-        }
-        return 0;
-    }
-
-    protected class InnerFeedViewHolder extends BaseFeedViewHolder {
-
-        public InnerFeedViewHolder(@NonNull View itemView) {
-            super(itemView);
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (feeds != null) {
-                listener.onInnerItemClick(feeds.get(getAdapterPosition()));
+    inner class InnerFeedViewHolder(itemView: View) : BaseFeedViewHolder(itemView) {
+        override fun onClick(view: View) {
+            if (!::feeds.isInitialized) {
+                listener.onInnerItemClick(feeds[adapterPosition])
             }
         }
     }

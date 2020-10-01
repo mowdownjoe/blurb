@@ -1,27 +1,24 @@
-package com.mowdowndevelopments.blurb.ui.settings;
+package com.mowdowndevelopments.blurb.ui.settings
 
-import android.os.Bundle;
+import android.os.Bundle
+import androidx.preference.Preference
+import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.SwitchPreferenceCompat
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.mowdowndevelopments.blurb.R
 
-import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.SwitchPreferenceCompat;
-
-import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.mowdowndevelopments.blurb.R;
-
-public class SettingsFragment extends PreferenceFragmentCompat {
-
-    @Override
-    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        setPreferencesFromResource(R.xml.root_preferences, rootKey);
-        SwitchPreferenceCompat crashlyticsPref = findPreference(getString(R.string.pref_crashlytics_key));
-        crashlyticsPref.setOnPreferenceChangeListener((preference, newValue) -> {
-            if (Boolean.TRUE.equals(newValue)){
-                FirebaseCrashlytics.getInstance().sendUnsentReports();
-                FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true);
+class SettingsFragment : PreferenceFragmentCompat() {
+    override fun onCreatePreferences(savedInstanceState: Bundle, rootKey: String) {
+        setPreferencesFromResource(R.xml.root_preferences, rootKey)
+        val crashlyticsPref = findPreference<SwitchPreferenceCompat>(getString(R.string.pref_crashlytics_key))
+        crashlyticsPref?.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _: Preference?, newValue: Any ->
+            if (true == newValue) {
+                FirebaseCrashlytics.getInstance().sendUnsentReports()
+                FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true)
             } else {
-                FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false);
+                FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false)
             }
-            return true;
-        });
+            true
+        }
     }
 }
