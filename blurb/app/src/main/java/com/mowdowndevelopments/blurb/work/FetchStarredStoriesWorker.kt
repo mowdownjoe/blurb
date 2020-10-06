@@ -33,7 +33,7 @@ class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : Co
             }
         } catch (e: Exception){
             val errorMsg = applicationContext.getString(R.string.error_star_fetch)
-            Timber.e(e, "%s%s", errorMsg, e.message)
+            Timber.e(e, "$errorMsg${e.message}")
             Toast.makeText(applicationContext, errorMsg + e.localizedMessage, Toast.LENGTH_LONG).show()
             Result.failure()
         }
@@ -48,11 +48,9 @@ class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : Co
                 .scheme("https")
                 .host("newsblur.com")
                 .addPathSegments("reader/starred_stories")
-        var count = 0
-        for (storyHash in hashes) {
+        for ((i, storyHash) in hashes.withIndex()) {
+            if (i >= 100) break //Only accepts max 100 hashes.
             builder.addQueryParameter("h", storyHash)
-            ++count
-            if (count >= 100) break //Only accepts max 100 hashes.
         }
         val request = Request.Builder()
                 .url(builder.build())

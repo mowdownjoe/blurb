@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -24,8 +25,8 @@ import java.util.*
 class SingleFeedFragment : Fragment(), StoryClickListener {
     lateinit var binding: SingleFeedFragmentBinding
     private lateinit var viewModel: SingleFeedViewModel
-    private lateinit var args: SingleFeedFragmentArgs
     private lateinit var adapter: SingleFeedAdapter
+    private val args by navArgs<SingleFeedFragmentArgs>()
 
     companion object {
         fun newInstance(): SingleFeedFragment = SingleFeedFragment()
@@ -33,7 +34,6 @@ class SingleFeedFragment : Fragment(), StoryClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        args = SingleFeedFragmentArgs.fromBundle(requireArguments())
         Picasso.get().load(args.feedToShow.favIconUrl).fetch() //Warm up Picasso's cache.
     }
 

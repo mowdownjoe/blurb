@@ -28,6 +28,10 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
 class SingleFeedViewModel(app: Application, feedId: Int) : BaseFeedViewModel(app) {
+    companion object {
+        private const val PAGE_SIZE = 6
+    }
+
     val pageLoadingStatus: LiveData<LoadingStatus>
     val storyList: LiveData<PagedList<Story>>
     private val factory: SingleFeedDataSource.Factory
@@ -89,7 +93,7 @@ class SingleFeedViewModel(app: Application, feedId: Int) : BaseFeedViewModel(app
                 } else {
                     Toast.makeText(getApplication(), getApplication<Application>()
                             .getString(R.string.http_error, response.code), Toast.LENGTH_SHORT).show()
-                    Timber.w("Could not mark as read. HTTP Error %o", response.code)
+                    Timber.w("Could not mark as read. HTTP Error ${response.code}")
                 }
             } catch (e: Exception) {
                 Timber.e(e)
@@ -102,15 +106,15 @@ class SingleFeedViewModel(app: Application, feedId: Int) : BaseFeedViewModel(app
     internal class Factory(private val app: Application, private val feedId: Int) : AndroidViewModelFactory(app) {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
-            return SingleFeedViewModel(app, feedId) as T
+            if (modelClass.isAssignableFrom(SingleFeedViewModel::class.java)) {
+                return SingleFeedViewModel(app, feedId) as T
+            } else {
+                throw IllegalArgumentException("ViewModel Not Found")
+            }
         }
 
         init {
             Timber.d("Creating Factory for ViewModel")
         }
-    }
-
-    companion object {
-        private const val PAGE_SIZE = 6
     }
 }

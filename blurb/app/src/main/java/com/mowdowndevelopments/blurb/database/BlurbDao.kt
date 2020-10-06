@@ -18,10 +18,10 @@ interface BlurbDao {
     suspend fun addStories(stories: Collection<Story>)
 
     @Insert
-    fun addStory(story: Story)
+    suspend fun addStory(story: Story)
 
     @Delete
-    fun removeStory(story: Story)
+    suspend fun removeStory(story: Story)
 
     @Query("SELECT * FROM STORIES ORDER BY story_timestamp DESC")
     fun getStarredStoryPagingSourceFactory(): DataSource.Factory<Int, Story>

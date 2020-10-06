@@ -42,10 +42,8 @@ object Singletons {
         return okHttpClient
     }
 
-    @JvmStatic //Required until Kotlin Refactor is complete
-    fun getNewsBlurAPI(c: Context) = getNewsBlurAPI(c, BASE_URL)
-
     @JvmStatic
+    @JvmOverloads
     fun getNewsBlurAPI(c: Context, baseUrl: String = BASE_URL): NewsBlurAPI {
         if (!::retrofit.isInitialized) {
             retrofit = Retrofit.Builder()

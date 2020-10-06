@@ -8,24 +8,24 @@ import retrofit2.http.*
 interface NewsBlurAPI {
     @POST("/api/login")
     @FormUrlEncoded
-    fun login(@Field("username") username: String, @Field("password") password: String): Call<AuthResponse>
+    suspend fun login(@Field("username") username: String, @Field("password") password: String): Response<AuthResponse>
 
     @POST("/api/login")
     @FormUrlEncoded
-    fun login(@Field("username") username: String): Call<AuthResponse>
+    suspend fun login(@Field("username") username: String): Response<AuthResponse>
 
     @POST("/api/logout")
     fun logout(): Call<Void>
 
     @POST("/api/signup")
     @FormUrlEncoded
-    fun signup(@Field("username") username: String,
+    suspend fun signup(@Field("username") username: String,
                @Field("password") password: String,
-               @Field("email") emailAddress: String): Call<AuthResponse>
+               @Field("email") emailAddress: String): Response<AuthResponse>
 
     @POST("/api/signup")
     @FormUrlEncoded
-    fun signup(@Field("username") username: String, @Field("email") emailAddress: String?): Call<AuthResponse>
+    suspend fun signup(@Field("username") username: String, @Field("email") emailAddress: String): Response<AuthResponse>
 
     @GET("/reader/feeds?flat=true")
     fun getFeeds(): Call<GetFeedsResponse>
@@ -70,11 +70,11 @@ interface NewsBlurAPI {
 
     @POST("/reader/mark_story_hash_as_starred")
     @FormUrlEncoded
-    fun markStoryAsStarred(@Field("story_hash") storyHash: String): Call<Map<String, Any>>
+    suspend fun markStoryAsStarred(@Field("story_hash") storyHash: String): Response<Map<String, Any>>
 
     @POST("/reader/mark_story_hash_as_unstarred")
     @FormUrlEncoded
-    fun removeStarredStory(@Field("story_hash") storyHash: String): Call<Map<String, Any>>
+    suspend fun removeStarredStory(@Field("story_hash") storyHash: String): Response<Map<String, Any>>
 
     @GET("/rss_feeds/feed_autocomplete")
     fun getAutoCompleteResults(@Query("term") searchTerm: String): Call<List<AutoCompleteResponse>>

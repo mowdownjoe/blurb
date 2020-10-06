@@ -100,14 +100,14 @@ class FeedListAdapter(private val listener: ItemOnClickListener) : RecyclerView.
     private inner class FolderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener, FeedOnClickListener {
         private val binding: FolderListItemBinding = FolderListItemBinding.bind(itemView)
         private var areFeedsHidden = false
-        private val adapter: FolderInnerFeedListAdapter
+        private val adapter: FolderInnerFeedListAdapter = FolderInnerFeedListAdapter(this)
         fun bind(folder: Folder?) {
             areFeedsHidden = false
             binding.rvFolderFeeds.visibility = View.VISIBLE
             binding.folderHeader.ibExpandContractFolder.setImageResource(R.drawable.ic_baseline_unfold_less)
             binding.folderHeader.ibExpandContractFolder.contentDescription = itemView.context.getString(R.string.desc_collapse)
-            binding.folderHeader.tvFolderName.text = folder!!.name
-            adapter.setInnerFeeds(folder.feeds)
+            binding.folderHeader.tvFolderName.text = folder?.name
+            adapter.setInnerFeeds(folder!!.feeds)
         }
 
         override fun onClick(view: View) {
@@ -136,7 +136,6 @@ class FeedListAdapter(private val listener: ItemOnClickListener) : RecyclerView.
             }
             binding.folderHeader.ivFolderIcon.setOnClickListener(this)
             binding.folderHeader.tvFolderName.setOnClickListener(this)
-            adapter = FolderInnerFeedListAdapter(this)
             binding.rvFolderFeeds.setHasFixedSize(true)
             binding.rvFolderFeeds.adapter = adapter
             binding.rvFolderFeeds.layoutManager = LinearLayoutManager(itemView.context)
