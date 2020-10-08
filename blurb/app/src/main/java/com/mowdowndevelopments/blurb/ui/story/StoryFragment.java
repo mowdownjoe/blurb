@@ -89,8 +89,8 @@ public class StoryFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.story_fragment_menu, menu);
         this.menu = menu;
-        toggleMenuItemVisibility(viewModel.getIsActiveStoryStarred().getValue());
-        viewModel.getIsActiveStoryStarred().observe(getViewLifecycleOwner(), this::toggleMenuItemVisibility);
+        toggleMenuItemVisibility(viewModel.isActiveStoryStarred().getValue());
+        viewModel.isActiveStoryStarred().observe(getViewLifecycleOwner(), this::toggleMenuItemVisibility);
     }
 
     @Override

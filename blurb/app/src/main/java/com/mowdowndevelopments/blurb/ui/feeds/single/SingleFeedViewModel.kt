@@ -79,12 +79,12 @@ class SingleFeedViewModel(app: Application, feedId: Int) : BaseFeedViewModel(app
             return
         }
         val type: MediaType = "application/x-www-form-urlencoded".toMediaType()
-        val request = Request.Builder()
-                .url(Singletons.BASE_URL + "reader/mark_story_hashes_as_read")
-                .post(stringBuilder.toString().toRequestBody(type))
-                .addHeader("content-type", "application/x-www-form-urlencoded")
-                .build()
-
+        val request = Request.Builder().run {
+            url(Singletons.BASE_URL + "reader/mark_story_hashes_as_read")
+            post(stringBuilder.toString().toRequestBody(type))
+            addHeader("content-type", "application/x-www-form-urlencoded")
+            build()
+        }
         viewModelScope.launch {
             try {
                 val response = getOkHttpClient(getApplication()).newCall(request).await()

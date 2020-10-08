@@ -42,5 +42,5 @@ interface BlurbDao {
     fun getFeedFaviconUrl(id: Int): String
 
     @Query("select exists(select 1 from stories where story_hash = :storyHash)")
-    fun doesStoryExist(storyHash: String?): LiveData<Boolean>
+    suspend fun doesStoryExist(storyHash: String?): LiveData<Boolean>
 }

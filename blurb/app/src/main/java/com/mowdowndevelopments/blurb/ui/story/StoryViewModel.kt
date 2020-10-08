@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.mowdowndevelopments.blurb.AppExecutors
+import com.mowdowndevelopments.blurb.BlurbApp
 import com.mowdowndevelopments.blurb.R
 import com.mowdowndevelopments.blurb.database.BlurbDb
 import com.mowdowndevelopments.blurb.database.entities.Story
@@ -42,12 +42,14 @@ class StoryViewModel(app: Application?) : AndroidViewModel(app!!) {
     var activeStory: Story? = null
         private set
 
-    var isActiveStoryStarred: LiveData<Boolean>? = null
+    lateinit var isActiveStoryStarred: LiveData<Boolean>
         private set
 
     fun setActiveStory(activeStory: Story) {
         this.activeStory = activeStory
-        AppExecutors.getInstance().diskIO().execute { isActiveStoryStarred = BlurbDb.getInstance(getApplication()).blurbDao().doesStoryExist(activeStory.storyHash) }
+        viewModelScope.launch {
+            isActiveStoryStarred = BlurbDb.getInstance(getApplication()).blurbDao().doesStoryExist(activeStory.storyHash)
+        }
     }
 
     fun setStories(newStories: Array<Story>) {
@@ -73,6 +75,7 @@ class StoryViewModel(app: Application?) : AndroidViewModel(app!!) {
 
     fun markQueueAsRead() {
         if (readStories.isEmpty()) return
+        val context = getApplication<Application>()
         try { //OkHttp is required due to an unknown amount of Hashes to mark. Boilerplate as follows:
             val builder = StringBuilder()
             for (i in readStories) {
@@ -81,31 +84,32 @@ class StoryViewModel(app: Application?) : AndroidViewModel(app!!) {
             }
             builder.deleteCharAt(builder.length - 1)
             val type: MediaType = "application/x-www-form-urlencoded".toMediaType()
-            val request = Request.Builder()
-                    .url(Singletons.BASE_URL + "reader/mark_story_hashes_as_read")
-                    .post(builder.toString().toRequestBody(type))
-                    .addHeader("content-type", "application/x-www-form-urlencoded")
-                    .build()
+            val request = Request.Builder().run {
+                url(Singletons.BASE_URL + "reader/mark_story_hashes_as_read")
+                post(builder.toString().toRequestBody(type))
+                addHeader("content-type", "application/x-www-form-urlencoded")
+                build()
+            }
             viewModelScope.launch {
                 try {
-                    val response = getOkHttpClient(getApplication()).newCall(request).await()
+                    val response = getOkHttpClient(context).newCall(request).await()
                     if (response.isSuccessful) {
                         Timber.d("Marked queue as read.")
                         readStories.clear()
                     } else {
-                        Toast.makeText(getApplication(), getApplication<Application>()
+                        Toast.makeText(context, context
                                 .getString(R.string.http_error, response.code), Toast.LENGTH_SHORT).show()
                         Timber.w("Could not mark as read. HTTP Error %o", response.code)
                     }
                 } catch (e: Exception) {
                     Timber.e(e)
                     FirebaseCrashlytics.getInstance().recordException(e)
-                    Toast.makeText(getApplication(), e.localizedMessage, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
                 }
             }
         } catch (e: UnsupportedEncodingException) {
             Timber.e(e)
-            Toast.makeText(getApplication(), e.localizedMessage, Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
             FirebaseCrashlytics.getInstance().recordException(e)
         }
     }
@@ -113,11 +117,12 @@ class StoryViewModel(app: Application?) : AndroidViewModel(app!!) {
     fun markStoryAsStarred(story: Story) {
         viewModelScope.launch {
             try {
-                val response = getNewsBlurAPI(getApplication()).markStoryAsStarred(story.storyHash)
+                val c = getApplication<BlurbApp>().applicationContext
+                val response = getNewsBlurAPI(c).markStoryAsStarred(story.storyHash)
                 if (response.isSuccessful){
-                    BlurbDb.getInstance(getApplication()).blurbDao().addStory(story)
+                    BlurbDb.getInstance(c).blurbDao().addStory(story)
                 } else {
-                    _snackbarMessage.postValue(getApplication<Application>().getString(R.string.http_error, response.code()))
+                    _snackbarMessage.postValue(c.getString(R.string.http_error, response.code()))
                     Timber.w("Could not mark as starred. HTTP Error %o", response.code())
                 }
             } catch (e: Exception) {
@@ -131,11 +136,12 @@ class StoryViewModel(app: Application?) : AndroidViewModel(app!!) {
     fun removeStoryFromStarred(story: Story) {
         viewModelScope.launch {
             try {
-                val response = getNewsBlurAPI(getApplication()).removeStarredStory(story.storyHash)
+                val c = getApplication<BlurbApp>().applicationContext
+                val response = getNewsBlurAPI(c).removeStarredStory(story.storyHash)
                 if (response.isSuccessful) {
-                    BlurbDb.getInstance(getApplication()).blurbDao().removeStory(story)
+                    BlurbDb.getInstance(c).blurbDao().removeStory(story)
                 } else {
-                    _snackbarMessage.postValue(getApplication<Application>().getString(R.string.http_error, response.code()))
+                    _snackbarMessage.postValue(c.getString(R.string.http_error, response.code()))
                     Timber.w("Could not remove from starred. HTTP Error %o", response.code())
                 }
             } catch (e: Exception) {

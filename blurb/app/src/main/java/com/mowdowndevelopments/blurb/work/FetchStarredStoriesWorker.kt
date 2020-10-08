@@ -25,7 +25,7 @@ class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : Co
                 val body = hashResponse.body()
                 requireNotNull(body) {
                     //If does not meet requirements:
-                    return Result.failure()
+                    return@doWork Result.failure()
                 }
                 fetchStoriesAndCommitToDb(body.starredStoryHashes)
             } else {
@@ -42,23 +42,25 @@ class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : Co
     private suspend fun fetchStoriesAndCommitToDb(hashes: List<String>): Result {
         require(hashes.isNotEmpty()) {
             //If does not meet requirements:
-            return Result.success()
+            return@fetchStoriesAndCommitToDb Result.success()
         }
-        val builder = HttpUrl.Builder()
-                .scheme("https")
-                .host("newsblur.com")
-                .addPathSegments("reader/starred_stories")
+        val builder = HttpUrl.Builder().run {
+            scheme("https")
+            host("newsblur.com")
+            addPathSegments("reader/starred_stories")
+        }
         for ((i, storyHash) in hashes.withIndex()) {
             if (i >= 100) break //Only accepts max 100 hashes.
             builder.addQueryParameter("h", storyHash)
         }
-        val request = Request.Builder()
-                .url(builder.build())
-                .get()
-                .build()
-        try {
+        val request = Request.Builder().run {
+            url(builder.build())
+            get()
+            build()
+        }
+        return try {
             val response = Singletons.getOkHttpClient(applicationContext).newCall(request).await()
-            return if (response.isSuccessful){
+            if (response.isSuccessful){
                 val body = Singletons.moshi
                         .adapter(FeedContentsResponse::class.java)
                         .fromJson(requireNotNull(response.body).string())
@@ -77,7 +79,7 @@ class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : Co
             val errorMsg = applicationContext.getString(R.string.error_star_fetch)
             Timber.e(e, "%s%s", errorMsg, e.message)
             Toast.makeText(applicationContext, errorMsg + e.localizedMessage, Toast.LENGTH_LONG).show()
-            return Result.failure()
+            Result.failure()
         }
     }
 }

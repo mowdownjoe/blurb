@@ -25,7 +25,12 @@ object Singletons {
     private lateinit var billingClient: BillingClient
 
     @JvmStatic
-    val moshi: Moshi by lazy { Moshi.Builder().build() }
+    val moshi: Moshi by lazy {
+        Moshi.Builder().run {
+            //add(KotlinJsonAdapterFactory())
+            build()
+        }
+    }
 
     @JvmStatic
     fun getOkHttpClient(c: Context): OkHttpClient {
@@ -33,11 +38,12 @@ object Singletons {
             val dispatcher = Dispatcher((AppExecutors.getInstance().networkIO() as ExecutorService))
             val cookieJar = PersistentCookieJar(SetCookieCache(),
                     SharedPrefsCookiePersistor(c.applicationContext))
-            okHttpClient = OkHttpClient.Builder()
-                    .cookieJar(cookieJar)
-                    .cache(Cache(c.cacheDir, CACHE_SIZE.toLong()))
-                    .dispatcher(dispatcher)
-                    .build()
+            okHttpClient = OkHttpClient.Builder().run {
+                cookieJar(cookieJar)
+                cache(Cache(c.cacheDir, CACHE_SIZE.toLong()))
+                dispatcher(dispatcher)
+                build()
+            }
         }
         return okHttpClient
     }
@@ -46,11 +52,12 @@ object Singletons {
     @JvmOverloads
     fun getNewsBlurAPI(c: Context, baseUrl: String = BASE_URL): NewsBlurAPI {
         if (!::retrofit.isInitialized) {
-            retrofit = Retrofit.Builder()
-                    .addConverterFactory(MoshiConverterFactory.create(moshi))
-                    .baseUrl(baseUrl)
-                    .client(getOkHttpClient(c))
-                    .build()
+            retrofit = Retrofit.Builder().run {
+                addConverterFactory(MoshiConverterFactory.create(moshi))
+                baseUrl(baseUrl)
+                client(getOkHttpClient(c))
+                build()
+            }
         }
         return retrofit.create(NewsBlurAPI::class.java)
     }
@@ -59,12 +66,25 @@ object Singletons {
     fun getBillingClient(c: Context): BillingClient {
         if (!::billingClient.isInitialized) {
             val listener = PurchasesUpdatedListener { billingResult: BillingResult?, list: List<Purchase?>? ->
-                //TODO Fill out Listener
+                when (billingResult?.responseCode){
+                    BillingClient.BillingResponseCode.OK -> {
+                        if (list != null){
+                            //TODO
+                        }
+                    }
+                    BillingClient.BillingResponseCode.USER_CANCELED -> {
+                        //TODO
+                    }
+                    else -> {
+                        //TODO
+                    }
+                }
             }
-            billingClient = BillingClient.newBuilder(c.applicationContext)
-                    .setListener(listener)
-                    .enablePendingPurchases()
-                    .build()
+            billingClient = BillingClient.newBuilder(c.applicationContext).run {
+                setListener(listener)
+                enablePendingPurchases()
+                build()
+            }
         }
         return billingClient
     }
