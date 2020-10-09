@@ -17,7 +17,6 @@ import com.mowdowndevelopments.blurb.network.Singletons
 import com.mowdowndevelopments.blurb.network.Singletons.getOkHttpClient
 import com.mowdowndevelopments.blurb.ui.feeds.BaseFeedViewModel
 import kotlinx.coroutines.launch
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -45,22 +44,18 @@ class SingleFeedViewModel(app: Application, feedId: Int) : BaseFeedViewModel(app
     init {
         Timber.d("Initializing ViewModel")
         val prefs = app.getSharedPreferences(app.getString(R.string.shared_pref_file), 0)
-        val sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest")
-        val filter = prefs.getString(app.getString(R.string.pref_sort_key), "unread")
-        factory = SingleFeedDataSource.Factory(getApplication(), feedId, sortOrder!!, filter!!)
+        val sortOrder = prefs.getString(app.getString(R.string.pref_filter_key), "newest") ?: "newest"
+        val filter = prefs.getString(app.getString(R.string.pref_sort_key), "unread") ?: "unread"
+        factory = SingleFeedDataSource.Factory(getApplication(), feedId, sortOrder, filter)
         storyList = LivePagedListBuilder(factory, PAGE_SIZE).build()
         pageLoadingStatus = Transformations
                 .switchMap(factory.mostRecentDataSource, SingleFeedDataSource::pageLoadingStatus)
     }
 
-    fun simpleRefresh() {
-        requireNotNull(factory.mostRecentDataSource.value).invalidate()
-    }
+    fun simpleRefresh() = requireNotNull(factory.mostRecentDataSource.value).invalidate()
 
-    fun refreshWithNewParameters(sortOrder: String, filter: String) {
-        requireNotNull(factory.mostRecentDataSource.value)
-                .resetWithNewParameters(sortOrder, filter)
-    }
+    fun refreshWithNewParameters(sortOrder: String, filter: String) =
+            requireNotNull(factory.mostRecentDataSource.value).resetWithNewParameters(sortOrder, filter)
 
     fun markAllAsRead() {
         val stringBuilder: StringBuilder = StringBuilder()
@@ -78,7 +73,7 @@ class SingleFeedViewModel(app: Application, feedId: Int) : BaseFeedViewModel(app
             FirebaseCrashlytics.getInstance().recordException(e)
             return
         }
-        val type: MediaType = "application/x-www-form-urlencoded".toMediaType()
+        val type = "application/x-www-form-urlencoded".toMediaType()
         val request = Request.Builder().run {
             url(Singletons.BASE_URL + "reader/mark_story_hashes_as_read")
             post(stringBuilder.toString().toRequestBody(type))

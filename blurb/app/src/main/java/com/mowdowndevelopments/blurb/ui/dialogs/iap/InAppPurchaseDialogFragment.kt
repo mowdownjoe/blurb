@@ -1,166 +1,150 @@
-package com.mowdowndevelopments.blurb.ui.dialogs.iap;
+package com.mowdowndevelopments.blurb.ui.dialogs.iap
 
-import android.app.Dialog;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.app.Dialog
+import android.content.DialogInterface
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.android.billingclient.api.*
+import com.android.billingclient.api.BillingClient.BillingResponseCode
+import com.android.billingclient.api.BillingClient.SkuType
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.mowdowndevelopments.blurb.R
+import com.mowdowndevelopments.blurb.databinding.FragmentInAppPurchaseDialogBinding
+import com.mowdowndevelopments.blurb.network.LoadingStatus
+import com.mowdowndevelopments.blurb.ui.navHost.MainViewModel
+import java.util.*
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.LinearLayoutManager;
+class InAppPurchaseDialogFragment : DialogFragment(), InAppPurchaseItemAdapter.OnItemClickListener {
+    private lateinit var adapter: InAppPurchaseItemAdapter
+    private lateinit var billingClient: BillingClient
+    lateinit var binding: FragmentInAppPurchaseDialogBinding
+    private val viewModel by activityViewModels<MainViewModel>()
 
-import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingClientStateListener;
-import com.android.billingclient.api.BillingFlowParams;
-import com.android.billingclient.api.BillingResult;
-import com.android.billingclient.api.SkuDetails;
-import com.android.billingclient.api.SkuDetailsParams;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.mowdowndevelopments.blurb.R;
-import com.mowdowndevelopments.blurb.databinding.FragmentInAppPurchaseDialogBinding;
-import com.mowdowndevelopments.blurb.network.LoadingStatus;
-import com.mowdowndevelopments.blurb.network.Singletons;
-import com.mowdowndevelopments.blurb.ui.navHost.MainViewModel;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        adapter = InAppPurchaseItemAdapter(this)
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-
-import static com.android.billingclient.api.BillingClient.BillingResponseCode;
-import static com.android.billingclient.api.BillingClient.SkuType;
-import static java.util.Objects.requireNonNull;
-
-
-public class InAppPurchaseDialogFragment extends DialogFragment implements InAppPurchaseItemAdapter.OnItemClickListener {
-
-    private InAppPurchaseItemAdapter adapter;
-    FragmentInAppPurchaseDialogBinding binding;
-    private MainViewModel viewModel;
-
-    public InAppPurchaseDialogFragment() {
-        // Required empty public constructor
-    }
-
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
-        adapter = new InAppPurchaseItemAdapter(this);
-    }
-
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireActivity());
-        binding = FragmentInAppPurchaseDialogBinding.inflate(requireActivity().getLayoutInflater());
-
-        binding.rvItemList.setLayoutManager(new LinearLayoutManager(requireContext()));
-        binding.rvItemList.setAdapter(adapter);
-
-        builder.setView(binding.getRoot())
-                .setNegativeButton(R.string.btn_cancel, (dialog, i) -> {
-                    viewModel.resetRetryAttempts();
-                    dialog.cancel();
-                });
-
-        return builder.create();
-    }
-
-    @Override
-    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return binding.getRoot();
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        viewModel.getInAppDialogStatus().observe(getViewLifecycleOwner(), loadingStatus -> {
-            switch (loadingStatus){
-                case LOADING:
-                    binding.pbLoadingSpinner.setVisibility(View.VISIBLE);
-                    binding.rvItemList.setVisibility(View.INVISIBLE);
-                    binding.tvErrorText.setVisibility(View.INVISIBLE);
-                    break;
-                case WAITING:
-                case DONE:
-                    binding.pbLoadingSpinner.setVisibility(View.INVISIBLE);
-                    binding.rvItemList.setVisibility(View.VISIBLE);
-                    binding.tvErrorText.setVisibility(View.INVISIBLE);
-                    break;
-                case ERROR:
-                    binding.pbLoadingSpinner.setVisibility(View.INVISIBLE);
-                    binding.rvItemList.setVisibility(View.INVISIBLE);
-                    binding.tvErrorText.setVisibility(View.VISIBLE);
-                    break;
-            }
-        });
-
-        beginDonationFlow();
-    }
-
-    private void beginDonationFlow() {
-        viewModel.postInAppDialogStatus(LoadingStatus.LOADING);
-
-        BillingClient billingClient = Singletons.getBillingClient(requireContext());
-        billingClient.startConnection(new BillingClientStateListener() {
-            @Override
-            public void onBillingSetupFinished(@NonNull BillingResult billingResult) {
-                if (billingResult.getResponseCode() == BillingResponseCode.OK) {
-                    viewModel.postInAppDialogStatus(LoadingStatus.DONE);
-                    getProducts();
+        val listener = PurchasesUpdatedListener { billingResult: BillingResult?, list: List<Purchase?>? ->
+            viewModel.resetRetryAttempts()
+            when (billingResult?.responseCode){
+                BillingResponseCode.OK -> {
+                    if (list != null){
+                        dismiss()
+                    } else {
+                        viewModel.postNewErrorMessage(getString(R.string.iap_error))
+                        FirebaseCrashlytics.getInstance()
+                                .log("Somehow received null purchase list. Debug message: ${billingResult.debugMessage}")
+                        requireDialog().cancel()
+                    }
+                }
+                BillingResponseCode.USER_CANCELED -> {
+                    requireDialog().cancel()
+                }
+                else -> {
+                    viewModel.postNewErrorMessage(getString(R.string.iap_error))
+                    FirebaseCrashlytics.getInstance()
+                            .log("Unknown error. Debug message: ${billingResult?.debugMessage}")
+                    requireDialog().cancel()
                 }
             }
-
-            @Override
-            public void onBillingServiceDisconnected() {
-                if (viewModel.canKeepRetryingPurchase()){
-                    viewModel.incrementRetryAttempts();
-                    billingClient.startConnection(this);
-                } else {
-                    viewModel.resetRetryAttempts();
-                    viewModel.postInAppDialogStatus(LoadingStatus.ERROR);
-                }
-            }
-        });
-    }
-
-    private void getProducts() {
-        ArrayList<String> skuList = new ArrayList<>();
-        skuList.add("blurb_donation_drink_level");
-        skuList.add("blurb_donation_lunch_level");
-        skuList.add("blurb_donation_pizza_level");
-        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder()
-                .setType(SkuType.INAPP)
-                .setSkusList(skuList);
-        BillingClient billingClient = Singletons.getBillingClient(requireActivity());
-        billingClient.querySkuDetailsAsync(params.build(), (billingResult, detailsList) -> {
-            if (billingResult.getResponseCode() == BillingResponseCode.OK){
-                adapter.setData(detailsList, billingClient.queryPurchases(SkuType.INAPP).getPurchasesList());
-            }
-        });
-    }
-
-    @Override
-    public void onItemClick(SkuDetails itemDetails) {
-        BillingFlowParams params = BillingFlowParams.newBuilder()
-                .setSkuDetails(itemDetails)
-                .build();
-        int responseCode = Singletons.getBillingClient(requireContext())
-                .launchBillingFlow(requireActivity(), params)
-                .getResponseCode();
-        viewModel.resetRetryAttempts();
-        if (responseCode == BillingResponseCode.OK){
-            dismiss();
-        } else {
-            requireNonNull(getDialog()).cancel();
-            viewModel.postNewErrorMessage(getString(R.string.iap_error));
         }
+        billingClient = BillingClient.newBuilder(requireActivity()).run {
+            setListener(listener)
+            enablePendingPurchases()
+            build()
+        }
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val builder = MaterialAlertDialogBuilder(requireActivity())
+        binding = FragmentInAppPurchaseDialogBinding.inflate(requireActivity().layoutInflater)
+        binding.rvItemList.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvItemList.adapter = adapter
+        builder.setView(binding.root)
+                .setNegativeButton(R.string.btn_cancel) { dialog: DialogInterface, _: Int ->
+                    viewModel.resetRetryAttempts()
+                    dialog.cancel()
+                }
+        return builder.create()
+    }
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View? {
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.inAppDialogStatus.observe(viewLifecycleOwner, { loadingStatus: LoadingStatus? ->
+            when (loadingStatus) {
+                LoadingStatus.LOADING -> {
+                    binding.pbLoadingSpinner.visibility = View.VISIBLE
+                    binding.rvItemList.visibility = View.INVISIBLE
+                    binding.tvErrorText.visibility = View.INVISIBLE
+                }
+                LoadingStatus.WAITING, LoadingStatus.DONE -> {
+                    binding.pbLoadingSpinner.visibility = View.INVISIBLE
+                    binding.rvItemList.visibility = View.VISIBLE
+                    binding.tvErrorText.visibility = View.INVISIBLE
+                }
+                LoadingStatus.ERROR -> {
+                    binding.pbLoadingSpinner.visibility = View.INVISIBLE
+                    binding.rvItemList.visibility = View.INVISIBLE
+                    binding.tvErrorText.visibility = View.VISIBLE
+                }
+            }
+        })
+        beginDonationFlow()
+    }
+
+    private fun beginDonationFlow() {
+        viewModel.postInAppDialogStatus(LoadingStatus.LOADING)
+        billingClient.startConnection(object : BillingClientStateListener {
+            override fun onBillingSetupFinished(billingResult: BillingResult) {
+                if (billingResult.responseCode == BillingResponseCode.OK) {
+                    viewModel.postInAppDialogStatus(LoadingStatus.DONE)
+                    getProducts()
+                }
+            }
+
+            override fun onBillingServiceDisconnected() {
+                if (viewModel.canKeepRetryingPurchase()) {
+                    viewModel.incrementRetryAttempts()
+                    billingClient.startConnection(this)
+                } else {
+                    viewModel.resetRetryAttempts()
+                    viewModel.postInAppDialogStatus(LoadingStatus.ERROR)
+                }
+            }
+        })
+    }
+
+    private fun getProducts() {
+        val skuList = ArrayList<String>()
+        skuList.add("blurb_donation_drink_level")
+        skuList.add("blurb_donation_lunch_level")
+        skuList.add("blurb_donation_pizza_level")
+        val params = SkuDetailsParams.newBuilder()
+                .setType(SkuType.INAPP)
+                .setSkusList(skuList)
+        billingClient.querySkuDetailsAsync(params.build()) { billingResult: BillingResult, detailsList: List<SkuDetails>? ->
+            if (billingResult.responseCode == BillingResponseCode.OK) {
+                adapter.setData(requireNotNull(detailsList),
+                        billingClient.queryPurchases(SkuType.INAPP).purchasesList!!)
+            }
+        }
+    }
+
+    override fun onItemClick(itemDetails: SkuDetails?) {
+        val params = BillingFlowParams.newBuilder()
+                .setSkuDetails(itemDetails!!)
+                .build()
+        billingClient.launchBillingFlow(requireActivity(), params)
     }
 }

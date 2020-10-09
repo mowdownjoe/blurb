@@ -26,7 +26,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-class StoryViewModel(app: Application?) : AndroidViewModel(app!!) {
+class StoryViewModel(app: Application) : AndroidViewModel(app) {
     private val _stories: MutableLiveData<Array<Story>> = MutableLiveData()
     val stories: LiveData<Array<Story>>
         get() = _stories
@@ -39,16 +39,16 @@ class StoryViewModel(app: Application?) : AndroidViewModel(app!!) {
 
     private val readStories: LinkedList<Story> = LinkedList()
 
-    var activeStory: Story? = null
+    lateinit var activeStory: Story
         private set
 
     lateinit var isActiveStoryStarred: LiveData<Boolean>
         private set
 
-    fun setActiveStory(activeStory: Story) {
-        this.activeStory = activeStory
+    fun setActiveStory(newActiveStory: Story) {
+        activeStory = newActiveStory
         viewModelScope.launch {
-            isActiveStoryStarred = BlurbDb.getInstance(getApplication()).blurbDao().doesStoryExist(activeStory.storyHash)
+            isActiveStoryStarred = BlurbDb.getInstance(getApplication()).blurbDao().doesStoryExist(newActiveStory.storyHash)
         }
     }
 

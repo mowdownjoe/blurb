@@ -1,10 +1,6 @@
 package com.mowdowndevelopments.blurb.network
 
 import android.content.Context
-import com.android.billingclient.api.BillingClient
-import com.android.billingclient.api.BillingResult
-import com.android.billingclient.api.Purchase
-import com.android.billingclient.api.PurchasesUpdatedListener
 import com.franmontiel.persistentcookiejar.PersistentCookieJar
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor
@@ -22,7 +18,6 @@ object Singletons {
     const val BASE_URL = "https://newsblur.com/"
     private lateinit var retrofit: Retrofit
     private lateinit var okHttpClient: OkHttpClient
-    private lateinit var billingClient: BillingClient
 
     @JvmStatic
     val moshi: Moshi by lazy {
@@ -60,32 +55,5 @@ object Singletons {
             }
         }
         return retrofit.create(NewsBlurAPI::class.java)
-    }
-
-    @JvmStatic
-    fun getBillingClient(c: Context): BillingClient {
-        if (!::billingClient.isInitialized) {
-            val listener = PurchasesUpdatedListener { billingResult: BillingResult?, list: List<Purchase?>? ->
-                when (billingResult?.responseCode){
-                    BillingClient.BillingResponseCode.OK -> {
-                        if (list != null){
-                            //TODO
-                        }
-                    }
-                    BillingClient.BillingResponseCode.USER_CANCELED -> {
-                        //TODO
-                    }
-                    else -> {
-                        //TODO
-                    }
-                }
-            }
-            billingClient = BillingClient.newBuilder(c.applicationContext).run {
-                setListener(listener)
-                enablePendingPurchases()
-                build()
-            }
-        }
-        return billingClient
     }
 }
