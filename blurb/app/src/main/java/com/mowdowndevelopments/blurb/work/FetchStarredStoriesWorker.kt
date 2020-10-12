@@ -77,7 +77,7 @@ class FetchStarredStoriesWorker(c: Context, workerParams: WorkerParameters) : Co
             }
         } catch (e: Exception) {
             val errorMsg = applicationContext.getString(R.string.error_star_fetch)
-            Timber.e(e, "%s%s", errorMsg, e.message)
+            Timber.e(e, "$errorMsg${e.message}")
             Toast.makeText(applicationContext, errorMsg + e.localizedMessage, Toast.LENGTH_LONG).show()
             Result.failure()
         }

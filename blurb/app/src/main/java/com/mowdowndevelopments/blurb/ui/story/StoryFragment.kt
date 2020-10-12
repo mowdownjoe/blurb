@@ -1,13 +1,13 @@
 package com.mowdowndevelopments.blurb.ui.story
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.*
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import com.mowdowndevelopments.blurb.R
 import com.mowdowndevelopments.blurb.database.entities.Story
 import com.mowdowndevelopments.blurb.databinding.StoryFragmentBinding
@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 class StoryFragment : Fragment() {
-    val viewModel: StoryViewModel by viewModels()
+    val viewModel: StoryViewModel by activityViewModels()
     lateinit var binding: StoryFragmentBinding
     private lateinit var menu: Menu
 
@@ -64,17 +64,18 @@ class StoryFragment : Fragment() {
         val activeStory = viewModel.activeStory
         when (item.itemId) {
             R.id.mi_view_in_browser -> {
+                val context = requireContext()
                 val toolbarColor = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    requireContext().getColor(R.color.primaryColor)
+                    context.getColor(R.color.primaryColor)
                 } else {
-                    requireContext().resources.getColor(R.color.primaryColor)
+                    context.resources.getColor(R.color.primaryColor)
                 }
-                val intent = CustomTabsIntent.Builder()
-                        .setToolbarColor(toolbarColor)
-                        .setStartAnimations(requireContext(), R.anim.slide_in_top, R.anim.fast_fade_out)
-                        .setExitAnimations(requireContext(), R.anim.slide_out_top, R.anim.fast_fade_in)
-                        .build()
-                intent.launchUrl(requireContext(), Uri.parse(activeStory.permalink))
+                CustomTabsIntent.Builder().run {
+                    setToolbarColor(toolbarColor)
+                    setStartAnimations(context, R.anim.slide_in_top, R.anim.fast_fade_out)
+                    setExitAnimations(context, R.anim.slide_out_top, R.anim.fast_fade_in)
+                    build().launchUrl(context, requireNotNull(activeStory.permalink?.toUri()))
+                }
                 return true
             }
             R.id.mi_mark_as_unread -> {
@@ -105,13 +106,8 @@ class StoryFragment : Fragment() {
     private fun toggleMenuItemVisibility(isStarred: Boolean?) {
         requireNotNull(isStarred) { return }
         require(::menu.isInitialized) { return }
-        if (isStarred) {
-            menu.findItem(R.id.mi_unstar).isVisible = true
-            menu.findItem(R.id.mi_star).isVisible = false
-        } else {
-            menu.findItem(R.id.mi_unstar).isVisible = false
-            menu.findItem(R.id.mi_star).isVisible = true
-        }
+        menu.findItem(R.id.mi_unstar).isVisible = isStarred
+        menu.findItem(R.id.mi_star).isVisible = !isStarred
     }
 
     companion object {

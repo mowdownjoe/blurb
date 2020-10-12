@@ -15,6 +15,7 @@ import com.squareup.picasso.Picasso
 
 class MultiPaneStoryListAdapter(private val listener: StoryClickListener) : RecyclerView.Adapter<MultiPaneStoryViewHolder>() {
     private lateinit var stories: Array<Story>
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MultiPaneStoryViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val view = inflater.inflate(R.layout.story_list_item, parent, false)
@@ -25,11 +26,9 @@ class MultiPaneStoryListAdapter(private val listener: StoryClickListener) : Recy
         holder.bind(stories[position])
     }
 
-    override fun getItemCount(): Int {
-        return if (!::stories.isInitialized) {
-            stories.size
-        } else 0
-    }
+    override fun getItemCount(): Int = if (::stories.isInitialized) {
+        stories.size
+    } else 0
 
     fun setStories(newStories: Array<Story>) {
         stories = newStories
@@ -52,13 +51,13 @@ class MultiPaneStoryListAdapter(private val listener: StoryClickListener) : Recy
             }
         }
 
-        private fun setFeedNameAndIcon(feedTitle: String?, faviconUrl: String?) {
-            if (feedTitle != null && feedTitle.isNotEmpty()) {
+        private fun setFeedNameAndIcon(feedTitle: String, faviconUrl: String) {
+            if (feedTitle.isNotEmpty()) {
                 binding.tvFeedName.text = feedTitle
             } else {
                 binding.tvFeedName.setText(R.string.unknown)
             }
-            if (faviconUrl != null && faviconUrl.isNotEmpty()) {
+            if (faviconUrl.isNotEmpty()) {
                 Picasso.get().load(faviconUrl)
                         .placeholder(R.drawable.ic_globe)
                         .error(R.drawable.ic_globe)

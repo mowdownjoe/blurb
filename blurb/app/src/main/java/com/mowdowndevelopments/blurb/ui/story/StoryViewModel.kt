@@ -61,14 +61,13 @@ class StoryViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun enqueueMarkAsRead(story: Story) {
-        if (story.isRead) return
-        if (readStories.contains(story)) return
+        require(!story.isRead && !readStories.contains(story)) { return }
         story.isRead = true
         readStories.add(story)
     }
 
     fun removeFromMarkAsReadQueue(story: Story) {
-        if (!story.isRead) return
+        require(story.isRead || readStories.contains(story)) { return }
         story.isRead = false
         readStories.remove(story)
     }
