@@ -15,7 +15,7 @@ interface NewsBlurAPI {
     suspend fun login(@Field("username") username: String): Response<AuthResponse>
 
     @POST("/api/logout")
-    fun logout(): Call<Void>
+    suspend fun logout(): Response<Void>
 
     @POST("/api/signup")
     @FormUrlEncoded
@@ -66,7 +66,7 @@ interface NewsBlurAPI {
 
     @POST("/reader/mark_story_hash_as_unread")
     @FormUrlEncoded
-    fun markStoryAsUnread(@Field("story_hash") storyHash: String): Call<Map<String, Any>>
+    suspend fun markStoryAsUnread(@Field("story_hash") storyHash: String): Response<Map<String, Any>>
 
     @POST("/reader/mark_story_hash_as_starred")
     @FormUrlEncoded
@@ -77,7 +77,7 @@ interface NewsBlurAPI {
     suspend fun removeStarredStory(@Field("story_hash") storyHash: String): Response<Map<String, Any>>
 
     @GET("/rss_feeds/feed_autocomplete")
-    fun getAutoCompleteResults(@Query("term") searchTerm: String): Call<List<AutoCompleteResponse>>
+    suspend fun getAutoCompleteResults(@Query("term") searchTerm: String): Response<List<AutoCompleteResponse>>
 
     @GET("/reader/starred_story_hashes")
     suspend fun getStarredStoryHashes(): Response<GetStarredHashesResponse>
