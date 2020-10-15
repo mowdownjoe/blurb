@@ -45,9 +45,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun postInAppDialogStatus(status: LoadingStatus) = _inAppDialogStatus.postValue(status)
 
-    fun clearAutoCompleteDialogData() {
-        _autoCompleteDialogData.value = null
-    }
+    fun clearAutoCompleteDialogData() = _autoCompleteDialogData.postValue(null)
 
     fun logout() {
         _logoutStatus.postValue(LoadingStatus.LOADING)
