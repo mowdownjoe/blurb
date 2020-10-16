@@ -30,7 +30,7 @@ class NewFeedAutoCompleteAdapter(context: Context) : ArrayAdapter<AutoCompleteRe
         if (::feeds.isInitialized) {
             val (feedTitle, subscriberCount, tagline) = feeds[position]
             binding.tvFeedLabel.text = feedTitle
-            binding.tvFeedSubCount.text = String.format("%o", subscriberCount)
+            binding.tvFeedSubCount.text = subscriberCount.toString()
             binding.tvTagline.text = tagline
         }
         return binding.root
