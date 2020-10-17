@@ -5,16 +5,18 @@ import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import com.mowdowndevelopments.blurb.AppExecutors
 import com.mowdowndevelopments.blurb.R
 import com.mowdowndevelopments.blurb.database.BlurbDb.Companion.getInstance
 import com.mowdowndevelopments.blurb.network.LoadingStatus
 import com.mowdowndevelopments.blurb.network.Singletons.getNewsBlurAPI
 import com.mowdowndevelopments.blurb.network.responseModels.GetFeedsResponse
 import com.mowdowndevelopments.blurb.work.FetchStarredStoriesWorker
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -88,16 +90,14 @@ class FeedListViewModel(application: Application) : AndroidViewModel(application
 
     @JvmOverloads
     fun postFeedsToDb(feedData: GetFeedsResponse = requireNotNull(feedsResponseData.value)) {
-        val executors = AppExecutors.getInstance()
-        executors.diskIO().execute {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
                 val request = OneTimeWorkRequest.Builder(FetchStarredStoriesWorker::class.java)
                         .addTag(FetchStarredStoriesWorker.WORK_TAG)
                         .build()
                 getInstance(getApplication()).blurbDao().addFeeds(feedData.feeds.values)
-                executors.mainThread().execute {
-                    WorkManager.getInstance(getApplication())
-                            .enqueue(request)
+                with(Dispatchers.Main){
+                    WorkManager.getInstance(getApplication()).enqueue(request)
                 }
             } catch (e: SQLiteConstraintException) {
                 Timber.w(e)

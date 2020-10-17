@@ -1,5 +1,5 @@
 ext {
-    nav_version = '2.3.0'
+    nav_version = '2.3.1'
 }
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -57,7 +57,7 @@ dependencies {
     def okHttp_version = '4.9.0'
     def androidX_fragment_version = "1.2.5"
     def lifecycle_version = '2.2.0'
-    def moshi_version = '1.10.0'
+    def moshi_version = '1.11.0'
     def retrofit_version = "2.9.0"
     def room_version = "2.2.5"
     def truth_version = '1.0.1'
@@ -66,6 +66,8 @@ dependencies {
     def work_version = "2.4.0"
     def paging_version = "2.1.2"
     def billing_version = '3.0.1'
+    def firebase_analytics_version = "17.6.0"
+    def pref_version = "1.1.1"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.10'
@@ -76,7 +78,8 @@ dependencies {
     implementation "androidx.collection:collection-ktx:1.1.0"
 
     implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
-    implementation 'com.google.firebase:firebase-analytics:17.6.0'
+    implementation "com.google.firebase:firebase-analytics:$firebase_analytics_version"
+    implementation "com.google.firebase:firebase-analytics-ktx:$firebase_analytics_version"
     implementation "com.android.billingclient:billing:$billing_version"
     implementation "com.android.billingclient:billing-ktx:$billing_version"
 
@@ -91,9 +94,11 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation "androidx.fragment:fragment:$androidX_fragment_version"
     implementation "androidx.fragment:fragment-ktx:$androidX_fragment_version"
-    implementation 'androidx.preference:preference:1.1.1'
+    implementation "androidx.preference:preference:$pref_version"
+    implementation "androidx.preference:preference-ktx:$pref_version"
     implementation 'androidx.browser:browser:1.2.0'
     implementation "androidx.paging:paging-runtime:$paging_version"
+    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
 
     implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
@@ -129,7 +134,7 @@ dependencies {
     implementation "com.squareup.moshi:moshi-kotlin:$moshi_version"
     implementation "com.squareup.moshi:moshi-adapters:$moshi_version"
 
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
     testImplementation "com.squareup.okhttp3:mockwebserver:$okHttp_version"
     debugImplementation "androidx.fragment:fragment-testing:$androidX_fragment_version" //Bugged in test source set
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
