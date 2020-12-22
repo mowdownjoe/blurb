@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.crashlytics.ktx.crashlytics
+import com.google.firebase.ktx.Firebase
 import com.mowdowndevelopments.blurb.R
 import com.mowdowndevelopments.blurb.database.BlurbDb.Companion.getInstance
 import com.mowdowndevelopments.blurb.network.LoadingStatus
@@ -48,16 +50,12 @@ class FeedListViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    fun getFeedsResponseData(): LiveData<GetFeedsResponse?> {
-        return feedsResponseData
-    }
+    fun getFeedsResponseData(): LiveData<GetFeedsResponse?> = feedsResponseData
 
     val loadingStatus: LiveData<LoadingStatus>
         get() = status
 
-    fun getErrorMessage(): LiveData<String> {
-        return errorMessage
-    }
+    fun getErrorMessage(): LiveData<String> = errorMessage
 
     fun loadFeeds() {
         if (status.value === LoadingStatus.LOADING) return
@@ -82,8 +80,8 @@ class FeedListViewModel(application: Application) : AndroidViewModel(application
                 status.postValue(LoadingStatus.ERROR)
                 errorMessage.postValue(t.localizedMessage)
                 Timber.e(t, "loadFeeds.onFailure: %s", t.message)
-                FirebaseCrashlytics.getInstance().log(String.format("loginCallback.onFailure: %s", t.message))
-                FirebaseCrashlytics.getInstance().recordException(t)
+                Firebase.crashlytics.log(String.format("loginCallback.onFailure: %s", t.message))
+                Firebase.crashlytics.recordException(t)
             }
         })
     }

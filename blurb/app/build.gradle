@@ -1,5 +1,5 @@
 ext {
-    nav_version = '2.3.1'
+    nav_version = '2.3.2'
 }
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
@@ -59,25 +59,27 @@ dependencies {
     def lifecycle_version = '2.2.0'
     def moshi_version = '1.11.0'
     def retrofit_version = "2.9.0"
-    def room_version = "2.2.5"
-    def truth_version = '1.0.1'
+    def room_version = '2.2.6'
+    def truth_version = '1.1'
     def androidX_testCore_version = '1.3.0'
     def espresso_version = '3.3.0'
     def work_version = "2.4.0"
     def paging_version = "2.1.2"
-    def billing_version = '3.0.1'
-    def firebase_analytics_version = "17.6.0"
+    def billing_version = '3.0.2'
+    def firebase_analytics_version = '18.0.0'
+    def firebase_crashlytics_version = '17.3.0'
     def pref_version = "1.1.1"
 
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.0.10'
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.1'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation "androidx.appcompat:appcompat:1.2.0"
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation "androidx.core:core-ktx:1.3.2"
     implementation "androidx.collection:collection-ktx:1.1.0"
 
-    implementation 'com.google.firebase:firebase-crashlytics:17.2.2'
+    implementation "com.google.firebase:firebase-crashlytics:$firebase_crashlytics_version"
+    implementation "com.google.firebase:firebase-crashlytics-ktx:$firebase_crashlytics_version"
     implementation "com.google.firebase:firebase-analytics:$firebase_analytics_version"
     implementation "com.google.firebase:firebase-analytics-ktx:$firebase_analytics_version"
     implementation "com.android.billingclient:billing:$billing_version"
@@ -87,7 +89,8 @@ dependencies {
     implementation("com.jakewharton.timber:timber:4.7.1")
 
     implementation "com.google.android.material:material:1.2.1"
-    implementation "androidx.constraintlayout:constraintlayout:2.0.2" //TODO Update to 2.0.x when rendering UI in IDE is stable
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    //TODO Update to 2.0.x when rendering UI in IDE is stable
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation "androidx.drawerlayout:drawerlayout:1.1.1"
     implementation "androidx.viewpager2:viewpager2:1.0.0"
@@ -96,7 +99,7 @@ dependencies {
     implementation "androidx.fragment:fragment-ktx:$androidX_fragment_version"
     implementation "androidx.preference:preference:$pref_version"
     implementation "androidx.preference:preference-ktx:$pref_version"
-    implementation 'androidx.browser:browser:1.2.0'
+    implementation 'androidx.browser:browser:1.3.0'
     implementation "androidx.paging:paging-runtime:$paging_version"
     implementation "androidx.paging:paging-runtime-ktx:$paging_version"
 
